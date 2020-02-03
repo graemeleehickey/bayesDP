@@ -5,12 +5,8 @@ alt="bayesDP Logo" width="400" height="250"></p>
 # bayesDP
 ## Tools for the Bayesian Discount Prior Function
 <https://cran.r-project.org/package=bayesDP>
-Shiny app available at:
-<https://mdic.shinyapps.io/bayesdp/>
 [![Travis-CI Build
 Status](https://travis-ci.org/graemeleehickey/bayesDP.svg?branch=master)](https://travis-ci.org/graemeleehickey/bayesDP)
-[![Issue
-Count](https://codeclimate.com/github/graemeleehickey/bayesDP/badges/issue_count.svg)](https://codeclimate.com/github/graemeleehickey/bayesDP)
 [![Downloads](http://cranlogs.r-pkg.org/badges/bayesDP?color=brightgreen)](http://www.r-pkg.org/pkg/bayesDP)
 [![Project Status: Active ? The project has reached a stable, usable state and
 is being actively
@@ -30,7 +26,7 @@ install.packages("bayesDP")
 
 ## GitHub Installation
 Install development version from GitHub:
-devtools::install_github("graemeleehickey/bayesDP")
+`devtools::install_github("graemeleehickey/bayesDP")`
 
 ## Documentation
 See manuals and vignettes within package.
