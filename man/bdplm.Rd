@@ -5,14 +5,27 @@
 \alias{bdplm,ANY-method}
 \title{Bayesian Discount Prior: Two-Arm Linear Regression}
 \usage{
-bdplm(formula = formula, data = data, data0 = NULL,
-  prior_treatment_effect = NULL, prior_control_effect = NULL,
-  prior_treatment_sd = NULL, prior_control_sd = NULL,
-  prior_covariate_effect = 0, prior_covariate_sd = 10000,
-  number_mcmc_alpha = 5000, number_mcmc_sigmagrid = 5000,
-  number_mcmc_sigma = 100, number_mcmc_beta = 10000,
-  discount_function = "identity", alpha_max = 1, fix_alpha = FALSE,
-  weibull_scale = 0.135, weibull_shape = 3, method = "mc")
+bdplm(
+  formula = formula,
+  data = data,
+  data0 = NULL,
+  prior_treatment_effect = NULL,
+  prior_control_effect = NULL,
+  prior_treatment_sd = NULL,
+  prior_control_sd = NULL,
+  prior_covariate_effect = 0,
+  prior_covariate_sd = 10000,
+  number_mcmc_alpha = 5000,
+  number_mcmc_sigmagrid = 5000,
+  number_mcmc_sigma = 100,
+  number_mcmc_beta = 10000,
+  discount_function = "identity",
+  alpha_max = 1,
+  fix_alpha = FALSE,
+  weibull_scale = 0.135,
+  weibull_shape = 3,
+  method = "mc"
+)
 }
 \arguments{
 \item{formula}{an object of class "formula." See "Details" for

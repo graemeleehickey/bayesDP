@@ -7,3 +7,5 @@
 *.dll
 *.so
 packrat/lib*/
+doc
+Meta

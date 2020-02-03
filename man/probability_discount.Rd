@@ -5,8 +5,16 @@
 \alias{probability_discount,ANY-method}
 \title{Bayesian Discount Prior: Comparison Between Current and Historical Data}
 \usage{
-probability_discount(mu = NULL, sigma = NULL, N = NULL, mu0 = NULL,
-  sigma0 = NULL, N0 = NULL, number_mcmc = 10000, method = "fixed")
+probability_discount(
+  mu = NULL,
+  sigma = NULL,
+  N = NULL,
+  mu0 = NULL,
+  sigma0 = NULL,
+  N0 = NULL,
+  number_mcmc = 10000,
+  method = "fixed"
+)
 }
 \arguments{
 \item{mu}{scalar. Mean of the current data.}

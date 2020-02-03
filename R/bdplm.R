@@ -163,7 +163,8 @@
 #' @import methods
 #' @importFrom stats density is.empty.model median model.offset model.response pweibull pnorm quantile rbeta rgamma rnorm var vcov contrasts<- dt gaussian lm.fit model.frame model.matrix.default offset terms terms.formula coefficients lm qgamma runif
 #' @aliases bdplm,ANY-method
-#' @useDynLib bayesDP
+#' @useDynLib bayesDP, .registration = TRUE
+#' @importFrom Rcpp evalCpp
 #' @export bdplm
 bdplm <- setClass("bdplm", slots = c(posterior_treatment = "list",
                                      posterior_control = "list",

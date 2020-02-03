@@ -5,12 +5,28 @@
 \alias{bdpnormal,ANY-method}
 \title{Bayesian Discount Prior: Gaussian mean values}
 \usage{
-bdpnormal(mu_t = NULL, sigma_t = NULL, N_t = NULL, mu0_t = NULL,
-  sigma0_t = NULL, N0_t = NULL, mu_c = NULL, sigma_c = NULL,
-  N_c = NULL, mu0_c = NULL, sigma0_c = NULL, N0_c = NULL,
-  discount_function = "identity", alpha_max = 1, fix_alpha = FALSE,
-  weibull_scale = 0.135, weibull_shape = 3, number_mcmc = 10000,
-  method = "mc", compare = TRUE)
+bdpnormal(
+  mu_t = NULL,
+  sigma_t = NULL,
+  N_t = NULL,
+  mu0_t = NULL,
+  sigma0_t = NULL,
+  N0_t = NULL,
+  mu_c = NULL,
+  sigma_c = NULL,
+  N_c = NULL,
+  mu0_c = NULL,
+  sigma0_c = NULL,
+  N0_c = NULL,
+  discount_function = "identity",
+  alpha_max = 1,
+  fix_alpha = FALSE,
+  weibull_scale = 0.135,
+  weibull_shape = 3,
+  number_mcmc = 10000,
+  method = "mc",
+  compare = TRUE
+)
 }
 \arguments{
 \item{mu_t}{scalar. Mean of the current treatment group.}

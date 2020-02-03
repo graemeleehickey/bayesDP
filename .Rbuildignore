@@ -12,3 +12,6 @@
 ^.travis.yml
 ^README_files/
 ^svgs
+^doc$
+^Meta$
+^CRAN-RELEASE$

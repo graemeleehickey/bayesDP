@@ -148,7 +148,10 @@
 #'
 #' @rdname bdplogit
 #' @import methods
-#' @importFrom stats density is.empty.model median model.offset model.response pweibull pnorm quantile rbeta rgamma rnorm var vcov contrasts<- dt gaussian lm.fit model.frame model.matrix.default offset terms terms.formula coefficients lm qgamma runif
+#' @importFrom stats density is.empty.model median model.offset model.response
+#'   pweibull pnorm quantile rbeta rgamma rnorm var vcov contrasts<- dt gaussian
+#'   lm.fit model.frame model.matrix.default offset terms terms.formula
+#'   coefficients lm qgamma runif glm binomial
 #' @importFrom MCMCpack MCMClogit 
 #' @aliases bdplogit,ANY-method
 #' @useDynLib bayesDP
@@ -530,8 +533,9 @@ discount_logit <- function(df, discount_function, alpha_max, fix_alpha,
     p_hat  <- mean(beta>0)
     p_hat  <- 2*ifelse(p_hat > 0.5, 1 - p_hat, p_hat)
   } else if(method == "mc"){
-    Z     <- abs(beta)/sigma2_beta
-    p_hat <- 2*(1-pnorm(Z))
+    stop("Method 'mc' not currently supported.")
+    #Z     <- abs(beta)/sigma2_beta
+    #p_hat <- 2*(1-pnorm(Z))
   }
   
   ### Compute alpha, the discount weight

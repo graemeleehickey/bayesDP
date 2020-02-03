@@ -1,19 +1,22 @@
+# bayesDP 1.3.3
+* New package maintainer (Graeme L. Hickey) since package was orphaned
+* Updates to README, DESCRIPTION, NAMESPACE
+* Added `stop` break to `discount_logit` for `method = mc`
+
 # bayesDP 1.3.2
 ## Bug fixes and minor improvements
-* Minor bdplm vignette typo fixes
-
+* Minor `bdplm` vignette typo fixes
 
 # bayesDP 1.3.1
 ## Major new features
-* Changes to inputs for bdpsurvival
+* Changes to inputs for `bdpsurvival`
   + Current and (optional) historical data are specified in separate data frames
-* Updated normal approximation used for method="mc" of the bdpbinomial and bdpnormal functions
+* Updated normal approximation used for `method = "mc"` of the `bdpbinomial` and `bdpnormal` functions
 
 ## Bug fixes and minor improvements
-* Summary method for bdplm now exists and mimics lm
-* Removed bdpbinomial vignette language around success (vs event) 
-* Reported one-arm sample size for bdpsurvival print method adjusted to current data only
-
+* Summary method for `bdplm` now exists and mimics `lm`
+* Removed `bdpbinomial` vignette language around success (vs event) 
+* Reported one-arm sample size for `bdpsurvival` print method adjusted to current data only
 
 # bayesDP 1.3.0
 ## Major new features
@@ -24,13 +27,10 @@
   + Identity - sets the discount weight to the posterior probability
 * Removal of bdpregression
 
-
 ## Bug fixes and minor improvements
 * Removed two-sided and one-sided function inputs to avoid confusion
-* Posterior probabilities for method="mc" switched from pshisq to pnorm 
+* Posterior probabilities for `method = "mc"` switched from `pshisq` to pnorm 
 * Updated vignettes to reflect new features
-
-
 
 # bayesDP 1.2.0
 ## Major new features
@@ -40,8 +40,7 @@
 
 ## Bug fixes and minor improvements
 * Fixes to class slots
-* Added print input to plot method
-
+* Added `print` input to plot method
 
 # bayesDP 1.1.0
 ## Major new features
@@ -56,15 +55,14 @@
 * Changed `two_side` input to logical
 * Consolidated several internal functions into a single function for computational efficiency gains
 
-
 # bayesDP 1.0.3
 * README update
 * Added plot types
 * Added Vignettes
 * Added logo
 * Improved documentation
-* Updated print, summary, plot methods
-* Refactored bdpnormal/bdpbinomial
+* Updated `print`, `summary`, `plot` methods
+* Refactored `bdpnormal` / `bdpbinomial`
 
 # bayesDP 1.0.2
 * Crucial bugfixes
@@ -73,4 +71,4 @@
 * User requested bugfixes
 
 # bayesDP 1.0.0
-* Initial CRAN release with normal, binomial and survival functions.
+* Initial CRAN release with normal, binomial and survival functions
