@@ -1,4 +1,7 @@
 # bayesDP 1.3.3
+* Updates to README and DESCRIPTION
+
+# bayesDP 1.3.3
 * New package maintainer (Graeme L. Hickey) since package was orphaned
 * Updates to README, DESCRIPTION, NAMESPACE
 * Added `stop` break to `discount_logit` for `method = mc`

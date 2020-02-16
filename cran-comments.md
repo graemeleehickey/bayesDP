@@ -1,12 +1,6 @@
-## Resubmission
-
-* 2 'libcurl 35' errors have been resolved by removing problematic URLs from README
-* 'Non-standard file/directory found at top level' has been resolved by adding cran-comments.md to .Rbuildignore
-
 ## Other notes
 
-Graeme L. Hickey has now taken over as package maintainer from Shawn Balcome
-since the package was orphaned.
+Minor updates included.
 
 ## Test environments
 
