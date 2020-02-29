@@ -1,25 +1,34 @@
+---
+output: github_document
+---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "README-"
+)
+```
+
 # bayesDP <img src="bayesDP-logo.png" width = "400" height = "250" align="right" />
 
-[![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/bayesDP)](https://CRAN.R-project.org/package=bayesDP)
+[![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/bayesDP)](https://CRAN.R-project.org/package=bayesDP)
 [![](http://cranlogs.r-pkg.org/badges/bayesDP)](https://CRAN.R-project.org/package=bayesDP)
 [![Travis-CI Build
 Status](https://travis-ci.org/graemeleehickey/bayesDP.svg?branch=master)](https://travis-ci.org/graemeleehickey/bayesDP)
 [![Downloads](http://cranlogs.r-pkg.org/badges/bayesDP?color=brightgreen)](http://www.r-pkg.org/pkg/bayesDP)
-[![Project Status: Active ? The project has reached a stable, usable
-state and is being actively
+[![Project Status: Active ? The project has reached a stable, usable state and
+is being actively
 developed.](http://www.repostatus.org/badges/latest/active.svg)](http://www.repostatus.org/#active)
 [![contributions
 welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/graemeleehickey/bayesDP/issues)
 [![License](https://img.shields.io/badge/license-GPL%20%28%3E=%203%29-brightgreen.svg?style=flat)](http://www.gnu.org/licenses/gpl-3.0.html)
-[![Codecov test
-coverage](https://codecov.io/gh/graemeleehickey/bayesDP/branch/master/graph/badge.svg)](https://codecov.io/gh/graemeleehickey/bayesDP?branch=master)
+[![Codecov test coverage](https://codecov.io/gh/graemeleehickey/bayesDP/branch/master/graph/badge.svg)](https://codecov.io/gh/graemeleehickey/bayesDP?branch=master)
 
-`bayesDP` provides tools and functions for data augmentation using the
-Bayesian discount prior function for one arm and two arm clinical
-trials.
+`bayesDP` provides tools and functions for data augmentation using the Bayesian discount prior function for one
+arm and two arm clinical trials.
 
 ## CRAN Installation
 
@@ -40,8 +49,8 @@ See manuals and vignettes within package.
 
 ## Authors
 
-Shawn Balcome, Donnie Musgrove, Tarek Haddad, Graeme L. Hickey, and
-Christopher Jackson (For the ppexp R code that was ported to C++.)
+Shawn Balcome, Donnie Musgrove, Tarek Haddad, Graeme L. Hickey, and Christopher
+Jackson (For the ppexp R code that was ported to C++.)
 
 ## License
 

@@ -1,6 +1,7 @@
 # bayesDP 1.3.4
 * Updates to README and DESCRIPTION
 * Updates to .gitignore file
+* Add codecov for coverage checking
 * Updates to R code formatting
 
 # bayesDP 1.3.3

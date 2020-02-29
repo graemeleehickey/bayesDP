@@ -16,3 +16,5 @@
 ^Meta$
 ^CRAN-RELEASE$
 ^cran-comments.md
+^codecov\.yml$
+^README\.Rmd$
