@@ -5,7 +5,7 @@ alt="bayesDP Logo" width="400" height="250"></p>
 # bayesDP
 
 [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/bayesDP)](https://CRAN.R-project.org/package=bayesDP)
-[![](http://cranlogs.r-pkg.org/badges/bayesDP)](https://CRAN.R-project.org/package=bayesDP)]
+[![](http://cranlogs.r-pkg.org/badges/bayesDP)](https://CRAN.R-project.org/package=bayesDP)
 [![Travis-CI Build
 Status](https://travis-ci.org/graemeleehickey/bayesDP.svg?branch=master)](https://travis-ci.org/graemeleehickey/bayesDP)
 [![Downloads](http://cranlogs.r-pkg.org/badges/bayesDP?color=brightgreen)](http://www.r-pkg.org/pkg/bayesDP)
@@ -15,7 +15,6 @@ developed.](http://www.repostatus.org/badges/latest/active.svg)](http://www.repo
 [![contributions
 welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/graemeleehickey/bayesDP/issues)
 [![License](https://img.shields.io/badge/license-GPL%20%28%3E=%203%29-brightgreen.svg?style=flat)](http://www.gnu.org/licenses/gpl-3.0.html)
-[![CRAN](http://www.r-pkg.org/badges/version/bayesDP)](https://cran.r-project.org/package=bayesDP)
 
 `bayesDP` provides tools and functions for data augmentation using the Bayesian discount prior function for one
 arm and two arm clinical trials.

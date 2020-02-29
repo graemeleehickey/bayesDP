@@ -9,3 +9,4 @@
 packrat/lib*/
 doc
 Meta
+.DS_Store
