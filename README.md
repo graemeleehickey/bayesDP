@@ -8,14 +8,11 @@
 [![Travis-CI Build
 Status](https://travis-ci.org/graemeleehickey/bayesDP.svg?branch=master)](https://travis-ci.org/graemeleehickey/bayesDP)
 [![Downloads](http://cranlogs.r-pkg.org/badges/bayesDP?color=brightgreen)](http://www.r-pkg.org/pkg/bayesDP)
-[![Project Status: Active ? The project has reached a stable, usable
-state and is being actively
-developed.](http://www.repostatus.org/badges/latest/active.svg)](http://www.repostatus.org/#active)
-[![contributions
-welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/graemeleehickey/bayesDP/issues)
 [![License](https://img.shields.io/badge/license-GPL%20%28%3E=%203%29-brightgreen.svg?style=flat)](http://www.gnu.org/licenses/gpl-3.0.html)
 [![Codecov test
 coverage](https://codecov.io/gh/graemeleehickey/bayesDP/branch/master/graph/badge.svg)](https://codecov.io/gh/graemeleehickey/bayesDP?branch=master)
+[![AppVeyor build
+status](https://ci.appveyor.com/api/projects/status/github/graemeleehickey/bayesDP?branch=master&svg=true)](https://ci.appveyor.com/project/graemeleehickey/bayesDP)
 
 `bayesDP` provides tools and functions for data augmentation using the
 Bayesian discount prior function for one arm and two arm clinical
