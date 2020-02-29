@@ -162,14 +162,15 @@ the following components:
 \details{
 \code{bdpbinomial} uses a two-stage approach for determining the
   strength of historical data in estimation of a binomial count mean outcome.
-  In the first stage, a \emph{discount function} is used that that defines the
-  maximum strength of the historical data and discounts based on disagreement with
-  the current data. Disagreement between current and historical data is determined by
-  stochastically comparing the respective posterior distributions under noninformative
-  priors. With binomial data, the comparison is the proability (\code{p}) that the current
-  count is less than the historical count. The comparison metric \code{p} is then
-  input into the Weibull discount function and the final strength of the
-  historical data is returned (alpha).
+  In the first stage, a \emph{discount function} is used that that defines
+  the maximum strength of the historical data and discounts based on
+  disagreement with the current data. Disagreement between current and
+  historical data is determined by stochastically comparing the respective
+  posterior distributions under noninformative priors. With binomial data,
+  the comparison is the proability (\code{p}) that the current count is less
+  than the historical count. The comparison metric \code{p} is then input
+  into the Weibull discount function and the final strength of the historical
+  data is returned (alpha).
 
  In the second stage, posterior estimation is performed where the discount
  function parameter, \code{alpha}, is used incorporated in all posterior
@@ -190,11 +191,13 @@ the following components:
 }
 \examples{
 # One-arm trial (OPC) example
-fit <- bdpbinomial(y_t    = 10,
-                   N_t    = 500,
-                   y0_t   = 25,
-                   N0_t   = 250,
-                   method = "fixed")
+fit <- bdpbinomial(
+  y_t = 10,
+  N_t = 500,
+  y0_t = 25,
+  N0_t = 250,
+  method = "fixed"
+)
 summary(fit)
 print(fit)
 \dontrun{
@@ -202,15 +205,17 @@ plot(fit)
 }
 
 # Two-arm (RCT) example
-fit2 <- bdpbinomial(y_t    = 10,
-                    N_t    = 500,
-                    y0_t   = 25,
-                    N0_t   = 250,
-                    y_c    = 8,
-                    N_c    = 500,
-                    y0_c   = 20,
-                    N0_c   = 250,
-                    method = "fixed")
+fit2 <- bdpbinomial(
+  y_t = 10,
+  N_t = 500,
+  y0_t = 25,
+  N0_t = 250,
+  y_c = 8,
+  N_c = 500,
+  y0_c = 20,
+  N0_c = 250,
+  method = "fixed"
+)
 summary(fit2)
 print(fit2)
 \dontrun{

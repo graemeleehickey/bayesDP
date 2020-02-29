@@ -1,4 +1,3 @@
-
 #' @importFrom ggplot2 aes
 #' @importFrom ggplot2 facet_wrap
 #' @importFrom ggplot2 geom_hline
@@ -180,20 +179,24 @@
 #'
 #' @examples
 #' # One-arm trial (OPC) example
-#' fit <- bdpnormal(mu_t  = 30, sigma_t  = 10,  N_t = 50,
-#'                  mu0_t = 32, sigma0_t = 10, N0_t = 50,
-#'                  method = "fixed")
+#' fit <- bdpnormal(
+#'   mu_t = 30, sigma_t = 10, N_t = 50,
+#'   mu0_t = 32, sigma0_t = 10, N0_t = 50,
+#'   method = "fixed"
+#' )
 #' summary(fit)
 #' \dontrun{
 #' plot(fit)
 #' }
 #'
 #' # Two-arm (RCT) example
-#' fit2 <- bdpnormal(mu_t  = 30, sigma_t  = 10,  N_t = 50,
-#'                   mu0_t = 32, sigma0_t = 10, N0_t = 50,
-#'                   mu_c  = 25, sigma_c  = 10,  N_c = 50,
-#'                   mu0_c = 25, sigma0_c = 10, N0_c = 50,
-#'                   method = "fixed")
+#' fit2 <- bdpnormal(
+#'   mu_t = 30, sigma_t = 10, N_t = 50,
+#'   mu0_t = 32, sigma0_t = 10, N0_t = 50,
+#'   mu_c = 25, sigma_c = 10, N_c = 50,
+#'   mu0_c = 25, sigma0_c = 10, N0_c = 50,
+#'   method = "fixed"
+#' )
 #' summary(fit2)
 #' \dontrun{
 #' plot(fit2)
@@ -201,362 +204,376 @@
 #'
 #' @rdname bdpnormal
 #' @import methods
-#' @importFrom stats sd density is.empty.model median model.offset model.response pweibull quantile rbeta rgamma rnorm var vcov
+#' @importFrom stats sd density is.empty.model median model.offset
+#'   model.response pweibull quantile rbeta rgamma rnorm var vcov
 #' @aliases bdpnormal,ANY-method
 #' @export bdpnormal
-bdpnormal <- setClass("bdpnormal", slots = c(posterior_treatment = "list",
-                                             posterior_control = "list",
-                                             final = "list",
-                                             args1 = "list"))
+bdpnormal <- setClass("bdpnormal", slots = c(
+  posterior_treatment = "list",
+  posterior_control = "list",
+  final = "list",
+  args1 = "list"
+))
 
-setGeneric("bdpnormal",
-           function(mu_t              = NULL,
-                    sigma_t           = NULL,
-                    N_t               = NULL,
-                    mu0_t             = NULL,
-                    sigma0_t          = NULL,
-                    N0_t              = NULL,
-                    mu_c              = NULL,
-                    sigma_c           = NULL,
-                    N_c               = NULL,
-                    mu0_c             = NULL,
-                    sigma0_c          = NULL,
-                    N0_c              = NULL,
-                    discount_function = "identity",
-                    alpha_max         = 1,
-                    fix_alpha         = FALSE,
-                    weibull_scale     = 0.135,
-                    weibull_shape     = 3,
-                    number_mcmc       = 10000,
-                    method            = "mc",
-                    compare           = TRUE){
-             standardGeneric("bdpnormal")
-           })
+setGeneric(
+  "bdpnormal",
+  function(mu_t = NULL,
+           sigma_t = NULL,
+           N_t = NULL,
+           mu0_t = NULL,
+           sigma0_t = NULL,
+           N0_t = NULL,
+           mu_c = NULL,
+           sigma_c = NULL,
+           N_c = NULL,
+           mu0_c = NULL,
+           sigma0_c = NULL,
+           N0_c = NULL,
+           discount_function = "identity",
+           alpha_max = 1,
+           fix_alpha = FALSE,
+           weibull_scale = 0.135,
+           weibull_shape = 3,
+           number_mcmc = 10000,
+           method = "mc",
+           compare = TRUE) {
+    standardGeneric("bdpnormal")
+  }
+)
 
-setMethod("bdpnormal",
-          signature(),
-          function(mu_t              = NULL,
-                   sigma_t           = NULL,
-                   N_t               = NULL,
-                   mu0_t             = NULL,
-                   sigma0_t          = NULL,
-                   N0_t              = NULL,
-                   mu_c              = NULL,
-                   sigma_c           = NULL,
-                   N_c               = NULL,
-                   mu0_c             = NULL,
-                   sigma0_c          = NULL,
-                   N0_c              = NULL,
-                   discount_function = "identity",
-                   alpha_max         = 1,
-                   fix_alpha         = FALSE,
-                   weibull_scale     = 0.135,
-                   weibull_shape     = 3,
-                   number_mcmc       = 10000,
-                   method            = "mc",
-                   compare           = TRUE){
+setMethod(
+  "bdpnormal",
+  signature(),
+  function(mu_t = NULL,
+           sigma_t = NULL,
+           N_t = NULL,
+           mu0_t = NULL,
+           sigma0_t = NULL,
+           N0_t = NULL,
+           mu_c = NULL,
+           sigma_c = NULL,
+           N_c = NULL,
+           mu0_c = NULL,
+           sigma0_c = NULL,
+           N0_c = NULL,
+           discount_function = "identity",
+           alpha_max = 1,
+           fix_alpha = FALSE,
+           weibull_scale = 0.135,
+           weibull_shape = 3,
+           number_mcmc = 10000,
+           method = "mc",
+           compare = TRUE) {
 
-  ################################################################################
-  # Check Input                                                                  #
-  ################################################################################
+    ################################################################################
+    # Check Input                                                                  #
+    ################################################################################
 
-  intent <- c()
-  if(length(mu_t + sigma_t + N_t) != 0){
-    intent <- c(intent,"current treatment")
-    #cat("Current Treatment\n")
-  }else{
-    if(is.null(mu_t) == TRUE){
-      cat("mu_t missing\n")
+    intent <- c()
+    if (length(mu_t + sigma_t + N_t) != 0) {
+      intent <- c(intent, "current treatment")
+      # cat("Current Treatment\n")
+    } else {
+      if (is.null(mu_t) == TRUE) {
+        cat("mu_t missing\n")
+      }
+      if (is.null(sigma_t) == TRUE) {
+        cat("sigma_t missing\n")
+      }
+      if (is.null(N_t) == TRUE) {
+        cat("N_t missing\n")
+      }
+      stop("Current treatment not provided/incomplete.")
     }
-    if(is.null(sigma_t) == TRUE){
-      cat("sigma_t missing\n")
+
+    if (length(mu0_t + sigma0_t + N0_t) != 0) {
+      intent <- c(intent, "historical treatment")
+      # cat("Historical Treatment\n")
+    } else {
+      if (length(c(mu0_t, sigma0_t, N0_t)) > 0) {
+        if (is.null(mu0_t) == TRUE) {
+          cat("mu0_t missing\n")
+        }
+        if (is.null(sigma0_t) == TRUE) {
+          cat("sigma0_t missing\n")
+        }
+        if (is.null(N0_t) == TRUE) {
+          cat("N0_t missing\n")
+        }
+        stop("Historical treatment incomplete.")
+      }
     }
-    if(is.null(N_t) == TRUE){
-      cat("N_t missing\n")
+
+    if (length(mu_c + sigma_c + N_c) != 0) {
+      intent <- c(intent, "current control")
+      # cat("Current Control\n")
+    } else {
+      if (length(c(mu_c, sigma_c, N_c)) > 0) {
+        if (is.null(mu_c) == TRUE) {
+          cat("mu_c missing\n")
+        }
+        if (is.null(sigma_c) == TRUE) {
+          cat("sigma_c missing\n")
+        }
+        if (is.null(N_c) == TRUE) {
+          cat("N_c missing\n")
+        }
+        stop("Current control not provided/incomplete.")
+      }
     }
-    stop("Current treatment not provided/incomplete.")
-  }
 
-  if(length(mu0_t + sigma0_t + N0_t) != 0){
-    intent <- c(intent,"historical treatment")
-    #cat("Historical Treatment\n")
-  }else{
-    if(length(c(mu0_t, sigma0_t, N0_t)) > 0){
-      if(is.null(mu0_t) == TRUE){
-        cat("mu0_t missing\n")
+    if (length(mu0_c + sigma0_c + N0_c) != 0) {
+      intent <- c(intent, "historical control")
+      # cat("Historical Contro\nl")
+    } else {
+      if (length(c(mu0_c, sigma0_c, N0_c)) > 0) {
+        if (is.null(mu0_c) == TRUE) {
+          cat("mu0_c missing\n")
+        }
+        if (is.null(sigma0_c) == TRUE) {
+          cat("sigma0_c missing\n")
+        }
+        if (is.null(N0_c) == TRUE) {
+          cat("N0_c missing\n")
+        }
+        stop("Historical Control not provided/incomplete.")
       }
-      if(is.null(sigma0_t) == TRUE){
-        cat("sigma0_t missing\n")
-      }
-      if(is.null(N0_t) == TRUE){
-        cat("N0_t missing\n")
-      }
-      stop("Historical treatment incomplete.")
     }
-  }
 
-  if(length(mu_c + sigma_c + N_c) != 0){
-    intent <- c(intent,"current control")
-    #cat("Current Control\n")
-  }else{
-    if(length(c(mu_c, sigma_c, N_c)) > 0){
-      if(is.null(mu_c) == TRUE){
-        cat("mu_c missing\n")
-      }
-      if(is.null(sigma_c) == TRUE){
-        cat("sigma_c missing\n")
-      }
-      if(is.null(N_c) == TRUE){
-        cat("N_c missing\n")
-      }
-      stop("Current control not provided/incomplete.")
+    if (!is.null(N_c) | !is.null(N0_c)) {
+      arm2 <- TRUE
+    } else {
+      arm2 <- FALSE
     }
-  }
 
-  if(length(mu0_c + sigma0_c + N0_c) != 0){
-    intent <- c(intent,"historical control")
-    #cat("Historical Contro\nl")
-  }else{
-    if(length(c(mu0_c, sigma0_c, N0_c)) > 0){
-      if(is.null(mu0_c) == TRUE){
-        cat("mu0_c missing\n")
-      }
-      if(is.null(sigma0_c) == TRUE){
-        cat("sigma0_c missing\n")
-      }
-      if(is.null(N0_c) == TRUE){
-        cat("N0_c missing\n")
-      }
-      stop("Historical Control not provided/incomplete.")
+    # Check that discount_function is input correctly
+    all_functions <- c("weibull", "scaledweibull", "identity")
+    function_match <- match(discount_function, all_functions)
+    if (is.na(function_match)) {
+      stop("discount_function input incorrectly.")
     }
-  }
 
-  if(!is.null(N_c) | !is.null(N0_c)){
-    arm2 <- TRUE
-  }else{
-    arm2 <- FALSE
-  }
+    ##############################################################################
+    # Quick check, if alpha_max, weibull_scale, or weibull_shape have length 1,
+    # repeat input twice
+    ##############################################################################
 
-  # Check that discount_function is input correctly
-  all_functions <- c("weibull", "scaledweibull", "identity")
-  function_match <- match(discount_function, all_functions)
-  if(is.na(function_match)) {
-    stop("discount_function input incorrectly.")
-  }
+    if (length(alpha_max) == 1) {
+      alpha_max <- rep(alpha_max, 2)
+    }
 
+    if (length(weibull_scale) == 1) {
+      weibull_scale <- rep(weibull_scale, 2)
+    }
 
-  ##############################################################################
-  # Quick check, if alpha_max, weibull_scale, or weibull_shape have length 1,
-  # repeat input twice
-  ##############################################################################
-
-  if(length(alpha_max)==1){
-    alpha_max <- rep(alpha_max, 2)
-  }
-
-  if(length(weibull_scale)==1){
-    weibull_scale <- rep(weibull_scale, 2)
-  }
-
-  if(length(weibull_shape)==1){
-    weibull_shape <- rep(weibull_shape, 2)
-  }
+    if (length(weibull_shape) == 1) {
+      weibull_shape <- rep(weibull_shape, 2)
+    }
 
 
-  ################################################################################
-  # Results                                                                      #
-  ################################################################################
+    ################################################################################
+    # Results                                                                      #
+    ################################################################################
 
-  posterior_treatment <- posterior_normal(
-    mu                = mu_t,
-    sigma             = sigma_t,
-    N                 = N_t,
-    mu0               = mu0_t,
-    sigma0            = sigma0_t,
-    N0                = N0_t,
-    discount_function = discount_function,
-    alpha_max         = alpha_max[1],
-    fix_alpha         = fix_alpha,
-    number_mcmc       = number_mcmc,
-    weibull_scale     = weibull_scale[1],
-    weibull_shape     = weibull_shape[1],
-    method            = method)
-
-
-  if (arm2){
-    posterior_control <- posterior_normal(
-      mu                = mu_c,
-      sigma             = sigma_c,
-      N                 = N_c,
-      mu0               = mu0_c,
-      sigma0            = sigma0_c,
-      N0                = N0_c,
+    posterior_treatment <- posterior_normal(
+      mu = mu_t,
+      sigma = sigma_t,
+      N = N_t,
+      mu0 = mu0_t,
+      sigma0 = sigma0_t,
+      N0 = N0_t,
       discount_function = discount_function,
-      alpha_max         = alpha_max[2],
-      fix_alpha         = fix_alpha,
-      number_mcmc       = number_mcmc,
-      weibull_scale     = weibull_scale[2],
-      weibull_shape     = weibull_shape[2],
-      method            = method)
-  } else{
-    posterior_control <- NULL
-  }
+      alpha_max = alpha_max[1],
+      fix_alpha = fix_alpha,
+      number_mcmc = number_mcmc,
+      weibull_scale = weibull_scale[1],
+      weibull_shape = weibull_shape[1],
+      method = method
+    )
 
 
-  args1 <- list(mu_t              = mu_t,
-                sigma_t           = sigma_t,
-                N_t               = N_t,
-                mu0_t             = mu0_t,
-                sigma0_t          = sigma0_t,
-                N0_t              = N0_t,
-                mu_c              = mu_c,
-                sigma_c           = sigma_c,
-                N_c               = N_c,
-                mu0_c             = mu0_c,
-                sigma0_c          = sigma0_c,
-                N0_c              = N0_c,
-                discount_function = discount_function,
-                alpha_max         = alpha_max,
-                fix_alpha         = fix_alpha,
-                weibull_scale     = weibull_scale,
-                weibull_shape     = weibull_shape,
-                number_mcmc       = number_mcmc,
-                method            = method,
-                arm2              = arm2,
-                intent            = paste(intent,collapse=", ",
-                compare           = compare))
-
-  ##############################################################################
-  ### Create final (comparison) object
-  ##############################################################################
-  if(!compare){
-    final <- NULL
-  } else{
-    if(arm2){
-      final           <- list()
-      final$posterior <- posterior_treatment$posterior_mu - posterior_control$posterior_mu
-    } else{
-      final           <- list()
-      final$posterior <- posterior_treatment$posterior_mu
+    if (arm2) {
+      posterior_control <- posterior_normal(
+        mu = mu_c,
+        sigma = sigma_c,
+        N = N_c,
+        mu0 = mu0_c,
+        sigma0 = sigma0_c,
+        N0 = N0_c,
+        discount_function = discount_function,
+        alpha_max = alpha_max[2],
+        fix_alpha = fix_alpha,
+        number_mcmc = number_mcmc,
+        weibull_scale = weibull_scale[2],
+        weibull_shape = weibull_shape[2],
+        method = method
+      )
+    } else {
+      posterior_control <- NULL
     }
+
+    args1 <- list(
+      mu_t = mu_t,
+      sigma_t = sigma_t,
+      N_t = N_t,
+      mu0_t = mu0_t,
+      sigma0_t = sigma0_t,
+      N0_t = N0_t,
+      mu_c = mu_c,
+      sigma_c = sigma_c,
+      N_c = N_c,
+      mu0_c = mu0_c,
+      sigma0_c = sigma0_c,
+      N0_c = N0_c,
+      discount_function = discount_function,
+      alpha_max = alpha_max,
+      fix_alpha = fix_alpha,
+      weibull_scale = weibull_scale,
+      weibull_shape = weibull_shape,
+      number_mcmc = number_mcmc,
+      method = method,
+      arm2 = arm2,
+      intent = paste(intent,
+        collapse = ", ",
+        compare = compare
+      )
+    )
+
+    ##############################################################################
+    ### Create final (comparison) object
+    ##############################################################################
+
+    if (!compare) {
+      final <- NULL
+    } else {
+      if (arm2) {
+        final <- list()
+        final$posterior <- posterior_treatment$posterior_mu - posterior_control$posterior_mu
+      } else {
+        final <- list()
+        final$posterior <- posterior_treatment$posterior_mu
+      }
+    }
+
+    me <- list(
+      posterior_treatment = posterior_treatment,
+      posterior_control = posterior_control,
+      final = final,
+      args1 = args1
+    )
+
+    class(me) <- "bdpnormal"
+
+    return(me)
   }
-
-  me <- list(posterior_treatment = posterior_treatment,
-             posterior_control   = posterior_control,
-             final               = final,
-             args1               = args1)
-
-  class(me) <- "bdpnormal"
-
-  return(me)
-})
-
-
-
+)
 
 ################################################################################
 # Normal posterior estimation
 # 1) Estimate the discount function (if current+historical data both present)
 # 2) Estimate the posterior of the augmented data
 ################################################################################
+
 posterior_normal <- function(mu, sigma, N, mu0, sigma0, N0, discount_function,
                              alpha_max, fix_alpha, number_mcmc, weibull_scale,
-                             weibull_shape, method){
+                             weibull_shape, method) {
 
   # Compute posterior(s) of current (flat) and historical (prior) data
   # with non-informative priors
   # Current data:
-  if(!is.null(N)){
-    posterior_flat_sigma2 <- 1/rgamma(number_mcmc, (N - 1)/2, ((N - 1) * sigma^2)/2)
-    s                     <- (posterior_flat_sigma2/((N-1)+1))^0.5
-    posterior_flat_mu     <- rnorm(number_mcmc, mu, s)
-  } else{
+  if (!is.null(N)) {
+    posterior_flat_sigma2 <- 1 / rgamma(number_mcmc, (N - 1) / 2, ((N - 1) * sigma^2) / 2)
+    s <- (posterior_flat_sigma2 / ((N - 1) + 1))^0.5
+    posterior_flat_mu <- rnorm(number_mcmc, mu, s)
+  } else {
     posterior_flat_mu <- posterior_flat_sigma2 <- NULL
   }
 
   # Historical data:
-  if(!is.null(N0)){
-    prior_sigma2 <- 1/rgamma(number_mcmc, (N0-1)/2, ((N0-1)*sigma0^2)/2)
-    s0           <- (prior_sigma2/((N0-1)+1))^0.5
-    prior_mu     <- rnorm(number_mcmc, mu0, s0)
-  } else{
-    prior_mu  <- prior_sigma2 <- NULL
+  if (!is.null(N0)) {
+    prior_sigma2 <- 1 / rgamma(number_mcmc, (N0 - 1) / 2, ((N0 - 1) * sigma0^2) / 2)
+    s0 <- (prior_sigma2 / ((N0 - 1) + 1))^0.5
+    prior_mu <- rnorm(number_mcmc, mu0, s0)
+  } else {
+    prior_mu <- prior_sigma2 <- NULL
   }
 
   ##############################################################################
   # Discount function
   ##############################################################################
+
   ### Compute stochastic comparison and alpha discount only if both
   ### N and N0 are present (i.e., current & historical data are present)
-  if(!is.null(N) & !is.null(N0)){
+  if (!is.null(N) & !is.null(N0)) {
 
     ### Test of model vs real
-    if(method == "fixed"){
-      p_hat <- mean(posterior_flat_mu < prior_mu)   # larger is higher failure
-      p_hat <- 2*ifelse(p_hat > 0.5, 1 - p_hat, p_hat)
-    } else if(method == "mc"){
-      Z     <- abs(posterior_flat_mu-prior_mu) / sqrt(s^2+s0^2)
-      p_hat <- 2*(1-pnorm(Z))
+    if (method == "fixed") {
+      p_hat <- mean(posterior_flat_mu < prior_mu) # larger is higher failure
+      p_hat <- 2 * ifelse(p_hat > 0.5, 1 - p_hat, p_hat)
+    } else if (method == "mc") {
+      Z <- abs(posterior_flat_mu - prior_mu) / sqrt(s^2 + s0^2)
+      p_hat <- 2 * (1 - pnorm(Z))
     }
-
 
     ### Number of effective sample size given shape and scale discount function
-    if(fix_alpha == TRUE){
+    if (fix_alpha == TRUE) {
       alpha_discount <- alpha_max
-    } else{
-        # Compute alpha discount based on distribution
-        if(discount_function == "weibull"){
-          alpha_discount <- pweibull(p_hat, shape=weibull_shape,
-                                     scale=weibull_scale)*alpha_max
-        } else if(discount_function == "scaledweibull"){
-          max_p <- pweibull(1, shape=weibull_shape, scale=weibull_scale)
+    } else {
+      # Compute alpha discount based on distribution
+      if (discount_function == "weibull") {
+        alpha_discount <- pweibull(p_hat,
+          shape = weibull_shape,
+          scale = weibull_scale
+        ) * alpha_max
+      } else if (discount_function == "scaledweibull") {
+        max_p <- pweibull(1, shape = weibull_shape, scale = weibull_scale)
 
-          alpha_discount <- pweibull(p_hat, shape=weibull_shape,
-                                     scale=weibull_scale)*alpha_max/max_p
-        } else if(discount_function == "identity"){
-          alpha_discount <- p_hat*alpha_max
-        }
+        alpha_discount <- pweibull(p_hat,
+          shape = weibull_shape,
+          scale = weibull_scale
+        ) * alpha_max / max_p
+      } else if (discount_function == "identity") {
+        alpha_discount <- p_hat * alpha_max
+      }
     }
-  } else{
+  } else {
     alpha_discount <- NULL
-    p_hat         <- NULL
+    p_hat <- NULL
   }
-
 
   ##############################################################################
   # Posterior augmentation
   # - If current or historical data are missing, this will not augment but
   #   will return the posterior of the non-missing data (with flat prior)
   ##############################################################################
+
   ### If only the historical data is present, compute posterior on historical
-  if(is.null(N0) & !is.null(N)){
+  if (is.null(N0) & !is.null(N)) {
     posterior_sigma2 <- posterior_flat_sigma2
-    posterior_mu     <- rnorm(number_mcmc, posterior_flat_mu, sqrt(posterior_sigma2))
-
-  } else if(!is.null(N0) & is.null(N)){
+    posterior_mu <- rnorm(number_mcmc, posterior_flat_mu, sqrt(posterior_sigma2))
+  } else if (!is.null(N0) & is.null(N)) {
     posterior_sigma2 <- prior_sigma2
-    posterior_mu     <- rnorm(number_mcmc, prior_mu, sqrt(posterior_sigma2))
-
-  } else if(!is.null(N0) & !is.null(N)){
+    posterior_mu <- rnorm(number_mcmc, prior_mu, sqrt(posterior_sigma2))
+  } else if (!is.null(N0) & !is.null(N)) {
     effective_N0 <- N0 * alpha_discount
 
-    posterior_mu0 <- prior_sigma2*N*mu + posterior_flat_sigma2*effective_N0*mu0
-    posterior_mu0 <- posterior_mu0 / (N*prior_sigma2 + posterior_flat_sigma2*effective_N0)
+    posterior_mu0 <- prior_sigma2 * N * mu + posterior_flat_sigma2 * effective_N0 * mu0
+    posterior_mu0 <- posterior_mu0 / (N * prior_sigma2 + posterior_flat_sigma2 * effective_N0)
 
-    posterior_sigma2 <- posterior_flat_sigma2*prior_sigma2
-    posterior_sigma2 <- posterior_sigma2 / (N*prior_sigma2 + posterior_flat_sigma2*effective_N0)
+    posterior_sigma2 <- posterior_flat_sigma2 * prior_sigma2
+    posterior_sigma2 <- posterior_sigma2 / (N * prior_sigma2 + posterior_flat_sigma2 * effective_N0)
 
-    posterior_mu     <- rnorm(number_mcmc, posterior_mu0, sqrt(posterior_sigma2))
+    posterior_mu <- rnorm(number_mcmc, posterior_mu0, sqrt(posterior_sigma2))
   }
 
-
-  return(list(alpha_discount        = alpha_discount,
-              p_hat                 = p_hat,
-              posterior_mu          = posterior_mu,
-              posterior_sigma2      = posterior_sigma2,
-              posterior_flat_mu     = posterior_flat_mu,
-              posterior_flat_sigma2 = posterior_flat_sigma2,
-              prior_mu              = prior_mu,
-              prior_sigma2          = prior_sigma2))
+  return(list(
+    alpha_discount = alpha_discount,
+    p_hat = p_hat,
+    posterior_mu = posterior_mu,
+    posterior_sigma2 = posterior_sigma2,
+    posterior_flat_mu = posterior_flat_mu,
+    posterior_flat_sigma2 = posterior_flat_sigma2,
+    prior_mu = prior_mu,
+    prior_sigma2 = prior_sigma2
+  ))
 }
-

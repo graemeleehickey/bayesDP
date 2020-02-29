@@ -29,16 +29,18 @@ probability_discount(
 
 \item{N0}{scalar. Number of observations of the historical data.}
 
-\item{number_mcmc}{scalar. Number of Monte Carlo simulations. Default is 10000.}
+\item{number_mcmc}{scalar. Number of Monte Carlo simulations. Default is
+10000.}
 
-\item{method}{character. Analysis method. Default value "\code{fixed}" estimates
-the posterior probability and holds it fixed. Alternative method "\code{mc}"
-estimates the posterior probability for each Monte Carlo iteration.
-See the the \code{bdpnormal} vignette \cr
+\item{method}{character. Analysis method. Default value "\code{fixed}"
+estimates the posterior probability and holds it fixed. Alternative method
+"\code{mc}" estimates the posterior probability for each Monte Carlo
+iteration. See the the \code{bdpnormal} vignette \cr
 \code{vignette("bdpnormal-vignette", package="bayesDP")} for more details.}
 }
 \value{
-\code{probability_discount} returns an object of class "probability_discount".
+\code{probability_discount} returns an object of class
+  "probability_discount".
 
 An object of class \code{probability_discount} contains the following:
 \describe{
@@ -62,9 +64,10 @@ This function is not used internally but is given for educational purposes.
   trial with normal (mean) data.
 }
 \examples{
-probability_discount(mu  = 0,   sigma = 1, N  = 100,
-                     mu0 = 0.1, sigma0 = 1, N0 = 100)
-
+probability_discount(
+  mu = 0, sigma = 1, N = 100,
+  mu0 = 0.1, sigma0 = 1, N0 = 100
+)
 }
 \references{
 Haddad, T., Himes, A., Thompson, L., Irony, T., Nair, R. MDIC Computer

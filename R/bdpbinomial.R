@@ -51,14 +51,15 @@
 #'   \code{TRUE}.
 #' @details \code{bdpbinomial} uses a two-stage approach for determining the
 #'   strength of historical data in estimation of a binomial count mean outcome.
-#'   In the first stage, a \emph{discount function} is used that that defines the
-#'   maximum strength of the historical data and discounts based on disagreement with
-#'   the current data. Disagreement between current and historical data is determined by
-#'   stochastically comparing the respective posterior distributions under noninformative
-#'   priors. With binomial data, the comparison is the proability (\code{p}) that the current
-#'   count is less than the historical count. The comparison metric \code{p} is then
-#'   input into the Weibull discount function and the final strength of the
-#'   historical data is returned (alpha).
+#'   In the first stage, a \emph{discount function} is used that that defines
+#'   the maximum strength of the historical data and discounts based on
+#'   disagreement with the current data. Disagreement between current and
+#'   historical data is determined by stochastically comparing the respective
+#'   posterior distributions under noninformative priors. With binomial data,
+#'   the comparison is the proability (\code{p}) that the current count is less
+#'   than the historical count. The comparison metric \code{p} is then input
+#'   into the Weibull discount function and the final strength of the historical
+#'   data is returned (alpha).
 #'
 #'  In the second stage, posterior estimation is performed where the discount
 #'  function parameter, \code{alpha}, is used incorporated in all posterior
@@ -151,11 +152,13 @@
 #'
 #' @examples
 #' # One-arm trial (OPC) example
-#' fit <- bdpbinomial(y_t    = 10,
-#'                    N_t    = 500,
-#'                    y0_t   = 25,
-#'                    N0_t   = 250,
-#'                    method = "fixed")
+#' fit <- bdpbinomial(
+#'   y_t = 10,
+#'   N_t = 500,
+#'   y0_t = 25,
+#'   N0_t = 250,
+#'   method = "fixed"
+#' )
 #' summary(fit)
 #' print(fit)
 #' \dontrun{
@@ -163,15 +166,17 @@
 #' }
 #'
 #' # Two-arm (RCT) example
-#' fit2 <- bdpbinomial(y_t    = 10,
-#'                     N_t    = 500,
-#'                     y0_t   = 25,
-#'                     N0_t   = 250,
-#'                     y_c    = 8,
-#'                     N_c    = 500,
-#'                     y0_c   = 20,
-#'                     N0_c   = 250,
-#'                     method = "fixed")
+#' fit2 <- bdpbinomial(
+#'   y_t = 10,
+#'   N_t = 500,
+#'   y0_t = 25,
+#'   N0_t = 250,
+#'   y_c = 8,
+#'   N_c = 500,
+#'   y0_c = 20,
+#'   N0_c = 250,
+#'   method = "fixed"
+#' )
 #' summary(fit2)
 #' print(fit2)
 #' \dontrun{
@@ -180,236 +185,252 @@
 #'
 #' @rdname bdpbinomial
 #' @import methods
-#' @importFrom stats sd density is.empty.model median model.offset model.response pweibull quantile rbeta rgamma rnorm var vcov
+#' @importFrom stats sd density is.empty.model median model.offset
+#'   model.response pweibull quantile rbeta rgamma rnorm var vcov
 #' @aliases bdpbinomial,ANY-method
 #' @export bdpbinomial
 bdpbinomial <- setClass("bdpbinomial",
-                        slots = c(posterior_test = "list",
-                                  posterior_control = "list",
-                                  final = "list",
-                                  args1 = "list"))
+  slots = c(
+    posterior_test = "list",
+    posterior_control = "list",
+    final = "list",
+    args1 = "list"
+  )
+)
 
-setGeneric("bdpbinomial",
-           function(y_t               = NULL,
-                    N_t               = NULL,
-                    y0_t              = NULL,
-                    N0_t              = NULL,
-                    y_c               = NULL,
-                    N_c               = NULL,
-                    y0_c              = NULL,
-                    N0_c              = NULL,
-                    discount_function = "identity",
-                    alpha_max         = 1,
-                    fix_alpha         = FALSE,
-                    a0                = 1,
-                    b0                = 1,
-                    number_mcmc       = 10000,
-                    weibull_scale     = 0.135,
-                    weibull_shape     = 3,
-                    method            = "mc",
-                    compare           = TRUE) {
-             standardGeneric("bdpbinomial")
-           })
+setGeneric(
+  "bdpbinomial",
+  function(y_t = NULL,
+           N_t = NULL,
+           y0_t = NULL,
+           N0_t = NULL,
+           y_c = NULL,
+           N_c = NULL,
+           y0_c = NULL,
+           N0_c = NULL,
+           discount_function = "identity",
+           alpha_max = 1,
+           fix_alpha = FALSE,
+           a0 = 1,
+           b0 = 1,
+           number_mcmc = 10000,
+           weibull_scale = 0.135,
+           weibull_shape = 3,
+           method = "mc",
+           compare = TRUE) {
+    standardGeneric("bdpbinomial")
+  }
+)
 
-setMethod("bdpbinomial",
-          signature(),
-          function(y_t               = NULL,
-                   N_t               = NULL,
-                   y0_t              = NULL,
-                   N0_t              = NULL,
-                   y_c               = NULL,
-                   N_c               = NULL,
-                   y0_c              = NULL,
-                   N0_c              = NULL,
-                   discount_function = "identity",
-                   alpha_max         = 1,
-                   fix_alpha         = FALSE,
-                   a0                = 1,
-                   b0                = 1,
-                   number_mcmc       = 10000,
-                   weibull_scale     = 0.135,
-                   weibull_shape     = 3,
-                   method            = "mc",
-                   compare           = TRUE) {
-            
-            
-            ################################################################################
-            # Check Input                                                                  #
-            ################################################################################
-            
-            intent <- c()
-            if (length(y_t + N_t) != 0) {
-              intent <- c(intent, "current treatment")
-              # cat('Current Treatment\n')
-            } else {
-              if (is.null(y_t) == TRUE) {
-                cat("y_t missing\n")
-              }
-              if (is.null(N_t) == TRUE) {
-                cat("N_t missing\n")
-              }
-              stop("Current treatment not provided/incomplete.")
-            }
-            
-            if (length(y0_t + N0_t) != 0) {
-              intent <- c(intent, "historical treatment")
-              # cat('Historical Treatment\n')
-            } else {
-              if (length(c(y0_t, N0_t)) > 0) {
-                if (is.null(y0_t) == TRUE) {
-                  cat("y0_t missing\n")
-                }
-                if (is.null(N0_t) == TRUE) {
-                  cat("N0_t missing\n")
-                }
-                stop("Historical treatment incomplete.")
-              }
-            }
-            
-            if (length(y_c + N_c) != 0) {
-              intent <- c(intent, "current control")
-              # cat('Current Control\n')
-            } else {
-              if (length(c(y_c, N_c)) > 0) {
-                if (is.null(y_c) == TRUE) {
-                  cat("y_c missing\n")
-                }
-                if (is.null(N_c) == TRUE) {
-                  cat("N_c missing\n")
-                }
-                stop("Current control not provided/incomplete.")
-              }
-            }
-            
-            if (length(y0_c + N0_c) != 0) {
-              intent <- c(intent, "historical control")
-              # cat('Historical Control\n')
-            } else {
-              if (length(c(y0_c, N0_c)) > 0) {
-                if (is.null(y0_c) == TRUE) {
-                  cat("y0_c missing\n")
-                }
-                if (is.null(N0_c) == TRUE) {
-                  cat("N0_c missing\n")
-                }
-                stop("Historical Control not provided/incomplete.")
-              }
-            }
-            
-            if (!is.null(N_c) | !is.null(N0_c)) {
-              arm2 <- TRUE
-            } else {
-              arm2 <- FALSE
-            }
-            
-            # Check that discount_function is input correctly
-            all_functions <- c("weibull", "scaledweibull", "identity")
-            function_match <- match(discount_function, all_functions)
-            if (is.na(function_match)) {
-              stop("discount_function input incorrectly.")
-            }            
-            
-            ##############################################################################
-            # Quick check, if alpha_max, weibull_scale, or weibull_shape have length 1,
-            # repeat input twice
-            ##############################################################################
-            
-            if (length(alpha_max) == 1) {
-              alpha_max <- rep(alpha_max, 2)
-            }
-            
-            if (length(weibull_scale) == 1) {
-              weibull_scale <- rep(weibull_scale, 2)
-            }
-            
-            if (length(weibull_shape) == 1) {
-              weibull_shape <- rep(weibull_shape, 2)
-            }
-            
-            ##############################################################################
-            # Run model and collect results
-            ##############################################################################
-            
-            posterior_treatment <- posterior_binomial(
-              y                 = y_t,
-              N                 = N_t,
-              y0                = y0_t,
-              N0                = N0_t,
-              discount_function = discount_function,
-              alpha_max         = alpha_max[1],
-              fix_alpha         = fix_alpha,
-              a0                = a0,
-              b0                = b0,
-              number_mcmc       = number_mcmc,
-              weibull_scale     = weibull_scale[1],
-              weibull_shape     = weibull_shape[1],
-              method            = method)
-            
-            if (arm2) {
-              posterior_control <- posterior_binomial(
-                y                 = y_c,
-                N                 = N_c,
-                y0                = y0_c,
-                N0                = N0_c,
-                discount_function = discount_function,
-                alpha_max         = alpha_max[2],
-                fix_alpha         = fix_alpha,
-                a0                = a0,
-                b0                = b0,
-                number_mcmc       = number_mcmc,
-                weibull_scale     = weibull_scale[2],
-                weibull_shape     = weibull_shape[2],
-                method            = method)
-            } else {
-              posterior_control <- NULL
-            }
-            
-            args1 <- list(y_t               = y_t,
-                          N_t               = N_t,
-                          y0_t              = y0_t,
-                          N0_t              = N0_t,
-                          y_c               = y_c,
-                          N_c               = N_c,
-                          y0_c              = y0_c,
-                          N0_c              = N0_c,
-                          discount_function = discount_function,
-                          alpha_max         = alpha_max,
-                          fix_alpha         = fix_alpha,
-                          a0                = a0,
-                          b0                = b0,
-                          number_mcmc       = number_mcmc,
-                          weibull_scale     = weibull_scale,
-                          weibull_shape     = weibull_shape,
-                          method            = method,
-                          arm2              = arm2,
-                          intent            = paste(intent,collapse=", ",
-                                                    compare = compare))
-            
-            ##############################################################################
-            ### Create final (comparison) object
-            ##############################################################################
-            
-            if (!compare) {
-              final <- NULL
-            } else {
-              if (arm2) {
-                final           <- list()
-                final$posterior <- posterior_treatment$posterior - posterior_control$posterior
-              } else {
-                final           <- list()
-                final$posterior <- posterior_treatment$posterior
-              }
-            }
-            
-            me <- list(posterior_treatment = posterior_treatment,
-                       posterior_control   = posterior_control,
-                       final               = final,
-                       args1               = args1)
-            
-            class(me) <- "bdpbinomial"
-            
-            return(me)
-          })
+setMethod(
+  "bdpbinomial",
+  signature(),
+  function(y_t = NULL,
+           N_t = NULL,
+           y0_t = NULL,
+           N0_t = NULL,
+           y_c = NULL,
+           N_c = NULL,
+           y0_c = NULL,
+           N0_c = NULL,
+           discount_function = "identity",
+           alpha_max = 1,
+           fix_alpha = FALSE,
+           a0 = 1,
+           b0 = 1,
+           number_mcmc = 10000,
+           weibull_scale = 0.135,
+           weibull_shape = 3,
+           method = "mc",
+           compare = TRUE) {
+
+
+    ################################################################################
+    # Check Input                                                                  #
+    ################################################################################
+
+    intent <- c()
+    if (length(y_t + N_t) != 0) {
+      intent <- c(intent, "current treatment")
+      # cat('Current Treatment\n')
+    } else {
+      if (is.null(y_t) == TRUE) {
+        cat("y_t missing\n")
+      }
+      if (is.null(N_t) == TRUE) {
+        cat("N_t missing\n")
+      }
+      stop("Current treatment not provided/incomplete.")
+    }
+
+    if (length(y0_t + N0_t) != 0) {
+      intent <- c(intent, "historical treatment")
+      # cat('Historical Treatment\n')
+    } else {
+      if (length(c(y0_t, N0_t)) > 0) {
+        if (is.null(y0_t) == TRUE) {
+          cat("y0_t missing\n")
+        }
+        if (is.null(N0_t) == TRUE) {
+          cat("N0_t missing\n")
+        }
+        stop("Historical treatment incomplete.")
+      }
+    }
+
+    if (length(y_c + N_c) != 0) {
+      intent <- c(intent, "current control")
+      # cat('Current Control\n')
+    } else {
+      if (length(c(y_c, N_c)) > 0) {
+        if (is.null(y_c) == TRUE) {
+          cat("y_c missing\n")
+        }
+        if (is.null(N_c) == TRUE) {
+          cat("N_c missing\n")
+        }
+        stop("Current control not provided/incomplete.")
+      }
+    }
+
+    if (length(y0_c + N0_c) != 0) {
+      intent <- c(intent, "historical control")
+      # cat('Historical Control\n')
+    } else {
+      if (length(c(y0_c, N0_c)) > 0) {
+        if (is.null(y0_c) == TRUE) {
+          cat("y0_c missing\n")
+        }
+        if (is.null(N0_c) == TRUE) {
+          cat("N0_c missing\n")
+        }
+        stop("Historical Control not provided/incomplete.")
+      }
+    }
+
+    if (!is.null(N_c) | !is.null(N0_c)) {
+      arm2 <- TRUE
+    } else {
+      arm2 <- FALSE
+    }
+
+    # Check that discount_function is input correctly
+    all_functions <- c("weibull", "scaledweibull", "identity")
+    function_match <- match(discount_function, all_functions)
+    if (is.na(function_match)) {
+      stop("discount_function input incorrectly.")
+    }
+
+    ##############################################################################
+    # Quick check, if alpha_max, weibull_scale, or weibull_shape have length 1,
+    # repeat input twice
+    ##############################################################################
+
+    if (length(alpha_max) == 1) {
+      alpha_max <- rep(alpha_max, 2)
+    }
+
+    if (length(weibull_scale) == 1) {
+      weibull_scale <- rep(weibull_scale, 2)
+    }
+
+    if (length(weibull_shape) == 1) {
+      weibull_shape <- rep(weibull_shape, 2)
+    }
+
+    ##############################################################################
+    # Run model and collect results
+    ##############################################################################
+
+    posterior_treatment <- posterior_binomial(
+      y = y_t,
+      N = N_t,
+      y0 = y0_t,
+      N0 = N0_t,
+      discount_function = discount_function,
+      alpha_max = alpha_max[1],
+      fix_alpha = fix_alpha,
+      a0 = a0,
+      b0 = b0,
+      number_mcmc = number_mcmc,
+      weibull_scale = weibull_scale[1],
+      weibull_shape = weibull_shape[1],
+      method = method
+    )
+
+    if (arm2) {
+      posterior_control <- posterior_binomial(
+        y = y_c,
+        N = N_c,
+        y0 = y0_c,
+        N0 = N0_c,
+        discount_function = discount_function,
+        alpha_max = alpha_max[2],
+        fix_alpha = fix_alpha,
+        a0 = a0,
+        b0 = b0,
+        number_mcmc = number_mcmc,
+        weibull_scale = weibull_scale[2],
+        weibull_shape = weibull_shape[2],
+        method = method
+      )
+    } else {
+      posterior_control <- NULL
+    }
+
+    args1 <- list(
+      y_t = y_t,
+      N_t = N_t,
+      y0_t = y0_t,
+      N0_t = N0_t,
+      y_c = y_c,
+      N_c = N_c,
+      y0_c = y0_c,
+      N0_c = N0_c,
+      discount_function = discount_function,
+      alpha_max = alpha_max,
+      fix_alpha = fix_alpha,
+      a0 = a0,
+      b0 = b0,
+      number_mcmc = number_mcmc,
+      weibull_scale = weibull_scale,
+      weibull_shape = weibull_shape,
+      method = method,
+      arm2 = arm2,
+      intent = paste(intent,
+        collapse = ", ",
+        compare = compare
+      )
+    )
+
+    ##############################################################################
+    ### Create final (comparison) object
+    ##############################################################################
+
+    if (!compare) {
+      final <- NULL
+    } else {
+      if (arm2) {
+        final <- list()
+        final$posterior <- posterior_treatment$posterior - posterior_control$posterior
+      } else {
+        final <- list()
+        final$posterior <- posterior_treatment$posterior
+      }
+    }
+
+    me <- list(
+      posterior_treatment = posterior_treatment,
+      posterior_control = posterior_control,
+      final = final,
+      args1 = args1
+    )
+
+    class(me) <- "bdpbinomial"
+
+    return(me)
+  }
+)
 
 
 ################################################################################
@@ -422,100 +443,103 @@ posterior_binomial <- function(y, N, y0, N0, discount_function,
                                alpha_max, fix_alpha, a0, b0,
                                number_mcmc, weibull_scale, weibull_shape,
                                method) {
-  
+
   ### Compute posterior(s) of current (flat) and historical (prior) data
   ### with non-informative priors
   if (!is.null(N)) {
-    posterior_flat  <- rbeta(number_mcmc, y + a0, N - y + b0)
+    posterior_flat <- rbeta(number_mcmc, y + a0, N - y + b0)
   } else {
     posterior_flat <- NULL
   }
-  
+
   if (!is.null(N0)) {
-    prior    <- rbeta(number_mcmc, y0 + a0, N0 - y0 + b0)
+    prior <- rbeta(number_mcmc, y0 + a0, N0 - y0 + b0)
   } else {
     prior <- NULL
   }
-  
+
   ##############################################################################
   # Discount function
   ##############################################################################
-  
+
   ### Compute stochastic comparison and alpha discount only if both
   ### N and N0 are present (i.e., current & historical data are present)
   if (!is.null(N) & !is.null(N0)) {
-    
+
     ### Test of model vs real
     if (method == "fixed") {
-      p_hat <- mean(posterior_flat < prior)   # larger is higher failure
+      p_hat <- mean(posterior_flat < prior) # larger is higher failure
       p_hat <- 2 * ifelse(p_hat > 0.5, 1 - p_hat, p_hat)
     } else if (method == "mc") {
       # v     <- 1 / ((y + a0 - 1)/posterior_flat^2 + (N-y+b0-1)/(posterior_flat-1)^2)
       # v0    <- 1 / ((y0 + a0 - 1)/prior^2 + (N0-y0+b0-1)/(prior-1)^2)
-      v     <- posterior_flat * (1 - posterior_flat) / N
-      v0    <- prior * (1 - prior) / N0
-      Z     <- abs(posterior_flat - prior) / sqrt(v + v0)
+      v <- posterior_flat * (1 - posterior_flat) / N
+      v0 <- prior * (1 - prior) / N0
+      Z <- abs(posterior_flat - prior) / sqrt(v + v0)
       p_hat <- 2 * (1 - pnorm(Z))
     }
-    
+
     ### Number of effective sample size given shape and scale discount function
     if (fix_alpha == TRUE) {
       alpha_discount <- alpha_max
     } else {
-      
+
       # Compute alpha discount based on distribution
       if (discount_function == "weibull") {
-        alpha_discount <- pweibull(p_hat, shape = weibull_shape,
-                                   scale = weibull_scale) * alpha_max
+        alpha_discount <- pweibull(p_hat,
+          shape = weibull_shape,
+          scale = weibull_scale
+        ) * alpha_max
       } else if (discount_function == "scaledweibull") {
-        max_p <- pweibull(1, shape = weibull_shape,
-                          scale = weibull_scale)
-        
-        alpha_discount <- pweibull(p_hat, shape = weibull_shape,
-                                   scale = weibull_scale)*alpha_max/max_p
-        
+        max_p <- pweibull(1,
+          shape = weibull_shape,
+          scale = weibull_scale
+        )
+
+        alpha_discount <- pweibull(p_hat,
+          shape = weibull_shape,
+          scale = weibull_scale
+        ) * alpha_max / max_p
       } else if (discount_function == "identity") {
-        alpha_discount <- p_hat*alpha_max
+        alpha_discount <- p_hat * alpha_max
       }
-      
     }
-    
   } else {
     alpha_discount <- NULL
-    p_hat          <- NULL
+    p_hat <- NULL
   }
-  
+
   ##############################################################################
   # Posterior augmentation
   # - If current or historical data are missing, this will not augment but
   #   will return the posterior of the non-missing data (with flat prior)
   ##############################################################################
-  
+
   ### If only the historical data is present, compute posterior on historical
   if (is.null(N0) & !is.null(N)) {
     posterior <- posterior_flat
-    
   } else if (!is.null(N0) & is.null(N)) {
     posterior <- prior
-    
   } else if (!is.null(N0) & !is.null(N)) {
     effective_N0 <- N0 * alpha_discount
-    a_prior    <- (y0 / N0)*effective_N0 + a0
-    b_prior    <- effective_N0 - (y0 / N0) * effective_N0 + b0
+    a_prior <- (y0 / N0) * effective_N0 + a0
+    b_prior <- effective_N0 - (y0 / N0) * effective_N0 + b0
     a_post_aug <- y + a_prior
     b_post_aug <- N - y + b_prior
-    posterior  <- rbeta(number_mcmc, a_post_aug, b_post_aug)
+    posterior <- rbeta(number_mcmc, a_post_aug, b_post_aug)
   }
-  
-  return(list(alpha_discount  = alpha_discount,
-              p_hat           = p_hat,
-              posterior       = posterior,
-              posterior_flat  = posterior_flat,
-              prior           = prior,
-              weibull_scale   = weibull_scale,
-              weibull_shape   = weibull_shape,
-              y               = y,
-              N               = N,
-              y0              = y0,
-              N0              = N0))
+
+  return(list(
+    alpha_discount = alpha_discount,
+    p_hat = p_hat,
+    posterior = posterior,
+    posterior_flat = posterior_flat,
+    prior = prior,
+    weibull_scale = weibull_scale,
+    weibull_shape = weibull_shape,
+    y = y,
+    N = N,
+    y0 = y0,
+    N0 = N0
+  ))
 }

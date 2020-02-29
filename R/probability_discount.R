@@ -1,4 +1,3 @@
-
 #' @importFrom ggplot2 aes
 #' @importFrom ggplot2 facet_wrap
 #' @importFrom ggplot2 geom_hline
@@ -20,11 +19,12 @@
 #' @param mu0 scalar. Mean of the historical data.
 #' @param sigma0 scalar. Standard deviation of the historical data.
 #' @param N0 scalar. Number of observations of the historical data.
-#' @param number_mcmc scalar. Number of Monte Carlo simulations. Default is 10000.
-#' @param method character. Analysis method. Default value "\code{fixed}" estimates
-#'   the posterior probability and holds it fixed. Alternative method "\code{mc}"
-#'   estimates the posterior probability for each Monte Carlo iteration.
-#'   See the the \code{bdpnormal} vignette \cr
+#' @param number_mcmc scalar. Number of Monte Carlo simulations. Default is
+#'   10000.
+#' @param method character. Analysis method. Default value "\code{fixed}"
+#'   estimates the posterior probability and holds it fixed. Alternative method
+#'   "\code{mc}" estimates the posterior probability for each Monte Carlo
+#'   iteration. See the the \code{bdpnormal} vignette \cr
 #'   \code{vignette("bdpnormal-vignette", package="bayesDP")} for more details.
 #' @details
 #'   This function is not used internally but is given for educational purposes.
@@ -32,7 +32,8 @@
 #'   between current and historical data in the context of a clinical
 #'   trial with normal (mean) data.
 #'
-#' @return \code{probability_discount} returns an object of class "probability_discount".
+#' @return \code{probability_discount} returns an object of class
+#'   "probability_discount".
 #'
 #' An object of class \code{probability_discount} contains the following:
 #' \describe{
@@ -49,63 +50,68 @@
 #'   \emph{Journal of Biopharmaceutical Statistics}, 1-15.
 #'
 #' @examples
-#' probability_discount(mu  = 0,   sigma = 1, N  = 100,
-#'                      mu0 = 0.1, sigma0 = 1, N0 = 100)
-#'
+#' probability_discount(
+#'   mu = 0, sigma = 1, N = 100,
+#'   mu0 = 0.1, sigma0 = 1, N0 = 100
+#' )
 #' @rdname probability_discount
 #' @import methods
-#' @importFrom stats sd density is.empty.model median model.offset model.response pweibull quantile rbeta rgamma rnorm var vcov pnorm
+#' @importFrom stats sd density is.empty.model median model.offset
+#'   model.response pweibull quantile rbeta rgamma rnorm var vcov pnorm
 #' @aliases probability_discount,ANY-method
 #' @export probability_discount
 probability_discount <- setClass("probability_discount")
 
-setGeneric("probability_discount",
-           function(mu          = NULL,
-                    sigma       = NULL,
-                    N           = NULL,
-                    mu0         = NULL,
-                    sigma0      = NULL,
-                    N0          = NULL,
-                    number_mcmc = 10000,
-                    method      = "fixed"){
-             standardGeneric("probability_discount")
-           })
-
-setMethod("probability_discount",
-          signature(),
-          function(mu          = NULL,
-                   sigma       = NULL,
-                   N           = NULL,
-                   mu0         = NULL,
-                   sigma0      = NULL,
-                   N0          = NULL,
-                   number_mcmc = 10000,
-                   method      = "fixed"){
-
-  if(!(method %in% c("fixed", "mc")))
-    stop("method entered incorrectly. Must be one of 'fixed' or 'mc'.")
-
-
-  ### Preposterior of current mu using flat prior
-  posterior_flat_sigma2 <- 1/rgamma(number_mcmc, (N - 1)/2, ((N - 1) * sigma^2)/2)
-  s                     <- (posterior_flat_sigma2/((N-1)+1))^0.5
-  posterior_flat_mu     <- rnorm(number_mcmc, mu, s)
-
-  ### Posterior of historical data parameters using flat prior
-  prior_sigma2 <- 1/rgamma(number_mcmc, (N0-1)/2, ((N0-1)*sigma0^2)/2)
-  s0           <- (prior_sigma2/((N0-1)+1))^0.5
-  prior_mu     <- rnorm(number_mcmc, mu0, s0)
-
-  ### Test of model vs real
-  p_hat <- mean(posterior_flat_mu < prior_mu)
-
-  ### Transform probability to an intuitive value
-  p_hat <- 2*ifelse(p_hat > 0.5, 1 - p_hat, p_hat)
-
-  if(method == "mc"){
-    Z     <- abs(posterior_flat_mu - prior_mu) / (s^2+s0^2)
-    p_hat <- 2*(1-pnorm(Z))
+setGeneric(
+  "probability_discount",
+  function(mu = NULL,
+           sigma = NULL,
+           N = NULL,
+           mu0 = NULL,
+           sigma0 = NULL,
+           N0 = NULL,
+           number_mcmc = 10000,
+           method = "fixed") {
+    standardGeneric("probability_discount")
   }
+)
 
-  return(p_hat)
-})
+setMethod(
+  "probability_discount",
+  signature(),
+  function(mu = NULL,
+           sigma = NULL,
+           N = NULL,
+           mu0 = NULL,
+           sigma0 = NULL,
+           N0 = NULL,
+           number_mcmc = 10000,
+           method = "fixed") {
+    if (!(method %in% c("fixed", "mc"))) {
+      stop("method entered incorrectly. Must be one of 'fixed' or 'mc'.")
+    }
+
+    ### Preposterior of current mu using flat prior
+    posterior_flat_sigma2 <- 1 / rgamma(number_mcmc, (N - 1) / 2, ((N - 1) * sigma^2) / 2)
+    s <- (posterior_flat_sigma2 / ((N - 1) + 1))^0.5
+    posterior_flat_mu <- rnorm(number_mcmc, mu, s)
+
+    ### Posterior of historical data parameters using flat prior
+    prior_sigma2 <- 1 / rgamma(number_mcmc, (N0 - 1) / 2, ((N0 - 1) * sigma0^2) / 2)
+    s0 <- (prior_sigma2 / ((N0 - 1) + 1))^0.5
+    prior_mu <- rnorm(number_mcmc, mu0, s0)
+
+    ### Test of model vs real
+    p_hat <- mean(posterior_flat_mu < prior_mu)
+
+    ### Transform probability to an intuitive value
+    p_hat <- 2 * ifelse(p_hat > 0.5, 1 - p_hat, p_hat)
+
+    if (method == "mc") {
+      Z <- abs(posterior_flat_mu - prior_mu) / (s^2 + s0^2)
+      p_hat <- 2 * (1 - pnorm(Z))
+    }
+
+    return(p_hat)
+  }
+)

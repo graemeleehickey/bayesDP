@@ -17,28 +17,28 @@
 #'
 #' @examples
 #' # Single vector of hazard rates. Returns a single cdf value.
-#' q    <- 12
-#' x    <- c(0.25,0.3,0.35,0.4)
-#' cuts <- c(0,6,12,18)
-#' pp   <- ppexp(q,x,cuts)
+#' q <- 12
+#' x <- c(0.25, 0.3, 0.35, 0.4)
+#' cuts <- c(0, 6, 12, 18)
+#' pp <- ppexp(q, x, cuts)
 #'
 #' # Matrix of multiple vectors of hazard rates. Returns 10 cdf values.
-#' x  <- matrix(rgamma(4*10, 0.1, 0.1), nrow=10)
-#' pp <- ppexp(q,x,cuts)
+#' x <- matrix(rgamma(4 * 10, 0.1, 0.1), nrow = 10)
+#' pp <- ppexp(q, x, cuts)
 #' @import methods
 #' @useDynLib bayesDP
 #' @export
-ppexp <- function(q, x, cuts){
-  if(!is.matrix(x)){
+ppexp <- function(q, x, cuts) {
+  if (!is.matrix(x)) {
     ppout <- ppexpV(q, x, cuts)
-  } else if(is.matrix(x)){
+  } else if (is.matrix(x)) {
     ppout <- ppexpM(q, x, cuts)
-  } else{
+  } else {
     stop("Error: input x is in the wrong format.")
   }
   return(ppout)
 }
 
-.onUnload <- function (libpath) {
+.onUnload <- function(libpath) {
   library.dynam.unload("bayesDP", libpath)
 }

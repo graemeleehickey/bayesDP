@@ -62,8 +62,7 @@ This function is not used internally but is given for educational purposes.
 \examples{
 alpha_discount(0.5)
 
-alpha_discount(0.5, discount_function="identity")
-
+alpha_discount(0.5, discount_function = "identity")
 }
 \references{
 Haddad, T., Himes, A., Thompson, L., Irony, T., Nair, R. MDIC Computer

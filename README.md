@@ -1,7 +1,9 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# bayesDP <img src="bayesDP-logo.png" width = "400" height = "250" align="right" />
+<img src="bayesDP-logo.png" width = "400" height = "250" align="right" />
+
+# bayesDP
 
 [![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/bayesDP)](https://CRAN.R-project.org/package=bayesDP)
 [![](http://cranlogs.r-pkg.org/badges/bayesDP)](https://CRAN.R-project.org/package=bayesDP)
