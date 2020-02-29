@@ -60,32 +60,32 @@ setMethod("print", signature(x = "bdpsurvival"), function(x) {
   posterior_treatment <- x$posterior_treatment
   posterior_control <- x$posterior_control
   surv_time <- x$args1$surv_time
-
+  
   args1 <- x$args1
   data <- args1$data
   data_current <- args1$data_current
   breaks <- args1$breaks
   arm2 <- args1$arm2
-
-
+  
+  
   treatment <- NULL
   historical <- NULL
-
+  
   if (!arm2) {
     ##############################################################################
     # Survival probability and surv_time
     ##############################################################################
     ### Print the augmented posterior
     survival_time_posterior_flat <- ppexp(surv_time,
-      posterior_treatment$posterior_hazard,
-      cuts = c(0, breaks)
+                                          posterior_treatment$posterior_hazard,
+                                          cuts = c(0, breaks)
     )
-
+    
     data_t <- subset(data, historical == 0 & treatment == 1)
     n <- nrow(data_t)
     s_t <- with(data_t, Surv(time, status)) # , type="mstate"))
     s_t <- survival::survfitKM(factor(rep(1, n)), s_t)
-
+    
     print_1arm <- matrix(c(
       nrow(data_current),
       sum(s_t$n.event),
@@ -124,7 +124,7 @@ setMethod("print", signature(x = "bdpsurvival"), function(x) {
 #'
 #' @export
 setMethod("print", signature(x = "bdplm"), function(x) {
-
+  
   # Format coefficients
   coefs <- x$estimates$coefficients
   p <- ncol(coefs)
@@ -132,12 +132,12 @@ setMethod("print", signature(x = "bdplm"), function(x) {
   names(coefs)[1] <- "(Intercept)"
   coefs[1, ] <- round(coefs[1, ], 3)
   dimnames(coefs) <- list("", names(coefs))
-
+  
   # Format alpha
   alpha_mat <- apply(x$alpha_discount, 2, median)
   alpha_mat <- matrix(alpha_mat, nrow = 1)
   dimnames(alpha_mat) <- list("", names(x$alpha_discount))
-
+  
   # Print output
   cat("\n")
   cat("Call:\n")

@@ -28,35 +28,34 @@ bdplm(
 )
 }
 \arguments{
-\item{formula}{an object of class "formula." See "Details" for
-more information, including specification of treatment
-data indicators.}
+\item{formula}{an object of class "formula." See "Details" for more
+information, including specification of treatment data indicators.}
 
 \item{data}{a data frame containing the current data variables in the model.
-A column named \code{treatment} must be present; \code{treatment} must
-be binary and indicate treatment group vs. control group.}
+A column named \code{treatment} must be present; \code{treatment} must be
+binary and indicate treatment group vs. control group.}
 
-\item{data0}{a data frame containing the historical data variables in the model.
-The column labels of data and data0 must match.}
+\item{data0}{a data frame containing the historical data variables in the
+model. The column labels of data and data0 must match.}
 
-\item{prior_treatment_effect}{scalar. The historical adjusted treatment effect.
-If left \code{NULL}, value is estimated from the historical data.}
+\item{prior_treatment_effect}{scalar. The historical adjusted treatment
+effect. If left \code{NULL}, value is estimated from the historical data.}
 
 \item{prior_control_effect}{scalar. The historical adjusted control effect.
 If left \code{NULL}, value is estimated from the historical data.}
 
 \item{prior_treatment_sd}{scalar. The standard deviation of the historical
-adjusted treatment effect. If left \code{NULL}, value is estimated from
-the historical data.}
+adjusted treatment effect. If left \code{NULL}, value is estimated from the
+historical data.}
 
 \item{prior_control_sd}{scalar. The standard deviation of the historical
-adjusted control effect. If left \code{NULL}, value is estimated from
-the historical data.}
+adjusted control effect. If left \code{NULL}, value is estimated from the
+historical data.}
 
 \item{prior_covariate_effect}{vector. The prior mean(s) of the covariate
-effect(s). Default value is zero. If a single value is input, the
-the scalar is repeated to the length of the input covariates. Otherwise,
-care must be taken to ensure the length of the input matches the number of
+effect(s). Default value is zero. If a single value is input, the the
+scalar is repeated to the length of the input covariates. Otherwise, care
+must be taken to ensure the length of the input matches the number of
 covariates.}
 
 \item{prior_covariate_sd}{vector. The prior standard deviation(s) of the
@@ -65,11 +64,11 @@ the scalar is repeated to the length of the input covariates. Otherwise,
 care must be taken to ensure the length of the input matches the number of
 covariates.}
 
-\item{number_mcmc_alpha}{scalar. Number of Monte Carlo
-simulations for estimating the historical data weight. Default is 5000.}
+\item{number_mcmc_alpha}{scalar. Number of Monte Carlo simulations for
+estimating the historical data weight. Default is 5000.}
 
-\item{number_mcmc_sigmagrid}{scalar. Grid size for computing sigma.
-Default is 5000. See "Details" for more information.}
+\item{number_mcmc_sigmagrid}{scalar. Grid size for computing sigma. Default
+is 5000. See "Details" for more information.}
 
 \item{number_mcmc_sigma}{scalar. Number of Monte Carlo simulations for
 estimating sigma. Default is 1000. See "Details" for more information.}
@@ -79,101 +78,94 @@ estimating beta, the vector of regression coefficients. Default is 10000.}
 
 \item{discount_function}{character. Specify the discount function to use.
 Currently supports \code{weibull}, \code{scaledweibull}, and
-\code{identity}. The discount function \code{scaledweibull} scales
-the output of the Weibull CDF to have a max value of 1. The \code{identity}
+\code{identity}. The discount function \code{scaledweibull} scales the
+output of the Weibull CDF to have a max value of 1. The \code{identity}
 discount function uses the posterior probability directly as the discount
 weight. Default value is "\code{identity}".}
 
 \item{alpha_max}{scalar. Maximum weight the discount function can apply.
 Default is 1. Users may specify a vector of two values where the first
-value is used to weight the historical treatment group and
-the second value is used to weight the historical control group.}
+value is used to weight the historical treatment group and the second value
+is used to weight the historical control group.}
 
 \item{fix_alpha}{logical. Fix alpha at alpha_max? Default value is FALSE.}
 
 \item{weibull_scale}{scalar. Scale parameter of the Weibull discount function
 used to compute alpha, the weight parameter of the historical data. Default
-value is 0.135. Users may specify a vector of two
-values where the first value is used to estimate the weight of the
-historical treatment group and the second value is used to estimate the
-weight of the historical control group.
-Not used when \code{discount_function} = "identity".}
+value is 0.135. Users may specify a vector of two values where the first
+value is used to estimate the weight of the historical treatment group and
+the second value is used to estimate the weight of the historical control
+group. Not used when \code{discount_function} = "identity".}
 
 \item{weibull_shape}{scalar. Shape parameter of the Weibull discount function
 used to compute alpha, the weight parameter of the historical data. Default
-value is 3. Users may specify a vector of two values
-where the first value is used to estimate the weight of the historical
-treatment group and the second value is used to estimate the weight of the
-historical control group. Not used when \code{discount_function} = "identity".}
+value is 3. Users may specify a vector of two values where the first value
+is used to estimate the weight of the historical treatment group and the
+second value is used to estimate the weight of the historical control
+group. Not used when \code{discount_function} = "identity".}
 
-\item{method}{character. Analysis method with respect to estimation of the weight
-paramter alpha. Default method "\code{mc}" estimates alpha for each
-Monte Carlo iteration. Alternate value "\code{fixed}" estimates alpha once and
-holds it fixed throughout the analysis.  See the the \code{bdplm} vignette \cr
-\code{vignette("bdplm-vignette", package="bayesDP")} for more details.}
+\item{method}{character. Analysis method with respect to estimation of the
+weight paramter alpha. Default method "\code{mc}" estimates alpha for each
+Monte Carlo iteration. Alternate value "\code{fixed}" estimates alpha once
+and holds it fixed throughout the analysis.  See the the \code{bdplm}
+vignette \cr \code{vignette("bdplm-vignette", package="bayesDP")} for more
+details.}
 }
 \value{
 \code{bdplm} returns an object of class "bdplm".
 
-An object of class "\code{bdplm}" is a list containing at least
-the following components:
-\describe{
-  \item{\code{posterior}}{
-    data frame. The posterior draws of the covariates, the intercept, and
-    the treatment effect. The grid of sigma values are included.}
-  \item{\code{alpha_discount}}{
-    vector. The posterior probability of the stochastic comparison
-    between the current and historical data for each of the treatment
-    and control arms. If \code{method="mc"}, the result is a matrix of
-    estimates, otherwise for \code{method="fixed"}, the result is a vector
-    of estimates.}
-  \item{\code{estimates}}{
-    list. The posterior means and standard errors of the intercept,
-    treatment effect, covariate effect(s) and error variance.}
-}
+  An object of class "\code{bdplm}" is a list containing at least the
+  following components: \describe{ \item{\code{posterior}}{ data frame. The
+  posterior draws of the covariates, the intercept, and the treatment effect.
+  The grid of sigma values are included.} \item{\code{alpha_discount}}{
+  vector. The posterior probability of the stochastic comparison between the
+  current and historical data for each of the treatment and control arms. If
+  \code{method="mc"}, the result is a matrix of estimates, otherwise for
+  \code{method="fixed"}, the result is a vector of estimates.}
+  \item{\code{estimates}}{ list. The posterior means and standard errors of
+  the intercept, treatment effect, covariate effect(s) and error variance.} }
 }
 \description{
-\code{bdplm} is used to estimate the treatment effect
-  in the presence of covariates using the regression analysis
-  implementation of the Bayesian discount prior. \code{summary} and
-  \code{print} methods are supported. Currently, the function only supports
-  a two-arm clinical trial where all of current treatment, current control,
-  historical treatment, and historical control data are present
+\code{bdplm} is used to estimate the treatment effect in the
+  presence of covariates using the regression analysis implementation of the
+  Bayesian discount prior. \code{summary} and \code{print} methods are
+  supported. Currently, the function only supports a two-arm clinical trial
+  where all of current treatment, current control, historical treatment, and
+  historical control data are present
 }
 \details{
-\code{bdplm} uses a two-stage approach for determining the
-  strength of historical data in estimation of an adjusted mean or covariate
-  effect. In the first stage, a \emph{discount function} is used that
-  that defines the maximum strength of the
-  historical data and discounts based on disagreement with the current data.
-  Disagreement between current and historical data is determined by stochastically
-  comparing the respective posterior distributions under noninformative priors.
-  Here with a two-arm regression analysis, the comparison is the
-  proability (\code{p}) that the covariate effect of an historical data indicator is
-  significantly different from zero. The comparison metric \code{p} is then
-  input into the discount function and the final strength of the
-  historical data is returned (\code{alpha}).
+\code{bdplm} uses a two-stage approach for determining the strength
+  of historical data in estimation of an adjusted mean or covariate effect.
+  In the first stage, a \emph{discount function} is used that that defines
+  the maximum strength of the historical data and discounts based on
+  disagreement with the current data. Disagreement between current and
+  historical data is determined by stochastically comparing the respective
+  posterior distributions under noninformative priors. Here with a two-arm
+  regression analysis, the comparison is the proability (\code{p}) that the
+  covariate effect of an historical data indicator is significantly different
+  from zero. The comparison metric \code{p} is then input into the discount
+  function and the final strength of the historical data is returned
+  (\code{alpha}).
 
   In the second stage, posterior estimation is performed where the discount
   function parameter, \code{alpha}, is used to weight the historical data
   effects.
 
-  The formula must include an intercept (i.e., do not use \code{-1} in
-  the formula) and both data and data0 must be present.
-  The column names of data and data0 must match. See \code{examples} below for
-  example usage.
+  The formula must include an intercept (i.e., do not use \code{-1} in the
+  formula) and both data and data0 must be present. The column names of data
+  and data0 must match. See \code{examples} below for example usage.
 
-  The underlying model results in a marginal posterior distribution for the error
-  variance \code{sigma2} that does not have a known distribution. Thus, we use
-  a grid search to draw samples of \code{sigma2}. First, the marginal posterior
-  is evaluated at a grid of \code{number_mcmc_sigmagrid} \code{sigma2} values.
-  The bounds of the grid are taken as approximately six standard deviations
-  from an estimate of \code{sigma2} using the \code{lm} function.
-  Next, \code{number_mcmc_sigma} posterior draws of \code{sigma2} are made by
-  sampling with replacement from the grid with each value having the
-  corresponding marginal posterior probability of being selected. With posterior
-  draws of \code{sigma2} in hand, we can make posterior draws of the regression
-  coefficients.
+  The underlying model results in a marginal posterior distribution for the
+  error variance \code{sigma2} that does not have a known distribution. Thus,
+  we use a grid search to draw samples of \code{sigma2}. First, the marginal
+  posterior is evaluated at a grid of \code{number_mcmc_sigmagrid}
+  \code{sigma2} values. The bounds of the grid are taken as approximately six
+  standard deviations from an estimate of \code{sigma2} using the \code{lm}
+  function. Next, \code{number_mcmc_sigma} posterior draws of \code{sigma2}
+  are made by sampling with replacement from the grid with each value having
+  the corresponding marginal posterior probability of being selected. With
+  posterior draws of \code{sigma2} in hand, we can make posterior draws of
+  the regression coefficients.
 }
 \examples{
 # Set sample sizes

@@ -90,28 +90,28 @@ setMethod(
     if (!(method %in% c("fixed", "mc"))) {
       stop("method entered incorrectly. Must be one of 'fixed' or 'mc'.")
     }
-
+    
     ### Preposterior of current mu using flat prior
     posterior_flat_sigma2 <- 1 / rgamma(number_mcmc, (N - 1) / 2, ((N - 1) * sigma^2) / 2)
     s <- (posterior_flat_sigma2 / ((N - 1) + 1))^0.5
     posterior_flat_mu <- rnorm(number_mcmc, mu, s)
-
+    
     ### Posterior of historical data parameters using flat prior
     prior_sigma2 <- 1 / rgamma(number_mcmc, (N0 - 1) / 2, ((N0 - 1) * sigma0^2) / 2)
     s0 <- (prior_sigma2 / ((N0 - 1) + 1))^0.5
     prior_mu <- rnorm(number_mcmc, mu0, s0)
-
+    
     ### Test of model vs real
     p_hat <- mean(posterior_flat_mu < prior_mu)
-
+    
     ### Transform probability to an intuitive value
     p_hat <- 2 * ifelse(p_hat > 0.5, 1 - p_hat, p_hat)
-
+    
     if (method == "mc") {
       Z <- abs(posterior_flat_mu - prior_mu) / (s^2 + s0^2)
       p_hat <- 2 * (1 - pnorm(Z))
     }
-
+    
     return(p_hat)
   }
 )

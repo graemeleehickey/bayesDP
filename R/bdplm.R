@@ -1,32 +1,31 @@
 #' @title Bayesian Discount Prior: Two-Arm Linear Regression
-#' @description \code{bdplm} is used to estimate the treatment effect
-#'   in the presence of covariates using the regression analysis
-#'   implementation of the Bayesian discount prior. \code{summary} and
-#'   \code{print} methods are supported. Currently, the function only supports
-#'   a two-arm clinical trial where all of current treatment, current control,
-#'   historical treatment, and historical control data are present
-#' @param formula an object of class "formula." See "Details" for
-#'   more information, including specification of treatment
-#'   data indicators.
+#' @description \code{bdplm} is used to estimate the treatment effect in the
+#'   presence of covariates using the regression analysis implementation of the
+#'   Bayesian discount prior. \code{summary} and \code{print} methods are
+#'   supported. Currently, the function only supports a two-arm clinical trial
+#'   where all of current treatment, current control, historical treatment, and
+#'   historical control data are present
+#' @param formula an object of class "formula." See "Details" for more
+#'   information, including specification of treatment data indicators.
 #' @param data a data frame containing the current data variables in the model.
-#'   A column named \code{treatment} must be present; \code{treatment} must
-#'   be binary and indicate treatment group vs. control group.
-#' @param data0 a data frame containing the historical data variables in the model.
-#'   The column labels of data and data0 must match.
-#' @param prior_treatment_effect scalar. The historical adjusted treatment effect.
-#'   If left \code{NULL}, value is estimated from the historical data.
+#'   A column named \code{treatment} must be present; \code{treatment} must be
+#'   binary and indicate treatment group vs. control group.
+#' @param data0 a data frame containing the historical data variables in the
+#'   model. The column labels of data and data0 must match.
+#' @param prior_treatment_effect scalar. The historical adjusted treatment
+#'   effect. If left \code{NULL}, value is estimated from the historical data.
 #' @param prior_control_effect scalar. The historical adjusted control effect.
 #'   If left \code{NULL}, value is estimated from the historical data.
 #' @param prior_treatment_sd scalar. The standard deviation of the historical
-#'   adjusted treatment effect. If left \code{NULL}, value is estimated from
-#'   the historical data.
+#'   adjusted treatment effect. If left \code{NULL}, value is estimated from the
+#'   historical data.
 #' @param prior_control_sd scalar. The standard deviation of the historical
-#'   adjusted control effect. If left \code{NULL}, value is estimated from
-#'   the historical data.
+#'   adjusted control effect. If left \code{NULL}, value is estimated from the
+#'   historical data.
 #' @param prior_covariate_effect vector. The prior mean(s) of the covariate
-#'   effect(s). Default value is zero. If a single value is input, the
-#'   the scalar is repeated to the length of the input covariates. Otherwise,
-#'   care must be taken to ensure the length of the input matches the number of
+#'   effect(s). Default value is zero. If a single value is input, the the
+#'   scalar is repeated to the length of the input covariates. Otherwise, care
+#'   must be taken to ensure the length of the input matches the number of
 #'   covariates.
 #' @param prior_covariate_sd vector. The prior standard deviation(s) of the
 #'   covariate effect(s). Default value is 1e4. If a single value is input, the
@@ -35,94 +34,87 @@
 #'   covariates.
 #' @param discount_function character. Specify the discount function to use.
 #'   Currently supports \code{weibull}, \code{scaledweibull}, and
-#'   \code{identity}. The discount function \code{scaledweibull} scales
-#'   the output of the Weibull CDF to have a max value of 1. The \code{identity}
+#'   \code{identity}. The discount function \code{scaledweibull} scales the
+#'   output of the Weibull CDF to have a max value of 1. The \code{identity}
 #'   discount function uses the posterior probability directly as the discount
 #'   weight. Default value is "\code{identity}".
 #' @param alpha_max scalar. Maximum weight the discount function can apply.
 #'   Default is 1. Users may specify a vector of two values where the first
-#'   value is used to weight the historical treatment group and
-#'   the second value is used to weight the historical control group.
+#'   value is used to weight the historical treatment group and the second value
+#'   is used to weight the historical control group.
 #' @param fix_alpha logical. Fix alpha at alpha_max? Default value is FALSE.
-#' @param number_mcmc_alpha scalar. Number of Monte Carlo
-#'   simulations for estimating the historical data weight. Default is 5000.
-#' @param number_mcmc_sigmagrid scalar. Grid size for computing sigma.
-#'   Default is 5000. See "Details" for more information.
+#' @param number_mcmc_alpha scalar. Number of Monte Carlo simulations for
+#'   estimating the historical data weight. Default is 5000.
+#' @param number_mcmc_sigmagrid scalar. Grid size for computing sigma. Default
+#'   is 5000. See "Details" for more information.
 #' @param number_mcmc_sigma scalar. Number of Monte Carlo simulations for
 #'   estimating sigma. Default is 1000. See "Details" for more information.
 #' @param number_mcmc_beta scalar. Number of Monte Carlo simulations for
 #'   estimating beta, the vector of regression coefficients. Default is 10000.
 #' @param weibull_shape scalar. Shape parameter of the Weibull discount function
 #'   used to compute alpha, the weight parameter of the historical data. Default
-#'   value is 3. Users may specify a vector of two values
-#'   where the first value is used to estimate the weight of the historical
-#'   treatment group and the second value is used to estimate the weight of the
-#'   historical control group. Not used when \code{discount_function} = "identity".
+#'   value is 3. Users may specify a vector of two values where the first value
+#'   is used to estimate the weight of the historical treatment group and the
+#'   second value is used to estimate the weight of the historical control
+#'   group. Not used when \code{discount_function} = "identity".
 #' @param weibull_scale scalar. Scale parameter of the Weibull discount function
 #'   used to compute alpha, the weight parameter of the historical data. Default
-#'   value is 0.135. Users may specify a vector of two
-#'   values where the first value is used to estimate the weight of the
-#'   historical treatment group and the second value is used to estimate the
-#'   weight of the historical control group.
-#'   Not used when \code{discount_function} = "identity".
-#' @param method character. Analysis method with respect to estimation of the weight
-#'   paramter alpha. Default method "\code{mc}" estimates alpha for each
-#'   Monte Carlo iteration. Alternate value "\code{fixed}" estimates alpha once and
-#'   holds it fixed throughout the analysis.  See the the \code{bdplm} vignette \cr
-#'   \code{vignette("bdplm-vignette", package="bayesDP")} for more details.
-#' @details \code{bdplm} uses a two-stage approach for determining the
-#'   strength of historical data in estimation of an adjusted mean or covariate
-#'   effect. In the first stage, a \emph{discount function} is used that
-#'   that defines the maximum strength of the
-#'   historical data and discounts based on disagreement with the current data.
-#'   Disagreement between current and historical data is determined by stochastically
-#'   comparing the respective posterior distributions under noninformative priors.
-#'   Here with a two-arm regression analysis, the comparison is the
-#'   proability (\code{p}) that the covariate effect of an historical data indicator is
-#'   significantly different from zero. The comparison metric \code{p} is then
-#'   input into the discount function and the final strength of the
-#'   historical data is returned (\code{alpha}).
+#'   value is 0.135. Users may specify a vector of two values where the first
+#'   value is used to estimate the weight of the historical treatment group and
+#'   the second value is used to estimate the weight of the historical control
+#'   group. Not used when \code{discount_function} = "identity".
+#' @param method character. Analysis method with respect to estimation of the
+#'   weight paramter alpha. Default method "\code{mc}" estimates alpha for each
+#'   Monte Carlo iteration. Alternate value "\code{fixed}" estimates alpha once
+#'   and holds it fixed throughout the analysis.  See the the \code{bdplm}
+#'   vignette \cr \code{vignette("bdplm-vignette", package="bayesDP")} for more
+#'   details.
+#' @details \code{bdplm} uses a two-stage approach for determining the strength
+#'   of historical data in estimation of an adjusted mean or covariate effect.
+#'   In the first stage, a \emph{discount function} is used that that defines
+#'   the maximum strength of the historical data and discounts based on
+#'   disagreement with the current data. Disagreement between current and
+#'   historical data is determined by stochastically comparing the respective
+#'   posterior distributions under noninformative priors. Here with a two-arm
+#'   regression analysis, the comparison is the proability (\code{p}) that the
+#'   covariate effect of an historical data indicator is significantly different
+#'   from zero. The comparison metric \code{p} is then input into the discount
+#'   function and the final strength of the historical data is returned
+#'   (\code{alpha}).
 #'
 #'   In the second stage, posterior estimation is performed where the discount
 #'   function parameter, \code{alpha}, is used to weight the historical data
 #'   effects.
 #'
-#'   The formula must include an intercept (i.e., do not use \code{-1} in
-#'   the formula) and both data and data0 must be present.
-#'   The column names of data and data0 must match. See \code{examples} below for
-#'   example usage.
+#'   The formula must include an intercept (i.e., do not use \code{-1} in the
+#'   formula) and both data and data0 must be present. The column names of data
+#'   and data0 must match. See \code{examples} below for example usage.
 #'
-#'   The underlying model results in a marginal posterior distribution for the error
-#'   variance \code{sigma2} that does not have a known distribution. Thus, we use
-#'   a grid search to draw samples of \code{sigma2}. First, the marginal posterior
-#'   is evaluated at a grid of \code{number_mcmc_sigmagrid} \code{sigma2} values.
-#'   The bounds of the grid are taken as approximately six standard deviations
-#'   from an estimate of \code{sigma2} using the \code{lm} function.
-#'   Next, \code{number_mcmc_sigma} posterior draws of \code{sigma2} are made by
-#'   sampling with replacement from the grid with each value having the
-#'   corresponding marginal posterior probability of being selected. With posterior
-#'   draws of \code{sigma2} in hand, we can make posterior draws of the regression
-#'   coefficients.
+#'   The underlying model results in a marginal posterior distribution for the
+#'   error variance \code{sigma2} that does not have a known distribution. Thus,
+#'   we use a grid search to draw samples of \code{sigma2}. First, the marginal
+#'   posterior is evaluated at a grid of \code{number_mcmc_sigmagrid}
+#'   \code{sigma2} values. The bounds of the grid are taken as approximately six
+#'   standard deviations from an estimate of \code{sigma2} using the \code{lm}
+#'   function. Next, \code{number_mcmc_sigma} posterior draws of \code{sigma2}
+#'   are made by sampling with replacement from the grid with each value having
+#'   the corresponding marginal posterior probability of being selected. With
+#'   posterior draws of \code{sigma2} in hand, we can make posterior draws of
+#'   the regression coefficients.
 #'
 #' @return \code{bdplm} returns an object of class "bdplm".
 #'
-#' An object of class "\code{bdplm}" is a list containing at least
-#' the following components:
-#' \describe{
-#'   \item{\code{posterior}}{
-#'     data frame. The posterior draws of the covariates, the intercept, and
-#'     the treatment effect. The grid of sigma values are included.}
-#'   \item{\code{alpha_discount}}{
-#'     vector. The posterior probability of the stochastic comparison
-#'     between the current and historical data for each of the treatment
-#'     and control arms. If \code{method="mc"}, the result is a matrix of
-#'     estimates, otherwise for \code{method="fixed"}, the result is a vector
-#'     of estimates.}
-#'   \item{\code{estimates}}{
-#'     list. The posterior means and standard errors of the intercept,
-#'     treatment effect, covariate effect(s) and error variance.}
-#' }
-#'
+#'   An object of class "\code{bdplm}" is a list containing at least the
+#'   following components: \describe{ \item{\code{posterior}}{ data frame. The
+#'   posterior draws of the covariates, the intercept, and the treatment effect.
+#'   The grid of sigma values are included.} \item{\code{alpha_discount}}{
+#'   vector. The posterior probability of the stochastic comparison between the
+#'   current and historical data for each of the treatment and control arms. If
+#'   \code{method="mc"}, the result is a matrix of estimates, otherwise for
+#'   \code{method="fixed"}, the result is a vector of estimates.}
+#'   \item{\code{estimates}}{ list. The posterior means and standard errors of
+#'   the intercept, treatment effect, covariate effect(s) and error variance.} }
+#'   
 #' @examples
 #' # Set sample sizes
 #' n_t <- 30 # Current treatment sample size
@@ -162,7 +154,10 @@
 #' print(fit)
 #' @rdname bdplm
 #' @import methods
-#' @importFrom stats density is.empty.model median model.offset model.response pweibull pnorm quantile rbeta rgamma rnorm var vcov contrasts<- dt gaussian lm.fit model.frame model.matrix.default offset terms terms.formula coefficients lm qgamma runif
+#' @importFrom stats density is.empty.model median model.offset model.response
+#'   pweibull pnorm quantile rbeta rgamma rnorm var vcov contrasts<- dt gaussian
+#'   lm.fit model.frame model.matrix.default offset terms terms.formula
+#'   coefficients lm qgamma runif
 #' @aliases bdplm,ANY-method
 #' @useDynLib bayesDP, .registration = TRUE
 #' @importFrom Rcpp evalCpp
@@ -219,17 +214,17 @@ setMethod(
            weibull_scale = 0.135,
            weibull_shape = 3,
            method = "mc") {
-
+    
     ### Check validity of data input
     call <- match.call()
     if (missing(data)) {
       stop("Current data not input correctly.")
     }
-
+    
     if (is.null(data0)) {
       stop("Historical data not input correctly.")
     }
-
+    
     ### Parse current data
     mf <- mf0 <- match.call(expand.dots = FALSE)
     m <- match(c("formula", "data"), names(mf), 0L)
@@ -246,7 +241,7 @@ setMethod(
         names(Y) <- nm
       }
     }
-
+    
     X <- if (!is.empty.model(mt)) {
       model.matrixBayes(
         object = mt, data = data, contrasts.arg = NULL,
@@ -255,26 +250,26 @@ setMethod(
     } else {
       matrix(, NROW(Y), 0L)
     }
-
+    
     ### Alter intercept column name, if present
     imatch <- match("(Intercept)", colnames(X))
     if (!is.na(imatch)) colnames(X)[imatch] <- "intercept"
-
+    
     # Create indicator of whether each column is present
     cmatch <- match(c("intercept", "treatment"), colnames(X))
     cmatch <- !is.na(cmatch) ### == TRUE == present
-
+    
     if (!all(cmatch)) {
       stop("Current data is input incorrectly. Intercept and treatment must be present.")
     }
-
+    
     ### Count levels of treatment data and sure 0 and 1 are present
     trt_levels <- levels(as.factor(X[, "treatment"]))
-
+    
     if (!(all(trt_levels %in% c(0, 1)))) {
       stop("Treatment input has wrong levels. Values should be 0 and 1.")
     }
-
+    
     ### Parse historical data
     if (missing(data0)) {
       stop("Historical data is required.")
@@ -296,7 +291,7 @@ setMethod(
           names(Y0) <- nm0
         }
       }
-
+      
       X0 <- if (!is.empty.model(mt0)) {
         model.matrixBayes(
           object = mt0, data = data0, contrasts.arg = NULL,
@@ -305,102 +300,101 @@ setMethod(
       } else {
         matrix(, NROW(Y0), 0L)
       }
-
+      
       ### Alter intercept column name, if present
       imatch <- match("(Intercept)", colnames(X0))
       if (!is.na(imatch)) colnames(X0)[imatch] <- "intercept"
-
+      
       # Create indicator of whether each column is present
       cmatch <- match(c("intercept", "treatment"), colnames(X0))
       cmatch <- !is.na(cmatch) ### == TRUE == present
-
+      
       if (!all(cmatch)) {
         stop("Historical data is input incorrectly. Intercept and treatment must be present.")
       }
-
+      
       cnames <- colnames(X)
       cnames0 <- colnames(X0)
       if (!all(cnames == cnames0)) {
         stop("Column names in the historical data must match the current data.")
       }
-
+      
       ### Count levels of treatment data and ensure 0 and 1 are present
       trt_levels0 <- levels(as.factor(X0[, "treatment"]))
-
+      
       # Check that the levels are 0 and/or 1
       if (!(all(trt_levels0 %in% c(0, 1)))) {
         stop("Treatment input has wrong levels. Values should be 0 and 1.")
       }
     }
-
-
+    
+    
     ### For method == "mc", grid size for estimating sigma2 must not be
     ### larger than the number of draws of alpha.
     if (method == "mc" & number_mcmc_sigmagrid > number_mcmc_alpha) {
       stop("number_mcmc_sigmagrid must be <= number_mcmc_alpha.")
     }
-
+    
     ### If method == "mc", fix_alpha must be FALSE
     if (method == "mc" & fix_alpha) {
       stop("mc method not possible with fix_alpha == TRUE. Set fix_alpha == FALSE.")
     }
-
-
+    
+    
     # Check that discount_function is input correctly
     all_functions <- c("weibull", "scaledweibull", "identity")
     function_match <- match(discount_function, all_functions)
     if (is.na(function_match)) {
       stop("discount_function input incorrectly.")
     }
-
-
-
+    
     historical <- NULL
     treatment <- NULL
     intercept <- NULL
-
+    
     ##############################################################################
     # Quick check, if alpha_max, weibull_scale, or weibull_shape have length 1,
     # repeat input twice
     ##############################################################################
+    
     if (length(alpha_max) == 1) {
       alpha_max <- rep(alpha_max, 2)
     }
-
+    
     if (length(weibull_scale) == 1) {
       weibull_scale <- rep(weibull_scale, 2)
     }
-
+    
     if (length(weibull_shape) == 1) {
       weibull_shape <- rep(weibull_shape, 2)
     }
-
-
+    
     ##############################################################################
     # Format input data
     ##############################################################################
+    
     ### Create a master dataframe
     df <- data.frame(Y = Y, data.frame(X), historical = 0)
     df0 <- data.frame(Y = Y0, data.frame(X0), historical = 1)
-
+    
     df <- rbind(df, df0)
-
+    
     ### Split data into separate treatment & control dataframes
     df_t <- subset(df, treatment == 1)
     df_c <- subset(df, treatment == 0)
-
+    
     ### Also create current data dataframe
     df_current <- subset(df, historical == 0, select = -intercept)
-
+    
     ### Count number of covariates
     names_df <- names(df)
     covs_df <- names_df[!(names_df %in% c("Y", "intercept", "treatment", "historical"))]
     n_covs <- length(covs_df)
-
-
+    
     ##############################################################################
     # Estimate discount weights for each of the treatment and control arms
     ##############################################################################
+    
     discount_treatment <- discount_lm(
       df = df_t,
       discount_function = discount_function,
@@ -411,7 +405,7 @@ setMethod(
       weibull_scale = weibull_scale[1],
       method = method
     )
-
+    
     discount_control <- discount_lm(
       df = df_c,
       discount_function = discount_function,
@@ -422,54 +416,52 @@ setMethod(
       weibull_scale = weibull_scale[2],
       method = method
     )
-
-
+    
     ##############################################################################
     # Estimate historical adjusted treatment and control effects to use as the
     # priors for the current data
     ##############################################################################
+    
     if (is.null(prior_treatment_effect) | is.null(prior_control_effect) |
-      is.null(prior_treatment_sd) | is.null(prior_control_sd)) {
+        is.null(prior_treatment_sd) | is.null(prior_control_sd)) {
       df0$control <- 1 - df0$treatment
-
+      
       cnames0 <- names(df0)
       cnames0 <- cnames0[!(cnames0 %in% c("Y", "intercept", "historical", "treatment", "control"))]
       cnames0 <- c("treatment", "control", cnames0)
       f0 <- paste0("Y~ -1+", paste0(cnames0, collapse = "+"))
-
+      
       fit_0 <- lm(f0, data = df0)
       summ_0 <- summary(fit_0)
-
+      
       if (is.null(prior_treatment_effect)) prior_treatment_effect <- summ_0$coef[1, 1]
       if (is.null(prior_control_effect)) prior_control_effect <- summ_0$coef[2, 1]
-
+      
       if (is.null(prior_treatment_sd)) prior_treatment_sd <- summ_0$coef[1, 2]
       if (is.null(prior_control_sd)) prior_control_sd <- summ_0$coef[2, 2]
     }
-
-
+    
     ### Prior covariate effects
     if (length(prior_covariate_effect) == 1) {
       prior_covariate_effect <- rep(prior_covariate_effect, n_covs)
     }
-
+    
     if (length(prior_covariate_sd) == 1) {
       prior_covariate_sd <- rep(prior_covariate_sd, n_covs)
     }
-
-
-
+    
     ##############################################################################
     # Estimate augmented treatment effect
     ##############################################################################
+    
     ### Compute prior terms
     tau2 <- c(prior_treatment_sd, prior_control_sd, prior_covariate_sd)^2
     mu0 <- c(prior_treatment_effect, prior_control_effect, prior_covariate_effect)
-
-
+    
+    
     ### Calculate constants from current data
     df_current$control <- 1 - df_current$treatment
-
+    
     X <- df_current[, c("treatment", "control", covs_df)]
     X <- as.matrix(X)
     y <- df_current$Y
@@ -477,22 +469,21 @@ setMethod(
     Xstar <- rbind(X, diag(length(mu0)))
     XtX <- t(X) %*% X
     Xty <- t(X) %*% y
-
-
+    
     ### Estimation scheme differs conditional on discounting method
     if (method == "fixed") {
-
+      
       ### Extract alpha0, append "zero" weight for the covariate effect(s)
       alpha0 <- c(
         discount_treatment$alpha_discount + 1e-12,
         discount_control$alpha_discount + 1e-12,
         rep(1e-12, n_covs)
       )
-
+      
       ### Grid search of sigma2
       ### - Find grid limits via wls
       SigmaBetaInv <- diag(alpha0 / tau2)
-
+      
       W <- c(rep(1, length(y)), alpha0 / tau2)
       lmfit <- lm(ystar ~ Xstar - 1, weights = W)
       summ <- summary(lmfit)
@@ -500,9 +491,9 @@ setMethod(
       b <- summ$sigma^2
       lower <- 1 / qgamma(.9999999999, a / 2, (a * b) / 2)
       upper <- 1 / qgamma(.0000000001, a / 2, (a * b) / 2)
-
+      
       grid_sigma2 <- seq(lower, upper, length.out = number_mcmc_sigmagrid)
-
+      
       ### Sample candidate values of sigma2
       sigma2candidates <- sigma2marginal(
         n = number_mcmc_sigmagrid,
@@ -514,14 +505,13 @@ setMethod(
         mu0 = mu0,
         ystar = ystar
       )
-
-
+      
       ### Normalize the marginal posteriors (log-likelihoods) and exponentiate
       logL <- sigma2candidates$logL
       logL <- logL[is.finite(logL)]
       normL <- logL[which.min(abs(logL))]
       L <- exp(logL - normL)
-
+      
       ### Sample with replacement from marginal posterior density of sigma2
       sigma2_accept <- sample(
         x = sigma2candidates$sigma2,
@@ -529,12 +519,11 @@ setMethod(
         replace = TRUE,
         prob = L
       )
-
-
+      
       ### Draw samples of the covariate vector beta
       ### n_beta_samples is ceiling(number_mcmc_beta/number_mcmc_sigma2)
       n_beta_samples <- ceiling(number_mcmc_beta / number_mcmc_sigma)
-
+      
       beta_samples <- betaRegSampler(
         sigma2_accept, XtX, SigmaBetaInv, mu0,
         Xty, n_beta_samples
@@ -546,27 +535,27 @@ setMethod(
         discount_control$alpha_discount + 1e-12
       )
       colnames(alpha0) <- c("alpha_treatment", "alpha_control")
-
+      
       for (i in 1:n_covs) {
         alpha0 <- cbind(alpha0, 0)
         colnames(alpha0)[i + 2] <- paste0("x", i)
       }
-
+      
       ### Grid search of sigma2
       ### - Find grid limits via wls
       SigmaBetaInv <- t(apply(alpha0, 1, function(x) x / tau2))
-
+      
       W <- c(rep(1, length(y)), SigmaBetaInv[1, ])
-
+      
       summ <- summary(lm(ystar ~ Xstar - 1, weights = W))
       a <- summ$df[2]
       b <- summ$sigma^2
-
+      
       lower <- 1 / qgamma(.9999999999, a / 2, (a * b) / 2)
       upper <- 1 / qgamma(.0000000001, a / 2, (a * b) / 2)
-
+      
       grid_sigma2 <- runif(number_mcmc_sigmagrid, lower, upper)
-
+      
       ### Sample candidate values of sigma2
       sigma2candidates <- sigma2marginalmc(
         n = number_mcmc_sigmagrid,
@@ -578,13 +567,13 @@ setMethod(
         mu0 = mu0,
         ystar = ystar
       )
-
+      
       ### Normalize the marginal posteriors (log-likelihoods) and exponentiate
       logL <- sigma2candidates$logL
       logL <- logL[is.finite(logL)]
       normL <- logL[which.min(abs(logL))]
       L <- exp(logL - normL)
-
+      
       ### Sample with replacement from marginal posterior density of sigma2
       sigma2_sampleid <- sample(
         x = 1:number_mcmc_sigmagrid,
@@ -592,56 +581,53 @@ setMethod(
         replace = TRUE,
         prob = L
       )
-
+      
       sigma2_accept <- sigma2candidates$sigma2[sigma2_sampleid]
-
+      
       SigmaBetaInvID <- sigma2candidates$SigmaBetaInvID[sigma2_sampleid]
-
+      
       ### Draw samples of the covariate vector beta
       ### n_beta_samples is ceiling(number_mcmc_beta/number_mcmc_sigma2)
       n_beta_samples <- ceiling(number_mcmc_beta / number_mcmc_sigma)
-
+      
       beta_samples <- betaRegSamplermc(
         sigma2_accept, XtX, SigmaBetaInv,
         SigmaBetaInvID,
         mu0, Xty, n_beta_samples
       )
     }
-
-
+    
     beta_samples <- data.frame(beta_samples)
     names(beta_samples) <- c("treatment", "control", covs_df, "sigma")
-
-
+    
     ### Estimate posterior of intercept and treatment effect
     beta_samples$intercept <- beta_samples$control
     beta_samples$treatment <- beta_samples$treatment - beta_samples$control
     beta_samples$sigma <- sqrt(beta_samples$sigma)
-
+    
     ### Format posterior table
     m <- ncol(beta_samples)
     beta_samples <- beta_samples[, c(m, 1, 3:(m - 1))]
-
+    
     ### Format alpha_discount values
     alpha_discount <- data.frame(
       treatment = discount_treatment$alpha_discount,
       control = discount_control$alpha_discount
     )
-
+    
     ### Format estimates
     estimates <- list()
     estimates$coefficients <- data.frame(t(colMeans(beta_samples)))
     estimates$coefficients <- estimates$coefficients[c("intercept", "treatment", covs_df, "sigma")]
     estimates$se <- data.frame(t(apply(beta_samples, 2, sd)))
     estimates$se <- estimates$se[c("intercept", "treatment", covs_df, "sigma")]
-
-
+    
     ### Format input arguments
     args1 <- list(
       call = call,
       data = df
     )
-
+    
     ### Format output
     me <- list(
       posterior = beta_samples,
@@ -649,13 +635,11 @@ setMethod(
       estimates = estimates,
       args1 = args1
     )
-
+    
     class(me) <- "bdplm"
     return(me)
   }
 )
-
-
 
 
 ################################################################################
@@ -664,31 +648,31 @@ setMethod(
 #    - Test that the historical effect is different from zero
 #    - Estimate alpha based on the above comparison
 ################################################################################
+
 discount_lm <- function(df, discount_function, alpha_max, fix_alpha,
                         number_mcmc_alpha,
                         weibull_shape, weibull_scale,
                         method) {
-
+  
   # Create formula
   cnames <- names(df)
   cnames <- cnames[!(cnames %in% c("Y", "intercept", "historical", "treatment"))]
   cnames <- c("historical", cnames)
   f <- paste0("Y~", paste0(cnames, collapse = "+"))
-
+  
   ### Get "flat" fit
   lm_fit <- lm(f, data = df)
   lm_summ <- summary(lm_fit)
-
+  
   ### Monte Carlo simulations of error variance
   a <- lm_summ$df[2]
   b <- lm_summ$sigma^2
   sigma2 <- 1 / rgamma(number_mcmc_alpha, a / 2, (a * b) / 2)
-
+  
   ### Monte Carlo simulations of historical effect
   sigma2_beta <- lm_summ$cov.unscaled[2, 2] * sigma2
   beta <- rnorm(number_mcmc_alpha, lm_summ$coefficients[2, 1], sqrt(sigma2_beta))
-
-
+  
   ### Compute posterior comparison
   if (method == "fixed") {
     p_hat <- mean(beta > 0)
@@ -697,43 +681,36 @@ discount_lm <- function(df, discount_function, alpha_max, fix_alpha,
     Z <- abs(beta) / sigma2_beta
     p_hat <- 2 * (1 - pnorm(Z))
   }
-
+  
   ### Compute alpha, the discount weight
   if (fix_alpha) {
     alpha_discount <- alpha_max
   } else {
-
+    
     # Compute alpha discount based on distribution
     if (discount_function == "weibull") {
       alpha_discount <- pweibull(p_hat,
-        shape = weibull_shape,
-        scale = weibull_scale
+                                 shape = weibull_shape,
+                                 scale = weibull_scale
       ) * alpha_max
     } else if (discount_function == "scaledweibull") {
       max_p <- pweibull(1, shape = weibull_shape, scale = weibull_scale)
-
+      
       alpha_discount <- pweibull(p_hat,
-        shape = weibull_shape,
-        scale = weibull_scale
+                                 shape = weibull_shape,
+                                 scale = weibull_scale
       ) * alpha_max / max_p
     } else if (discount_function == "identity") {
       alpha_discount <- p_hat * alpha_max
     }
   }
-
+  
   res <- list(
     p_hat = p_hat,
     alpha_discount = alpha_discount
   )
   res
 }
-
-
-
-
-
-
-
 
 
 model.matrixBayes <- function(object, data = environment(object), contrasts.arg = NULL,
@@ -743,7 +720,7 @@ model.matrixBayes <- function(object, data = environment(object), contrasts.arg 
   } else {
     terms.formula(object, data = data, keep.order = keep.order)
   }
-
+  
   attr(t, "intercept") <- attr(object, "intercept")
   if (is.null(attr(data, "terms"))) {
     data <- model.frame(object, data, xlev = xlev)
@@ -756,7 +733,7 @@ model.matrixBayes <- function(object, data = environment(object), contrasts.arg 
       data <- data[, reorder, drop = FALSE]
     }
   }
-
+  
   int <- attr(t, "response")
   if (length(data)) { # otherwise no rhs terms, so skip all this
     if (drop.baseline) {
@@ -764,9 +741,9 @@ model.matrixBayes <- function(object, data = environment(object), contrasts.arg 
     } else {
       contr.funs <- as.character(list("contr.bayes.unordered", "contr.bayes.ordered"))
     }
-
+    
     namD <- names(data)
-
+    
     ## turn  character columns into factors
     for (i in namD) {
       if (is.character(data[[i]])) {
@@ -782,7 +759,7 @@ model.matrixBayes <- function(object, data = environment(object), contrasts.arg 
         contrasts(data[[nn]]) <- contr.funs[1 + isOF[nn]]
       }
     }
-
+    
     ## it might be safer to have numerical contrasts:
     ##    get(contr.funs[1 + isOF[nn]])(nlevels(data[[nn]]))
     if (!is.null(contrasts.arg) && is.list(contrasts.arg)) {

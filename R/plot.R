@@ -37,15 +37,15 @@ setMethod("plot", signature(x = "bdpnormal"), function(x, type = NULL, print = T
   N_c <- x$args1$N_c
   arm2 <- x$args1$arm2
   method <- x$args1$method
-
+  
   information_sources <- NULL
-
+  
   ### Create data frames for plotting via ggplot2
   D1 <- D2 <- D3 <- D5 <- D6 <- NULL
-
+  
   if (arm2) {
     dens1 <- density(posterior_control$posterior_mu,
-      adjust = 0.5
+                     adjust = 0.5
     )
     D1 <- data.frame(
       information_sources = "Posterior",
@@ -53,10 +53,10 @@ setMethod("plot", signature(x = "bdpnormal"), function(x, type = NULL, print = T
       x = dens1$x,
       y = dens1$y
     )
-
+    
     if (!is.null(posterior_control$posterior_flat_mu)) {
       dens2 <- density(posterior_control$posterior_flat_mu,
-        adjust = 0.5
+                       adjust = 0.5
       )
       D2 <- data.frame(
         information_sources = "Current Data",
@@ -65,10 +65,10 @@ setMethod("plot", signature(x = "bdpnormal"), function(x, type = NULL, print = T
         y = dens2$y
       )
     }
-
+    
     if (!is.null(posterior_control$prior_mu)) {
       dens3 <- density(posterior_control$prior_mu,
-        adjust = 0.5
+                       adjust = 0.5
       )
       D3 <- data.frame(
         information_sources = "Historical Data",
@@ -78,9 +78,9 @@ setMethod("plot", signature(x = "bdpnormal"), function(x, type = NULL, print = T
       )
     }
   }
-
+  
   dens4 <- density(posterior_treatment$posterior_mu,
-    adjust = 0.5
+                   adjust = 0.5
   )
   D4 <- data.frame(
     information_sources = "Posterior",
@@ -88,10 +88,10 @@ setMethod("plot", signature(x = "bdpnormal"), function(x, type = NULL, print = T
     x = dens4$x,
     y = dens4$y
   )
-
+  
   if (!is.null(posterior_treatment$posterior_flat_mu)) {
     dens5 <- density(posterior_treatment$posterior_flat_mu,
-      adjust = 0.5
+                     adjust = 0.5
     )
     D5 <- data.frame(
       information_sources = "Current Data",
@@ -100,10 +100,10 @@ setMethod("plot", signature(x = "bdpnormal"), function(x, type = NULL, print = T
       y = dens5$y
     )
   }
-
+  
   if (!is.null(posterior_treatment$prior_mu)) {
     dens6 <- density(posterior_treatment$prior_mu,
-      adjust = 0.5
+                     adjust = 0.5
     )
     D6 <- data.frame(
       information_sources = "Historical Data",
@@ -112,18 +112,18 @@ setMethod("plot", signature(x = "bdpnormal"), function(x, type = NULL, print = T
       y = dens6$y
     )
   }
-
+  
   D <- rbind(D1, D2, D3, D4, D5, D6)
-
+  
   D$information_sources <- factor(D$information_sources,
-    levels = c("Posterior", "Current Data", "Historical Data")
+                                  levels = c("Posterior", "Current Data", "Historical Data")
   )
   D$group <- factor(D$group, levels = c("Treatment", "Control"))
-
+  
   ##############################################################################
   ### Posterior Type Plots
   ##############################################################################
-
+  
   post_typeplot <- ggplot(D, aes_string(x = "x", y = "y")) +
     geom_line(
       size = 2,
@@ -139,11 +139,11 @@ setMethod("plot", signature(x = "bdpnormal"), function(x, type = NULL, print = T
     ggtitle("Posterior Type Plot") +
     guides(fill = guide_legend(title = NULL)) +
     theme(legend.title = element_blank())
-
+  
   ##############################################################################
   ### Density Plots
   ##############################################################################
-
+  
   densityplot <- ggplot(
     subset(D, information_sources == "Posterior"),
     aes_string(x = "x", y = "y")
@@ -155,39 +155,39 @@ setMethod("plot", signature(x = "bdpnormal"), function(x, type = NULL, print = T
     ggtitle("Density Plot") +
     guides(fill = guide_legend(title = NULL)) +
     theme(legend.title = element_blank())
-
+  
   ##############################################################################
   ### Discount function plot
   ### - Only makes sense to plot if Current/historical treatment are present or
   ###   both current/historical control are present
   ##############################################################################
-
+  
   p_hat <- seq(0, 1, length.out = 100)
-
+  
   discountfun_plot <- NULL
-
+  
   if (!is.null(N0_t) & !is.null(N_t)) {
-
+    
     ### Create discount function based on distribution type
     if (discount_function == "weibull") {
       discount_function_treatment <- pweibull(p_hat,
-        shape = x$args1$weibull_shape[1],
-        scale = x$args1$weibull_scale[1]
+                                              shape = x$args1$weibull_shape[1],
+                                              scale = x$args1$weibull_scale[1]
       )
     } else if (discount_function == "scaledweibull") {
       max_p <- pweibull(1,
-        shape = x$args1$weibull_shape[1],
-        scale = x$args1$weibull_scale[1]
+                        shape = x$args1$weibull_shape[1],
+                        scale = x$args1$weibull_scale[1]
       )
-
+      
       discount_function_treatment <- pweibull(p_hat,
-        shape = x$args1$weibull_shape[1],
-        scale = x$args1$weibull_scale[1]
+                                              shape = x$args1$weibull_shape[1],
+                                              scale = x$args1$weibull_scale[1]
       ) / max_p
     } else if (discount_function == "identity") {
       discount_function_treatment <- p_hat
     }
-
+    
     D1 <- data.frame(
       group = "Treatment",
       y = discount_function_treatment,
@@ -201,39 +201,39 @@ setMethod("plot", signature(x = "bdpnormal"), function(x, type = NULL, print = T
       group = c("Treatment"),
       p_hat = median(posterior_treatment$alpha_discount)
     )
-
+    
     discountfun_plot <- ggplot() +
       geom_line(data = D1, aes_string(y = "y", x = "x", color = "group"), size = 1) +
       geom_vline(data = D2, aes_string(xintercept = "p_hat", color = "group"), lty = 2) +
       geom_hline(data = D3, aes_string(yintercept = "p_hat", color = "group"), lty = 2)
   }
-
+  
   if (arm2) {
     if (!is.null(N0_c) & !is.null(N_c)) {
       if (is.null(discountfun_plot)) {
         discountfun_plot <- ggplot()
       }
-
+      
       ### Create discount function based on distribution type
       if (discount_function == "weibull") {
         discount_function_control <- pweibull(p_hat,
-          shape = x$args1$weibull_shape[2],
-          scale = x$args1$weibull_scale[2]
+                                              shape = x$args1$weibull_shape[2],
+                                              scale = x$args1$weibull_scale[2]
         )
       } else if (discount_function == "scaledweibull") {
         max_p <- pweibull(1,
-          shape = x$args1$weibull_shape[2],
-          scale = x$args1$weibull_scale[2]
+                          shape = x$args1$weibull_shape[2],
+                          scale = x$args1$weibull_scale[2]
         )
-
+        
         discount_function_control <- pweibull(p_hat,
-          shape = x$args1$weibull_shape[2],
-          scale = x$args1$weibull_scale[2]
+                                              shape = x$args1$weibull_shape[2],
+                                              scale = x$args1$weibull_scale[2]
         ) / max_p
       } else if (discount_function == "identity") {
         discount_function_control <- p_hat
       }
-
+      
       D4 <- data.frame(
         group = "Control",
         y = discount_function_control,
@@ -241,14 +241,14 @@ setMethod("plot", signature(x = "bdpnormal"), function(x, type = NULL, print = T
       )
       D5 <- data.frame(group = "Control", p_hat = median(posterior_control$p_hat))
       D6 <- data.frame(group = "Control", p_hat = median(posterior_control$alpha_discount))
-
+      
       discountfun_plot <- discountfun_plot +
         geom_line(data = D4, aes_string(y = "y", x = "x", color = "group"), size = 1) +
         geom_vline(data = D5, aes_string(xintercept = "p_hat", color = "group"), lty = 2) +
         geom_hline(data = D6, aes_string(yintercept = "p_hat", color = "group"), lty = 2)
     }
   }
-
+  
   if (!is.null(discountfun_plot)) {
     discountfun_plot <- discountfun_plot +
       facet_wrap(~group, ncol = 1) +
@@ -260,7 +260,7 @@ setMethod("plot", signature(x = "bdpnormal"), function(x, type = NULL, print = T
       guides(fill = guide_legend(title = NULL)) +
       theme(legend.title = element_blank())
   }
-
+  
   if (print) {
     if (is.null(type)) {
       op <- par(ask = TRUE)
@@ -343,15 +343,15 @@ setMethod("plot", signature(x = "bdpbinomial"), function(x, type = NULL, print =
   N_c <- x$args1$N_c
   arm2 <- x$args1$arm2
   method <- x$args1$method
-
+  
   information_sources <- NULL
-
+  
   ### Create data frames for plotting via ggplot2
   D1 <- D2 <- D3 <- D5 <- D6 <- NULL
-
+  
   if (arm2) {
     dens1 <- density(posterior_control$posterior,
-      adjust = 0.5
+                     adjust = 0.5
     )
     D1 <- data.frame(
       information_sources = "Posterior",
@@ -359,7 +359,7 @@ setMethod("plot", signature(x = "bdpbinomial"), function(x, type = NULL, print =
       x = dens1$x,
       y = dens1$y
     )
-
+    
     if (!is.null(posterior_control$posterior_flat)) {
       dens2 <- density(posterior_control$posterior_flat, adjust = 0.5)
       D2 <- data.frame(
@@ -369,7 +369,7 @@ setMethod("plot", signature(x = "bdpbinomial"), function(x, type = NULL, print =
         y = dens2$y
       )
     }
-
+    
     if (!is.null(posterior_control$prior)) {
       dens3 <- density(posterior_control$prior, adjust = 0.5)
       D3 <- data.frame(
@@ -380,7 +380,7 @@ setMethod("plot", signature(x = "bdpbinomial"), function(x, type = NULL, print =
       )
     }
   }
-
+  
   dens4 <- density(posterior_treatment$posterior, adjust = 0.5)
   D4 <- data.frame(
     information_sources = "Posterior",
@@ -388,7 +388,7 @@ setMethod("plot", signature(x = "bdpbinomial"), function(x, type = NULL, print =
     x = dens4$x,
     y = dens4$y
   )
-
+  
   if (!is.null(posterior_treatment$posterior_flat)) {
     dens5 <- density(posterior_treatment$posterior_flat, adjust = 0.5)
     D5 <- data.frame(
@@ -398,7 +398,7 @@ setMethod("plot", signature(x = "bdpbinomial"), function(x, type = NULL, print =
       y = dens5$y
     )
   }
-
+  
   if (!is.null(posterior_treatment$prior)) {
     dens6 <- density(posterior_treatment$prior, adjust = 0.5)
     D6 <- data.frame(
@@ -408,18 +408,18 @@ setMethod("plot", signature(x = "bdpbinomial"), function(x, type = NULL, print =
       y = dens6$y
     )
   }
-
+  
   D <- rbind(D1, D2, D3, D4, D5, D6)
-
+  
   D$information_sources <- factor(D$information_sources,
-    levels = (c("Posterior", "Current Data", "Historical Data"))
+                                  levels = (c("Posterior", "Current Data", "Historical Data"))
   )
   D$group <- factor(D$group, levels = c("Treatment", "Control"))
-
+  
   ##############################################################################
   ### Posterior Type Plots
   ##############################################################################
-
+  
   post_typeplot <- ggplot(D, aes_string(x = "x", y = "y")) +
     geom_line(size = 2, aes_string(color = "information_sources", lty = "information_sources")) +
     theme_bw() +
@@ -429,11 +429,11 @@ setMethod("plot", signature(x = "bdpbinomial"), function(x, type = NULL, print =
     ggtitle("Posterior Type Plot") +
     guides(fill = guide_legend(title = NULL)) +
     theme(legend.title = element_blank())
-
+  
   ##############################################################################
   ### Density Plots
   ##############################################################################
-
+  
   densityplot <- ggplot(
     subset(D, information_sources == "Posterior"),
     aes_string(x = "x", y = "y")
@@ -445,38 +445,38 @@ setMethod("plot", signature(x = "bdpbinomial"), function(x, type = NULL, print =
     ggtitle("Density Plot") +
     guides(fill = guide_legend(title = NULL)) +
     theme(legend.title = element_blank())
-
+  
   ##############################################################################
   ### Discount function plot
   ### - Only makes sense to plot if Current/historical treatment are present or
   ###   both current/historical control are present
   ##############################################################################
-
+  
   p_hat <- seq(0, 1, length.out = 100)
-
+  
   discountfun_plot <- NULL
-
+  
   if (!is.null(N0_t) & !is.null(N_t)) {
     ### Create discount function based on distribution type
     if (discount_function == "weibull") {
       discount_function_treatment <- pweibull(p_hat,
-        shape = x$args1$weibull_shape[1],
-        scale = x$args1$weibull_scale[1]
+                                              shape = x$args1$weibull_shape[1],
+                                              scale = x$args1$weibull_scale[1]
       )
     } else if (discount_function == "scaledweibull") {
       max_p <- pweibull(1,
-        shape = x$args1$weibull_shape[1],
-        scale = x$args1$weibull_scale[1]
+                        shape = x$args1$weibull_shape[1],
+                        scale = x$args1$weibull_scale[1]
       )
-
+      
       discount_function_treatment <- pweibull(p_hat,
-        shape = x$args1$weibull_shape[1],
-        scale = x$args1$weibull_scale[1]
+                                              shape = x$args1$weibull_shape[1],
+                                              scale = x$args1$weibull_scale[1]
       ) / max_p
     } else if (discount_function == "identity") {
       discount_function_treatment <- p_hat
     }
-
+    
     D1 <- data.frame(
       group = "Treatment",
       y = discount_function_treatment,
@@ -484,39 +484,39 @@ setMethod("plot", signature(x = "bdpbinomial"), function(x, type = NULL, print =
     )
     D2 <- data.frame(group = "Treatment", p_hat = median(posterior_treatment$p_hat))
     D3 <- data.frame(group = "Treatment", p_hat = median(posterior_treatment$alpha_discount))
-
+    
     discountfun_plot <- ggplot() +
       geom_line(data = D1, aes_string(y = "y", x = "x", color = "group"), size = 1) +
       geom_vline(data = D2, aes_string(xintercept = "p_hat", color = "group"), lty = 2) +
       geom_hline(data = D3, aes_string(yintercept = "p_hat", color = "group"), lty = 2)
   }
-
+  
   if (arm2) {
     if (!is.null(N0_c) & !is.null(N_c)) {
       if (is.null(discountfun_plot)) {
         discountfun_plot <- ggplot()
       }
-
+      
       ### Create discount function based on distribution type
       if (discount_function == "weibull") {
         discount_function_control <- pweibull(p_hat,
-          shape = x$args1$weibull_shape[2],
-          scale = x$args1$weibull_scale[2]
+                                              shape = x$args1$weibull_shape[2],
+                                              scale = x$args1$weibull_scale[2]
         )
       } else if (discount_function == "scaledweibull") {
         max_p <- pweibull(1,
-          shape = x$args1$weibull_shape[2],
-          scale = x$args1$weibull_scale[2]
+                          shape = x$args1$weibull_shape[2],
+                          scale = x$args1$weibull_scale[2]
         )
-
+        
         discount_function_control <- pweibull(p_hat,
-          shape = x$args1$weibull_shape[2],
-          scale = x$args1$weibull_scale[2]
+                                              shape = x$args1$weibull_shape[2],
+                                              scale = x$args1$weibull_scale[2]
         ) / max_p
       } else if (discount_function == "identity") {
         discount_function_control <- p_hat
       }
-
+      
       D4 <- data.frame(
         group = "Control",
         y = discount_function_control,
@@ -524,14 +524,14 @@ setMethod("plot", signature(x = "bdpbinomial"), function(x, type = NULL, print =
       )
       D5 <- data.frame(group = "Control", p_hat = median(posterior_control$p_hat))
       D6 <- data.frame(group = "Control", p_hat = median(posterior_control$alpha_discount))
-
+      
       discountfun_plot <- discountfun_plot +
         geom_line(data = D4, aes_string(y = "y", x = "x", color = "group"), size = 1) +
         geom_vline(data = D5, aes_string(xintercept = "p_hat", color = "group"), lty = 2) +
         geom_hline(data = D6, aes_string(yintercept = "p_hat", color = "group"), lty = 2)
     }
   }
-
+  
   if (!is.null(discountfun_plot)) {
     discountfun_plot <- discountfun_plot +
       facet_wrap(~group, ncol = 1) +
@@ -543,7 +543,7 @@ setMethod("plot", signature(x = "bdpbinomial"), function(x, type = NULL, print =
       guides(fill = guide_legend(title = NULL)) +
       theme(legend.title = element_blank())
   }
-
+  
   if (print) {
     if (is.null(type)) {
       op <- par(ask = TRUE)
@@ -624,36 +624,36 @@ setMethod("plot", signature(x = "bdpsurvival"), function(x, type = NULL, print =
   breaks <- args1$breaks
   arm2 <- args1$arm2
   method <- args1$method
-
+  
   ##############################################################################
   ### Survival curve(s)
   ### - Only computed for one-arm trial
   ##############################################################################
-
+  
   ### Organize data for current treatment
   time_t <- sort(unique(args1$S_t$time))
   survival_times_posterior_flat <- lapply(time_t, ppexp,
-    posterior_treatment$posterior_flat_hazard,
-    cuts = c(0, breaks)
+                                          posterior_treatment$posterior_flat_hazard,
+                                          cuts = c(0, breaks)
   )
   survival_median_posterior_flat <- 1 - sapply(survival_times_posterior_flat, median)
-
+  
   D1 <- data.frame(
     source = "Current Data",
     group = "Treatment",
     x = time_t,
     y = survival_median_posterior_flat
   )
-
+  
   ### Organize data for historical treatment
   if (!is.null(args1$S0_t)) {
     time0_t <- sort(unique(args1$S0_t$time))
     survival_times_prior <- lapply(time0_t, ppexp,
-      posterior_treatment$prior_hazard,
-      cuts = c(0, breaks)
+                                   posterior_treatment$prior_hazard,
+                                   cuts = c(0, breaks)
     )
     survival_median_prior <- 1 - sapply(survival_times_prior, median)
-
+    
     D2 <- data.frame(
       source = "Historical Data",
       group = "Treatment",
@@ -663,27 +663,27 @@ setMethod("plot", signature(x = "bdpsurvival"), function(x, type = NULL, print =
   } else {
     D2 <- NULL
   }
-
+  
   ### Organize data for treatment posterior
   survival_times_posterior <- lapply(time_t, ppexp, posterior_treatment$posterior_hazard, cuts = c(0, breaks))
   survival_median_posterior <- 1 - sapply(survival_times_posterior, median)
-
+  
   D3 <- data.frame(
     source = "Posterior",
     group = "Treatment",
     x = time_t,
     y = survival_median_posterior
   )
-
+  
   ### Organize data for current control
   if (!is.null(args1$S_c)) {
     time_c <- sort(unique(args1$S_c$time))
     survival_times_posterior_flat <- lapply(time_c, ppexp,
-      posterior_control$posterior_flat_hazard,
-      cuts = c(0, breaks)
+                                            posterior_control$posterior_flat_hazard,
+                                            cuts = c(0, breaks)
     )
     survival_median_posterior_flat <- 1 - sapply(survival_times_posterior_flat, median)
-
+    
     D4 <- data.frame(
       source = "Current Data",
       group = "Control",
@@ -693,16 +693,16 @@ setMethod("plot", signature(x = "bdpsurvival"), function(x, type = NULL, print =
   } else {
     D4 <- NULL
   }
-
+  
   ### Organize data for historical control
   if (!is.null(args1$S0_c)) {
     time0_c <- sort(unique(args1$S0_c$time))
     survival_times_prior <- lapply(time0_c, ppexp,
-      posterior_control$prior_hazard,
-      cuts = c(0, breaks)
+                                   posterior_control$prior_hazard,
+                                   cuts = c(0, breaks)
     )
     survival_median_prior <- 1 - sapply(survival_times_prior, median)
-
+    
     D5 <- data.frame(
       source = "Historical Data",
       group = "Control",
@@ -712,12 +712,12 @@ setMethod("plot", signature(x = "bdpsurvival"), function(x, type = NULL, print =
   } else {
     D5 <- NULL
   }
-
+  
   ### Organize data for control posterior
   if (!is.null(args1$S_c) & !is.null(args1$S0_c)) {
     survival_times_posterior <- lapply(time_c, ppexp, posterior_control$posterior_hazard, cuts = c(0, breaks))
     survival_median_posterior <- 1 - sapply(survival_times_posterior, median)
-
+    
     D6 <- data.frame(
       source = "Posterior",
       group = "Control",
@@ -727,7 +727,7 @@ setMethod("plot", signature(x = "bdpsurvival"), function(x, type = NULL, print =
   } else if (is.null(args1$S_c) & !is.null(args1$S0_c)) {
     survival_times_posterior <- lapply(time0_c, ppexp, posterior_control$posterior_hazard, cuts = c(0, breaks))
     survival_median_posterior <- 1 - sapply(survival_times_posterior, median)
-
+    
     D6 <- data.frame(
       source = "Posterior",
       group = "Control",
@@ -737,7 +737,7 @@ setMethod("plot", signature(x = "bdpsurvival"), function(x, type = NULL, print =
   } else if (!is.null(args1$S_c) & is.null(args1$S0_c)) {
     survival_times_posterior <- lapply(time_c, ppexp, posterior_control$posterior_hazard, cuts = c(0, breaks))
     survival_median_posterior <- 1 - sapply(survival_times_posterior, median)
-
+    
     D6 <- data.frame(
       source = "Posterior",
       group = "Control",
@@ -747,10 +747,10 @@ setMethod("plot", signature(x = "bdpsurvival"), function(x, type = NULL, print =
   } else {
     D6 <- NULL
   }
-
+  
   D <- rbind(D4, D5, D6, D1, D2, D3)
   D$group <- factor(D$group, levels = c("Treatment", "Control"))
-
+  
   ### Plot survival curve
   survival_curves <- ggplot(D, aes_string(x = "x", y = "y")) +
     geom_line(size = 1.4, aes_string(color = "source", lty = "source")) +
@@ -761,39 +761,39 @@ setMethod("plot", signature(x = "bdpsurvival"), function(x, type = NULL, print =
     ggtitle("Survival Curve(s)") +
     guides(fill = guide_legend(title = NULL)) +
     theme(legend.title = element_blank())
-
+  
   ##############################################################################
   ### Discount function plot
   ### - Only makes sense to plot if Current/historical treatment are present or
   ###   both current/historical control are present
   ##############################################################################
-
+  
   p_hat <- seq(0, 1, length.out = 100)
-
+  
   discountfun_plot <- NULL
-
+  
   if (!is.null(args1$S_t) & !is.null(args1$S0_t)) {
-
+    
     ### Create discount function based on distribution type
     if (discount_function == "weibull") {
       discount_function_treatment <- pweibull(p_hat,
-        shape = x$args1$weibull_shape[1],
-        scale = x$args1$weibull_scale[1]
+                                              shape = x$args1$weibull_shape[1],
+                                              scale = x$args1$weibull_scale[1]
       )
     } else if (discount_function == "scaledweibull") {
       max_p <- pweibull(1,
-        shape = x$args1$weibull_shape[1],
-        scale = x$args1$weibull_scale[1]
+                        shape = x$args1$weibull_shape[1],
+                        scale = x$args1$weibull_scale[1]
       )
-
+      
       discount_function_treatment <- pweibull(p_hat,
-        shape = x$args1$weibull_shape[1],
-        scale = x$args1$weibull_scale[1]
+                                              shape = x$args1$weibull_shape[1],
+                                              scale = x$args1$weibull_scale[1]
       ) / max_p
     } else if (discount_function == "identity") {
       discount_function_treatment <- p_hat
     }
-
+    
     D1 <- data.frame(
       group = "Treatment",
       y = discount_function_treatment,
@@ -801,39 +801,39 @@ setMethod("plot", signature(x = "bdpsurvival"), function(x, type = NULL, print =
     )
     D2 <- data.frame(group = "Treatment", p_hat = c(median(posterior_treatment$p_hat)))
     D3 <- data.frame(group = "Treatment", p_hat = c(median(posterior_treatment$alpha_discount)))
-
+    
     discountfun_plot <- ggplot() +
       geom_line(data = D1, aes_string(y = "y", x = "x", color = "group"), size = 1) +
       geom_vline(data = D2, aes_string(xintercept = "p_hat", color = "group"), lty = 2) +
       geom_hline(data = D3, aes_string(yintercept = "p_hat", color = "group"), lty = 2)
   }
-
+  
   if (arm2) {
     if (!is.null(args1$S_c) & !is.null(args1$S0_c)) {
       if (is.null(discountfun_plot)) {
         discountfun_plot <- ggplot()
       }
-
+      
       ### Create discount function based on distribution type
       if (discount_function == "weibull") {
         discount_function_control <- pweibull(p_hat,
-          shape = x$args1$weibull_shape[2],
-          scale = x$args1$weibull_scale[2]
+                                              shape = x$args1$weibull_shape[2],
+                                              scale = x$args1$weibull_scale[2]
         )
       } else if (discount_function == "scaledweibull") {
         max_p <- pweibull(1,
-          shape = x$args1$weibull_shape[2],
-          scale = x$args1$weibull_scale[2]
+                          shape = x$args1$weibull_shape[2],
+                          scale = x$args1$weibull_scale[2]
         )
-
+        
         discount_function_control <- pweibull(p_hat,
-          shape = x$args1$weibull_shape[2],
-          scale = x$args1$weibull_scale[2]
+                                              shape = x$args1$weibull_shape[2],
+                                              scale = x$args1$weibull_scale[2]
         ) / max_p
       } else if (discount_function == "identity") {
         discount_function_control <- p_hat
       }
-
+      
       D4 <- data.frame(
         group = "Control",
         y = discount_function_control,
@@ -841,14 +841,14 @@ setMethod("plot", signature(x = "bdpsurvival"), function(x, type = NULL, print =
       )
       D5 <- data.frame(group = "Control", p_hat = c(median(posterior_control$p_hat)))
       D6 <- data.frame(group = "Control", p_hat = c(median(posterior_control$alpha_discount)))
-
+      
       discountfun_plot <- discountfun_plot +
         geom_line(data = D4, aes_string(y = "y", x = "x", color = "group"), size = 1) +
         geom_vline(data = D5, aes_string(xintercept = "p_hat", color = "group"), lty = 2) +
         geom_hline(data = D6, aes_string(yintercept = "p_hat", color = "group"), lty = 2)
     }
   }
-
+  
   if (!is.null(discountfun_plot)) {
     discountfun_plot <- discountfun_plot +
       facet_wrap(~group, ncol = 1) +
@@ -860,7 +860,7 @@ setMethod("plot", signature(x = "bdpsurvival"), function(x, type = NULL, print =
       guides(fill = guide_legend(title = NULL)) +
       theme(legend.title = element_blank())
   }
-
+  
   if (print) {
     if (is.null(type)) {
       op <- par(ask = TRUE)

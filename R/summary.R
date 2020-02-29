@@ -43,12 +43,12 @@ setMethod("summary", signature(object = "bdpnormal"), function(object) {
   sigma0_c <- object$args1$sigma0_c
   N0_c <- object$args1$N0_c
   method <- object$args1$method
-
+  
   if (!arm2) {
     # Format treatment mean output
     mean_CI_t <- round(quantile(posterior_treatment$posterior_mu, prob = c(0.025, 0.975)), 4)
     mean_est_t <- round(median(posterior_treatment$posterior_mu), 4)
-
+    
     cat("\n")
     cat("    One-armed bdp normal\n\n")
     cat("data:\n")
@@ -80,7 +80,7 @@ setMethod("summary", signature(object = "bdpnormal"), function(object) {
     cat("\n")
   } else {
     comparison_est <- posterior_treatment$posterior_mu - posterior_control$posterior_mu
-
+    
     mean_est_t <- format(round(median(posterior_treatment$posterior_mu), 2), nsmall = 2)
     mean_est_c <- format(round(median(posterior_control$posterior_mu), 2), nsmall = 2)
     comp_CI <- round(quantile(comparison_est, prob = c(0.025, 0.975)), 4)
@@ -101,7 +101,7 @@ setMethod("summary", signature(object = "bdpnormal"), function(object) {
       cat(paste0("  Historical control: mu0_c = ", mu0_c, ", sigma0_c = ", sigma0_c, ", N0_c = ", N0_c))
       cat("\n")
     }
-
+    
     if (!is.null(N0_t)) {
       cat(paste0(
         "Stochastic comparison (p_hat) - treatment (current vs. historical data): ",
@@ -109,7 +109,7 @@ setMethod("summary", signature(object = "bdpnormal"), function(object) {
       ))
       cat("\n")
     }
-
+    
     if (!is.null(N0_c) & !is.null(N_c)) {
       cat(paste0(
         "Stochastic comparison (p_hat) - control (current vs. historical data): ",
@@ -117,7 +117,7 @@ setMethod("summary", signature(object = "bdpnormal"), function(object) {
       ))
       cat("\n")
     }
-
+    
     if (!is.null(N0_t)) {
       cat(paste0(
         "Discount function value (alpha) - treatment: ",
@@ -125,7 +125,7 @@ setMethod("summary", signature(object = "bdpnormal"), function(object) {
       ))
       cat("\n")
     }
-
+    
     if (!is.null(N0_c) & !is.null(N_c)) {
       cat(paste0(
         "Discount function value (alpha) - control: ",
@@ -135,7 +135,7 @@ setMethod("summary", signature(object = "bdpnormal"), function(object) {
     }
     cat("alternative hypothesis: two.sided")
     cat("\n")
-
+    
     cat("95 percent CI: \n")
     cat(paste0(" ", comp_CI))
     cat("\n")
@@ -188,13 +188,13 @@ setMethod("summary", signature(object = "bdpbinomial"), function(object) {
   y0_c <- object$args1$y0_c
   N0_c <- object$args1$N0_c
   method <- object$args1$method
-
+  
   if (!arm2) {
     ### Format treatment mean output
     mean_CI_t <- round(quantile(posterior_treatment$posterior, prob = c(0.025, 0.975)), 4)
     mean_est_t <- round(median(posterior_treatment$posterior), 4)
     mean_print_t <- paste0(mean_est_t, " (", mean_CI_t[1], ", ", mean_CI_t[2], ")")
-
+    
     cat("\n")
     cat("    One-armed bdp binomial\n\n")
     cat(paste0("Current treatment data: ", y_t, " and ", N_t, "\n"))
@@ -218,21 +218,21 @@ setMethod("summary", signature(object = "bdpbinomial"), function(object) {
     cat(paste0(" ", mean_est_t))
     cat("\n")
   } else {
-
+    
     ### Format control mean output
     comparison_est <- posterior_treatment$posterior - posterior_control$posterior
-
+    
     mean_est_t <- format(round(median(posterior_treatment$posterior), 2), nsmall = 2)
     mean_est_c <- format(round(median(posterior_control$posterior), 2), nsmall = 2)
-
+    
     mean_CI_c <- round(quantile(posterior_control$posterior, prob = c(0.025, 0.975)), 4)
     mean_print_c <- paste0(mean_est_c, " (", mean_CI_c[1], ", ", mean_CI_c[2], ")")
-
+    
     ### Format comparison output
     comp_CI <- round(quantile(comparison_est, prob = c(0.025, 0.975)), 4)
     comp_est <- round(median(comparison_est), 4)
     comp_print <- paste0(comp_est, " (", comp_CI[1], ", ", comp_CI[2], ")")
-
+    
     cat("\n")
     cat("    Two-armed bdp binomial\n\n")
     cat(paste0("Current treatment data: ", y_t, " and ", N_t, "\n"))
@@ -245,7 +245,7 @@ setMethod("summary", signature(object = "bdpbinomial"), function(object) {
     if (!is.null(N0_c)) {
       cat(paste0("Historical control data: ", y0_c, " and ", N0_c, "\n"))
     }
-
+    
     if (!is.null(N_t) & !is.null(N0_t)) {
       cat(paste0(
         "Stochastic comparison (p_hat) - treatment (current vs. historical data): ",
@@ -258,7 +258,7 @@ setMethod("summary", signature(object = "bdpbinomial"), function(object) {
       ))
       cat("\n")
     }
-
+    
     if (!is.null(N_c) & !is.null(N0_c)) {
       cat(paste0(
         "Stochastic comparison (p_hat) - control (current vs. historical data): ",
@@ -271,7 +271,7 @@ setMethod("summary", signature(object = "bdpbinomial"), function(object) {
       ))
       cat("\n")
     }
-
+    
     cat("alternative hypothesis: two.sided")
     cat("\n")
     cat("95 percent CI:\n")
@@ -317,16 +317,16 @@ setMethod("summary", signature(object = "bdpsurvival"), function(object) {
   posterior_treatment <- object$posterior_treatment
   posterior_control <- object$posterior_control
   surv_time <- object$args1$surv_time
-
+  
   args1 <- object$args1
   data <- args1$data
   breaks <- args1$breaks
   arm2 <- args1$arm2
   method <- args1$method
-
+  
   historical <- NULL
   treatment <- NULL
-
+  
   ##############################################################################
   ### Survival table
   ### - Only print if !arm2
@@ -337,17 +337,17 @@ setMethod("summary", signature(object = "bdpsurvival"), function(object) {
     s_t <- with(data_t, Surv(time, status)) # , type="mstate"))
     n <- nrow(data_t)
     s_t <- survival::survfitKM(factor(rep(1, n)), s_t)
-
+    
     survival_times_posterior <- lapply(s_t$time, ppexp,
-      posterior_treatment$posterior_hazard,
-      cuts = c(0, breaks)
+                                       posterior_treatment$posterior_hazard,
+                                       cuts = c(0, breaks)
     )
-
+    
     s_t$surv <- 1 - sapply(survival_times_posterior, median)
     s_t$std.err <- sapply(survival_times_posterior, sd)
     s_t$upper <- 1 - sapply(survival_times_posterior, quantile, 0.025)
     s_t$lower <- 1 - sapply(survival_times_posterior, quantile, 0.975)
-
+    
     m_t <- round(cbind(
       s_t$time, s_t$n.risk, s_t$n.event, s_t$surv, s_t$std.err,
       s_t$lower, s_t$upper
@@ -357,7 +357,7 @@ setMethod("summary", signature(object = "bdpsurvival"), function(object) {
       "lower 95% CI", "upper 95% CI"
     )
     dimnames(m_t) <- list(rep("", nrow(m_t)), cnames)
-
+    
     cat("\n")
     cat("    One-armed bdp survival\n\n")
     if (is.null(args1$S0_t)) {
@@ -375,7 +375,7 @@ setMethod("summary", signature(object = "bdpsurvival"), function(object) {
         round(median(posterior_treatment$alpha_discount), 4)
       ))
       cat("\n")
-
+      
       cat("\n")
       cat("Current treatment - augmented posterior summary:")
       cat("\n")
@@ -383,7 +383,7 @@ setMethod("summary", signature(object = "bdpsurvival"), function(object) {
       cat("\n")
     }
   }
-
+  
   ##############################################################################
   ### Significance of cox proportional hazard for treatment vs control
   ### - Only print if arm2
@@ -396,16 +396,16 @@ setMethod("summary", signature(object = "bdpsurvival"), function(object) {
     coef <- mean(logHR0)
     se_coef <- sd(logHR0)
     CI <- quantile(logHR0, probs = c(0.025, 0.975))
-
+    
     summ_table <- matrix(round(c(coef, exp(coef), se_coef, CI[1], CI[2]), 4), nrow = 1)
     cnames <- c("coef", "exp(coef)", "se(coef)", "lower 95% CI", "upper 95% CI")
     dimnames(summ_table) <- list("treatment", cnames)
-
+    
     ### Count sample size and number of events
     data_t <- subset(data, historical == 0 & treatment == 1)
     n_t <- nrow(data_t)
     e_t <- sum(data_t$status)
-
+    
     if (!is.null(args1$S_c)) {
       data_c <- subset(data, historical == 0 & treatment == 0)
       n_c <- nrow(data_c)
@@ -414,7 +414,7 @@ setMethod("summary", signature(object = "bdpsurvival"), function(object) {
       n_c <- nrow(data_c)
       e_c <- sum(data_c$status)
     }
-
+    
     cat("\n")
     cat("    Two-armed bdp survival\n\n")
     cat("data:\n")
@@ -427,7 +427,7 @@ setMethod("summary", signature(object = "bdpsurvival"), function(object) {
       cat(paste0("  Historical control: n = ", n_c, ", number of events = ", e_c))
       cat("\n")
     }
-
+    
     if (!is.null(args1$S0_t)) {
       cat(paste0(
         "Stochastic comparison (p_hat) - treatment (current vs. historical data): ",
@@ -435,7 +435,7 @@ setMethod("summary", signature(object = "bdpsurvival"), function(object) {
       ))
       cat("\n")
     }
-
+    
     if (!is.null(args1$S0_c) & !is.null(args1$S_c)) {
       cat(paste0(
         "Stochastic comparison (p_hat) - control (current vs. historical data): ",
@@ -443,7 +443,7 @@ setMethod("summary", signature(object = "bdpsurvival"), function(object) {
       ))
       cat("\n")
     }
-
+    
     if (!is.null(args1$S0_t)) {
       cat(paste0(
         "Discount function value (alpha) - treatment: ",
@@ -451,7 +451,7 @@ setMethod("summary", signature(object = "bdpsurvival"), function(object) {
       ))
       cat("\n")
     }
-
+    
     if (!is.null(args1$S0_c) & !is.null(args1$S_c)) {
       cat(paste0(
         "Discount function value (alpha) - control: ",
@@ -482,7 +482,7 @@ setMethod("summary", signature(object = "bdpsurvival"), function(object) {
 #'
 #' @export
 setMethod("summary", signature(object = "bdplm"), function(object) {
-
+  
   # Format residuals
   data <- object$args1$data
   data <- data[data$historical == 0, ]
@@ -504,7 +504,7 @@ setMethod("summary", signature(object = "bdplm"), function(object) {
     rep("", nrow(resid_sum)),
     c("Min", "1Q", "Median", "3Q", "Max")
   )
-
+  
   # Format coefficient table
   coefs <- object$estimates
   cnames <- names(coefs[[1]])
@@ -514,16 +514,16 @@ setMethod("summary", signature(object = "bdplm"), function(object) {
   p <- nrow(coefs)
   coefs <- coefs[-p, ]
   coefs <- round(coefs, 4)
-
+  
   # Format alpha
   alpha_mat <- apply(object$alpha_discount, 2, median)
   alpha_mat <- matrix(alpha_mat, nrow = 1)
   dimnames(alpha_mat) <- list("", names(object$alpha_discount))
-
+  
   # Format residual standard error
   s <- object$estimates$coefficients[p]
   s <- round(s, 4)
-
+  
   # Print output
   cat("\n")
   cat("Call:\n")
