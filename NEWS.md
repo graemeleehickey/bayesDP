@@ -1,5 +1,7 @@
-# bayesDP 1.3.3
+# bayesDP 1.3.4
 * Updates to README and DESCRIPTION
+* Updates to .gitignore file
+* Updates to R code formatting
 
 # bayesDP 1.3.3
 * New package maintainer (Graeme L. Hickey) since package was orphaned
