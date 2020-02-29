@@ -1,4 +1,3 @@
-
 #' @importFrom ggplot2 aes
 #' @importFrom ggplot2 facet_wrap
 #' @importFrom ggplot2 geom_hline
@@ -69,7 +68,7 @@ setGeneric("alpha_discount",
                     discount_function = "weibull",
                     alpha_max         = 1,
                     weibull_scale     = 0.135,
-                    weibull_shape     = 3){
+                    weibull_shape     = 3) {
              standardGeneric("alpha_discount")
            })
 
@@ -79,28 +78,27 @@ setMethod("alpha_discount",
                    discount_function = "weibull",
                    alpha_max         = 1,
                    weibull_scale     = 0.135,
-                   weibull_shape     = 3){
-
-  # Check that discount_function is input correctly
-  all_functions <- c("weibull", "scaledweibull", "identity")
-  function_match <- match(discount_function, all_functions)
-  if(is.na(function_match)) {
-    stop("discount_function input incorrectly.")
-  }
-
-
-  # Compute alpha discount based on distribution
-  if(discount_function == "weibull"){
-    alpha_hat <- pweibull(p_hat, shape=weibull_shape,
-                               scale=weibull_scale)*alpha_max
-  } else if(discount_function == "scaledweibull"){
-    max_p <- pweibull(1, shape=weibull_shape, scale=weibull_scale)
-
-    alpha_hat <- pweibull(p_hat, shape=weibull_shape,
-                               scale=weibull_scale)*alpha_max/max_p
-  } else if(discount_function == "identity"){
-    alpha_hat <- p_hat
-  }
-
-  return(alpha_hat)
-})
+                   weibull_shape     = 3) {
+            
+            # Check that discount_function is input correctly
+            all_functions <- c("weibull", "scaledweibull", "identity")
+            function_match <- match(discount_function, all_functions)
+            if (is.na(function_match)) {
+              stop("discount_function input incorrectly.")
+            }
+            
+            
+            # Compute alpha discount based on distribution
+            if (discount_function == "weibull") {
+              alpha_hat <- pweibull(p_hat, shape = weibull_shape, scale = weibull_scale) * alpha_max
+            } else if (discount_function == "scaledweibull") {
+              max_p <- pweibull(1, shape = weibull_shape, scale = weibull_scale)
+              
+              alpha_hat <- pweibull(p_hat, shape = weibull_shape, scale = weibull_scale) * alpha_max / max_p
+            } else if (discount_function == "identity") {
+              alpha_hat <- p_hat
+            }
+            
+            return(alpha_hat)
+            
+          })
