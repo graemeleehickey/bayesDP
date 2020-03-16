@@ -5,7 +5,6 @@
 ^\cran-comments.md$
 ^\.travis\.yml$
 ^tests/
-^bayesDP-logo.png
 ^README.Rmd
 ^.Rhistory
 ^.gitignore
@@ -19,3 +18,4 @@
 ^codecov\.yml$
 ^README\.Rmd$
 ^appveyor\.yml$
+inst/image
