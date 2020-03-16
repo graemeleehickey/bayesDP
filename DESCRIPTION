@@ -23,7 +23,7 @@ Description: Functions for data augmentation using the
     the The Medical Device Innovation Consortium (MDIC) Computer Modeling & 
     Simulation Working Group.
 LazyLoad: yes
-License: GPL-3
+License: GPL-3 | file LICENSE
 URL: https://github.com/graemeleehickey/bayesDP
 BugReports: https://github.com/graemeleehickey/bayesDP/issues
 NeedsCompilation: yes
