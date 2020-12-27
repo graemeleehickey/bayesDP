@@ -19,3 +19,4 @@
 ^README\.Rmd$
 ^appveyor\.yml$
 inst/image
+^\.github$
