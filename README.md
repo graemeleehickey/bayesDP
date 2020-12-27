@@ -14,7 +14,7 @@ coverage](https://codecov.io/gh/graemeleehickey/bayesDP/branch/master/graph/badg
 [![AppVeyor build
 status](https://ci.appveyor.com/api/projects/status/github/graemeleehickey/bayesDP?branch=master&svg=true)](https://ci.appveyor.com/project/graemeleehickey/bayesDP)
 [![R build
-status](https://github.com/donaldmusgrove/bayesDP/workflows/R-CMD-check/badge.svg)](https://github.com/donaldmusgrove/bayesDP/actions)
+status](https://github.com/graemeleehickey/bayesDP/workflows/R-CMD-check/badge.svg)](https://github.com/graemeleehickey/bayesDP/actions)
 <!-- badges: end -->
 
 `bayesDP` provides tools and functions for data augmentation using the
