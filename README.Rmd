@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 
 # bayesDP <img src="man/figures/hex.png" width = "175" height = "200" align="right" />
 <!-- badges: start -->
-[![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/bayesDP)](https://CRAN.R-project.org/package=bayesDP)
+[![CRAN_Status_Badge](https://www.r-pkg.org/pkg/bayesDP)](https://CRAN.R-project.org/package=bayesDP)
 [![](http://cranlogs.r-pkg.org/badges/bayesDP)](https://CRAN.R-project.org/package=bayesDP)
 [![Downloads](http://cranlogs.r-pkg.org/badges/grand-total/bayesDP?color=brightgreen)](http://www.r-pkg.org/pkg/bayesDP)
 [![License](https://img.shields.io/badge/license-GPL%20%28%3E=%203%29-brightgreen.svg?style=flat)](http://www.gnu.org/licenses/gpl-3.0.html)
