@@ -3,6 +3,7 @@
 * Updates to .gitignore file
 * Add codecov for coverage checking
 * Updates to R code formatting
+* Added GitHub Actions CI.
 
 # bayesDP 1.3.3
 * New package maintainer (Graeme L. Hickey) since package was orphaned
