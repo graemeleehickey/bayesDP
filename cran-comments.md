@@ -1,6 +1,7 @@
 ## Other notes
 
-Minor updates included.
+* Minor updates included.
+* Fixed URL issue highlighted by CRAN automatic checks.
 
 ## Test environments
 
@@ -17,4 +18,4 @@ Minor updates included.
 
 ## Reverse dependencies
 
-There are no reverse dependencies active on CRAN.
+No changes in this package affect `bayesCT` package dependency.

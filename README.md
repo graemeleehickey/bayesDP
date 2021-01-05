@@ -5,10 +5,10 @@
 
 <!-- badges: start -->
 
-[![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/bayesDP)](https://CRAN.R-project.org/package=bayesDP)
-[![](http://cranlogs.r-pkg.org/badges/bayesDP)](https://CRAN.R-project.org/package=bayesDP)
-[![Downloads](http://cranlogs.r-pkg.org/badges/grand-total/bayesDP?color=brightgreen)](http://www.r-pkg.org/pkg/bayesDP)
-[![License](https://img.shields.io/badge/license-GPL%20%28%3E=%203%29-brightgreen.svg?style=flat)](http://www.gnu.org/licenses/gpl-3.0.html)
+[![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/bayesDP)](https://CRAN.R-project.org/package=bayesDP)
+[![](https://cranlogs.r-pkg.org/badges/bayesDP)](https://CRAN.R-project.org/package=bayesDP)
+[![Downloads](https://cranlogs.r-pkg.org/badges/grand-total/bayesDP?color=brightgreen)](https://www.r-pkg.org:443/pkg/bayesDP)
+[![License](https://img.shields.io/badge/license-GPL%20%28%3E=%203%29-brightgreen.svg?style=flat)](https://www.gnu.org/licenses/gpl-3.0.html)
 [![Codecov test
 coverage](https://codecov.io/gh/graemeleehickey/bayesDP/branch/master/graph/badge.svg)](https://codecov.io/gh/graemeleehickey/bayesDP?branch=master)
 [![AppVeyor build
