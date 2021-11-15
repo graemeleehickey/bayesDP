@@ -97,7 +97,7 @@ control. If \code{compare=TRUE}, the comparison object is accessible in the
 \value{
 \code{bdpsurvival} returns an object of class "bdpsurvival".
 The functions \code{\link[=summary,bdpsurvival-method]{summary}} and \code{\link[=print,bdpsurvival-method]{print}} are used to obtain and
-print a summary of the results, including user inputs. The \code{\link[=plot,bdpsurvival-method]{plot}}
+print a summary of the results, including user inputs. The \code{\link[=plot,bdpsurvival,ANY-method]{plot}}
 function displays visual outputs as well.
 
 An object of class "\code{bdpsurvival}" is a list containing at least
@@ -284,6 +284,6 @@ Haddad, T., Himes, A., Thompson, L., Irony, T., Nair, R. MDIC Computer
 \seealso{
 \code{\link[=summary,bdpsurvival-method]{summary}},
   \code{\link[=print,bdpsurvival-method]{print}},
-  and \code{\link[=plot,bdpsurvival-method]{plot}} for details of each of the
+  and \code{\link[=plot,bdpsurvival,ANY-method]{plot}} for details of each of the
   supported methods.
 }

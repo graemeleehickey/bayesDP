@@ -6,6 +6,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // sigma2marginal
 SEXP sigma2marginal(int n, const arma::vec& grid, const arma::mat& XtX, const arma::mat& SigmaBetaInv, const arma::mat& Xstar, const arma::vec& Xty, const arma::vec& mu0, const arma::vec& ystar);
 RcppExport SEXP _bayesDP_sigma2marginal(SEXP nSEXP, SEXP gridSEXP, SEXP XtXSEXP, SEXP SigmaBetaInvSEXP, SEXP XstarSEXP, SEXP XtySEXP, SEXP mu0SEXP, SEXP ystarSEXP) {

@@ -97,7 +97,7 @@
 #'   functions \code{\link[=summary,bdpnormal-method]{summary}} and
 #'   \code{\link[=print,bdpnormal-method]{print}} are used to obtain and print
 #'   a summary of the results, including user inputs. The
-#'   \code{\link[=plot,bdpnormal-method]{plot}} function displays visual
+#'   \code{\link[=plot,bdpnormal,ANY-method]{plot}} function displays visual
 #'   outputs as well.
 #'
 #' An object of class \code{bdpnormal} is a list containing at least
@@ -168,7 +168,7 @@
 #'
 #' @seealso \code{\link[=summary,bdpnormal-method]{summary}},
 #'   \code{\link[=print,bdpnormal-method]{print}},
-#'   and \code{\link[=plot,bdpnormal-method]{plot}} for details of each of the
+#'   and \code{\link[=plot,bdpnormal,ANY-method]{plot}} for details of each of the
 #'   supported methods.
 #'
 #' @references
@@ -264,11 +264,11 @@ setMethod(
            number_mcmc = 10000,
            method = "mc",
            compare = TRUE) {
-    
+
     ################################################################################
     # Check Input                                                                  #
     ################################################################################
-    
+
     intent <- c()
     if (length(mu_t + sigma_t + N_t) != 0) {
       intent <- c(intent, "current treatment")
@@ -285,7 +285,7 @@ setMethod(
       }
       stop("Current treatment not provided/incomplete.")
     }
-    
+
     if (length(mu0_t + sigma0_t + N0_t) != 0) {
       intent <- c(intent, "historical treatment")
       # cat("Historical Treatment\n")
@@ -303,7 +303,7 @@ setMethod(
         stop("Historical treatment incomplete.")
       }
     }
-    
+
     if (length(mu_c + sigma_c + N_c) != 0) {
       intent <- c(intent, "current control")
       # cat("Current Control\n")
@@ -321,7 +321,7 @@ setMethod(
         stop("Current control not provided/incomplete.")
       }
     }
-    
+
     if (length(mu0_c + sigma0_c + N0_c) != 0) {
       intent <- c(intent, "historical control")
       # cat("Historical Contro\nl")
@@ -339,42 +339,42 @@ setMethod(
         stop("Historical Control not provided/incomplete.")
       }
     }
-    
+
     if (!is.null(N_c) | !is.null(N0_c)) {
       arm2 <- TRUE
     } else {
       arm2 <- FALSE
     }
-    
+
     # Check that discount_function is input correctly
     all_functions <- c("weibull", "scaledweibull", "identity")
     function_match <- match(discount_function, all_functions)
     if (is.na(function_match)) {
       stop("discount_function input incorrectly.")
     }
-    
+
     ##############################################################################
     # Quick check, if alpha_max, weibull_scale, or weibull_shape have length 1,
     # repeat input twice
     ##############################################################################
-    
+
     if (length(alpha_max) == 1) {
       alpha_max <- rep(alpha_max, 2)
     }
-    
+
     if (length(weibull_scale) == 1) {
       weibull_scale <- rep(weibull_scale, 2)
     }
-    
+
     if (length(weibull_shape) == 1) {
       weibull_shape <- rep(weibull_shape, 2)
     }
-    
-    
+
+
     ################################################################################
     # Results                                                                      #
     ################################################################################
-    
+
     posterior_treatment <- posterior_normal(
       mu = mu_t,
       sigma = sigma_t,
@@ -390,8 +390,8 @@ setMethod(
       weibull_shape = weibull_shape[1],
       method = method
     )
-    
-    
+
+
     if (arm2) {
       posterior_control <- posterior_normal(
         mu = mu_c,
@@ -411,7 +411,7 @@ setMethod(
     } else {
       posterior_control <- NULL
     }
-    
+
     args1 <- list(
       mu_t = mu_t,
       sigma_t = sigma_t,
@@ -438,11 +438,11 @@ setMethod(
                      compare = compare
       )
     )
-    
+
     ##############################################################################
     ### Create final (comparison) object
     ##############################################################################
-    
+
     if (!compare) {
       final <- NULL
     } else {
@@ -454,16 +454,16 @@ setMethod(
         final$posterior <- posterior_treatment$posterior_mu
       }
     }
-    
+
     me <- list(
       posterior_treatment = posterior_treatment,
       posterior_control = posterior_control,
       final = final,
       args1 = args1
     )
-    
+
     class(me) <- "bdpnormal"
-    
+
     return(me)
   }
 )
@@ -477,7 +477,7 @@ setMethod(
 posterior_normal <- function(mu, sigma, N, mu0, sigma0, N0, discount_function,
                              alpha_max, fix_alpha, number_mcmc, weibull_scale,
                              weibull_shape, method) {
-  
+
   # Compute posterior(s) of current (flat) and historical (prior) data
   # with non-informative priors
   # Current data:
@@ -488,7 +488,7 @@ posterior_normal <- function(mu, sigma, N, mu0, sigma0, N0, discount_function,
   } else {
     posterior_flat_mu <- posterior_flat_sigma2 <- NULL
   }
-  
+
   # Historical data:
   if (!is.null(N0)) {
     prior_sigma2 <- 1 / rgamma(number_mcmc, (N0 - 1) / 2, ((N0 - 1) * sigma0^2) / 2)
@@ -497,15 +497,15 @@ posterior_normal <- function(mu, sigma, N, mu0, sigma0, N0, discount_function,
   } else {
     prior_mu <- prior_sigma2 <- NULL
   }
-  
+
   ##############################################################################
   # Discount function
   ##############################################################################
-  
+
   ### Compute stochastic comparison and alpha discount only if both
   ### N and N0 are present (i.e., current & historical data are present)
   if (!is.null(N) & !is.null(N0)) {
-    
+
     ### Test of model vs real
     if (method == "fixed") {
       p_hat <- mean(posterior_flat_mu < prior_mu) # larger is higher failure
@@ -514,7 +514,7 @@ posterior_normal <- function(mu, sigma, N, mu0, sigma0, N0, discount_function,
       Z <- abs(posterior_flat_mu - prior_mu) / sqrt(s^2 + s0^2)
       p_hat <- 2 * (1 - pnorm(Z))
     }
-    
+
     ### Number of effective sample size given shape and scale discount function
     if (fix_alpha == TRUE) {
       alpha_discount <- alpha_max
@@ -527,7 +527,7 @@ posterior_normal <- function(mu, sigma, N, mu0, sigma0, N0, discount_function,
         ) * alpha_max
       } else if (discount_function == "scaledweibull") {
         max_p <- pweibull(1, shape = weibull_shape, scale = weibull_scale)
-        
+
         alpha_discount <- pweibull(p_hat,
                                    shape = weibull_shape,
                                    scale = weibull_scale
@@ -540,13 +540,13 @@ posterior_normal <- function(mu, sigma, N, mu0, sigma0, N0, discount_function,
     alpha_discount <- NULL
     p_hat <- NULL
   }
-  
+
   ##############################################################################
   # Posterior augmentation
   # - If current or historical data are missing, this will not augment but
   #   will return the posterior of the non-missing data (with flat prior)
   ##############################################################################
-  
+
   ### If only the historical data is present, compute posterior on historical
   if (is.null(N0) & !is.null(N)) {
     posterior_sigma2 <- posterior_flat_sigma2
@@ -556,16 +556,16 @@ posterior_normal <- function(mu, sigma, N, mu0, sigma0, N0, discount_function,
     posterior_mu <- rnorm(number_mcmc, prior_mu, sqrt(posterior_sigma2))
   } else if (!is.null(N0) & !is.null(N)) {
     effective_N0 <- N0 * alpha_discount
-    
+
     posterior_mu0 <- prior_sigma2 * N * mu + posterior_flat_sigma2 * effective_N0 * mu0
     posterior_mu0 <- posterior_mu0 / (N * prior_sigma2 + posterior_flat_sigma2 * effective_N0)
-    
+
     posterior_sigma2 <- posterior_flat_sigma2 * prior_sigma2
     posterior_sigma2 <- posterior_sigma2 / (N * prior_sigma2 + posterior_flat_sigma2 * effective_N0)
-    
+
     posterior_mu <- rnorm(number_mcmc, posterior_mu0, sqrt(posterior_sigma2))
   }
-  
+
   return(list(
     alpha_discount = alpha_discount,
     p_hat = p_hat,

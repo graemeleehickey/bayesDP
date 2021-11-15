@@ -100,7 +100,7 @@
 #'
 #' @return \code{bdpsurvival} returns an object of class "bdpsurvival".
 #' The functions \code{\link[=summary,bdpsurvival-method]{summary}} and \code{\link[=print,bdpsurvival-method]{print}} are used to obtain and
-#' print a summary of the results, including user inputs. The \code{\link[=plot,bdpsurvival-method]{plot}}
+#' print a summary of the results, including user inputs. The \code{\link[=plot,bdpsurvival,ANY-method]{plot}}
 #' function displays visual outputs as well.
 #'
 #' An object of class "\code{bdpsurvival}" is a list containing at least
@@ -166,7 +166,7 @@
 #'
 #' @seealso \code{\link[=summary,bdpsurvival-method]{summary}},
 #'   \code{\link[=print,bdpsurvival-method]{print}},
-#'   and \code{\link[=plot,bdpsurvival-method]{plot}} for details of each of the
+#'   and \code{\link[=plot,bdpsurvival,ANY-method]{plot}} for details of each of the
 #'   supported methods.
 #'
 #' @references
@@ -293,18 +293,18 @@ setMethod(
            weibull_shape = 3,
            method = "mc",
            compare = TRUE) {
-    
-    
+
+
     ### Check validity of data input
     call <- match.call()
     if (missing(data)) {
       stop("Current data not input correctly.")
     }
-    
+
     ##############################################################################
     ### Parse current data
     ##############################################################################
-    
+
     ### Check data frame and ensure it has the correct column names
     mf <- mf0 <- match.call(expand.dots = FALSE)
     m <- match(c("formula", "data"), names(mf), 0L)
@@ -321,13 +321,13 @@ setMethod(
         names(Y) <- nm
       }
     }
-    
+
     if (class(Y) != "Surv") stop("Data input incorrectly.")
-    
+
     ##############################################################################
     ### Parse historical data
     ##############################################################################
-    
+
     ### Parse historical data
     if (!is.null(data0)) {
       m00 <- match("data0", names(mf0), 0L)
@@ -350,34 +350,34 @@ setMethod(
     } else {
       Y0 <- NULL
     }
-    
+
     # Check that discount_function is input correctly
     all_functions <- c("weibull", "scaledweibull", "identity")
     function_match <- match(discount_function, all_functions)
     if (is.na(function_match)) {
       stop("discount_function input incorrectly.")
     }
-    
+
     historical <- NULL
     treatment <- NULL
-    
+
     ##############################################################################
     # Quick check, if alpha_max, weibull_scale, or weibull_shape have length 1,
     # repeat input twice
     ##############################################################################
-    
+
     if (length(alpha_max) == 1) {
       alpha_max <- rep(alpha_max, 2)
     }
-    
+
     if (length(weibull_scale) == 1) {
       weibull_scale <- rep(weibull_scale, 2)
     }
-    
+
     if (length(weibull_shape) == 1) {
       weibull_shape <- rep(weibull_shape, 2)
     }
-    
+
     ##############################################################################
     # Format input data
     ##############################################################################
@@ -385,29 +385,29 @@ setMethod(
     if (is.null(breaks)) {
       breaks <- quantile(c(Y[, 1], Y0[, 1]), probs = c(0.2, 0.4, 0.6, 0.8))
     }
-    
+
     ### If zero is present in breaks, remove and give warning
     if (any(breaks == 0)) {
       breaks <- breaks[!(breaks == 0)]
       warning("Breaks vector included 0. The zero value was removed.")
     }
-    
+
     ### Combine current and historical data, and format for analysis
     dataCurrent <- data
     dataCurrent$historical <- 0
-    
+
     if (!is.null(data0)) {
       dataHistorical <- data0
       dataHistorical$historical <- 1
     } else {
       dataHistorical <- NULL
     }
-    
+
     dataALL <- rbind(dataCurrent, dataHistorical)
-    
+
     ### Update formula
     formula <- update(formula, ~ . + historical)
-    
+
     ### Split the data on the breaks
     dataSplit <- survSplit(formula,
                            cut = breaks,
@@ -415,58 +415,58 @@ setMethod(
                            episode = "interval",
                            data = dataALL
     )
-    
+
     ### Change time and status column names
     vars <- as.character(attr(mt, "variables"))[2]
     vars <- strsplit(vars, "Surv\\(|, |\\)")[[1]]
     var_time <- vars[2]
     var_status <- vars[3]
-    
+
     names(dataSplit)[match(var_time, names(dataSplit))] <- "time"
     names(dataSplit)[match(var_status, names(dataSplit))] <- "status"
-    
+
     # Grab fu-time column
     id_time <- names(dataSplit[ncol(dataSplit) - 2])
-    
+
     # Look for treatment column, if missing, add it and set to 1
     if (!any(names(dataSplit) == "treatment")) {
       dataSplit$treatment <- 1
     }
-    
+
     ### Compute exposure time within each interval
     dataSplit$exposure <- dataSplit$time - dataSplit$start
-    
+
     ### Create new labels for the intervals
     maxTime <- max(dataSplit$time)
     labels_t <- unique(c(breaks, maxTime))
     dataSplit$interval <- factor(dataSplit$interval,
                                  labels = labels_t
     )
-    
+
     ### Parse out the historical and current data
     S_t <- subset(dataSplit, historical == 0 & treatment == 1)
     S_c <- subset(dataSplit, historical == 0 & treatment == 0)
     S0_t <- subset(dataSplit, historical == 1 & treatment == 1)
     S0_c <- subset(dataSplit, historical == 1 & treatment == 0)
-    
+
     if (nrow(S0_t) == 0) S0_t <- NULL
     if (nrow(S_c) == 0) S_c <- NULL
     if (nrow(S0_c) == 0) S0_c <- NULL
-    
+
     ### Compute arm2, internal indicator of a two-arm trial
     if (is.null(S_c) & is.null(S0_c)) {
       arm2 <- FALSE
     } else {
       arm2 <- TRUE
     }
-    
+
     # if(arm2) stop("Two arm trials are not currently supported.")
-    
+
     ### If surv_time is null, replace with median time
     if (is.null(surv_time) & !arm2) {
       surv_time <- median(c(Y[, 1], Y[, 0]))
     }
-    
+
     ### Check inputs
     if (!arm2) {
       if (nrow(S_t) == 0) stop("Current treatment data missing or input incorrectly.")
@@ -476,7 +476,7 @@ setMethod(
       if (is.null(S_c)) warning("Current control data missing or input incorrectly.")
       if (is.null(S0_t) & is.null(S0_c)) warning("Historical data input incorrectly.")
     }
-    
+
     posterior_treatment <- posterior_survival(
       S = S_t,
       S0 = S0_t,
@@ -493,7 +493,7 @@ setMethod(
       arm2 = arm2,
       method = method
     )
-    
+
     if (arm2) {
       posterior_control <- posterior_survival(
         S = S_c,
@@ -514,7 +514,7 @@ setMethod(
     } else {
       posterior_control <- NULL
     }
-    
+
     args1 <- list(
       S_t = S_t,
       S_c = S_c,
@@ -535,12 +535,12 @@ setMethod(
       data = dataSplit,
       data_current = data
     )
-    
-    
+
+
     ##############################################################################
     ### Create final (comparison) object
     ##############################################################################
-    
+
     if (!compare) {
       final <- NULL
     } else {
@@ -555,17 +555,17 @@ setMethod(
         final$posterior_survival <- posterior_treatment$posterior_survival
       }
     }
-    
-    
+
+
     me <- list(
       posterior_treatment = posterior_treatment,
       posterior_control = posterior_control,
       final = final,
       args1 = args1
     )
-    
+
     class(me) <- "bdpsurvival"
-    
+
     return(me)
   }
 )
@@ -581,46 +581,46 @@ posterior_survival <- function(S, S0, surv_time, discount_function,
                                alpha_max, fix_alpha, a0, b0,
                                number_mcmc, weibull_shape, weibull_scale,
                                breaks, arm2, method) {
-  
+
   ### Extract intervals and count number of intervals
   ### - It should be that S_int equals S0_int
   if (!is.null(S)) {
     S_int <- levels(S$interval)
     nInt <- length(S_int)
   }
-  
+
   if (!is.null(S0)) {
     S0_int <- levels(S0$interval)
     nInt <- length(S0_int)
   }
-  
+
   interval <- NULL
-  
+
   ##############################################################################
   # Discount function
   # - Comparison is made only if both S and S0 are present
   ##############################################################################
-  
+
   # Compute hazards for historical and current data efficiently
   if (!is.null(S) & !is.null(S0)) {
     ### Compute posterior of interval hazards
     a_post <- b_post <- numeric(nInt)
     a_post0 <- b_post0 <- numeric(nInt)
-    
+
     if (!is.null(S)) {
       posterior_flat_hazard <- prior_hazard <- matrix(NA, number_mcmc, nInt)
     } else {
       posterior_flat_hazard <- prior_hazard <- matrix(NA, number_mcmc, nInt)
     }
-    
+
     ### Compute posterior values
     for (i in 1:nInt) {
       a_post[i] <- a0 + sum(subset(S, interval == S_int[i])$status)
       b_post[i] <- b0 + sum(subset(S, interval == S_int[i])$exposure)
-      
+
       a_post0[i] <- a0 + sum(subset(S0, interval == S0_int[i])$status)
       b_post0[i] <- b0 + sum(subset(S0, interval == S0_int[i])$exposure)
-      
+
       ### Interval hazards - add on a very small value to avoid underflow
       posterior_flat_hazard[, i] <- rgamma(number_mcmc, a_post[i], b_post[i]) + 1e-12
       prior_hazard[, i] <- rgamma(number_mcmc, a_post0[i], b_post0[i]) + 1e-12
@@ -628,39 +628,39 @@ posterior_survival <- function(S, S0, surv_time, discount_function,
   } else if (!is.null(S) & is.null(S0)) {
     ### Compute posterior of interval hazards
     a_post <- b_post <- numeric(nInt)
-    
+
     posterior_flat_hazard <- matrix(NA, number_mcmc, nInt)
     prior_hazard <- NULL
-    
+
     ### Compute posterior values
     for (i in 1:nInt) {
       a_post[i] <- a0 + sum(subset(S, interval == S_int[i])$status)
       b_post[i] <- b0 + sum(subset(S, interval == S_int[i])$exposure)
-      
+
       ### Interval hazards - add on a very small value to avoid underflow
       posterior_flat_hazard[, i] <- rgamma(number_mcmc, a_post[i], b_post[i]) + 1e-12
     }
   } else if (is.null(S) & !is.null(S0)) {
     ### Compute posterior of interval hazards
     a_post0 <- b_post0 <- numeric(nInt)
-    
+
     prior_hazard <- matrix(NA, number_mcmc, nInt)
     posterior_flat_hazard <- NULL
-    
+
     ### Compute posterior values
     for (i in 1:nInt) {
       a_post0[i] <- a0 + sum(subset(S0, interval == S0_int[i])$status)
       b_post0[i] <- b0 + sum(subset(S0, interval == S0_int[i])$exposure)
-      
+
       ### Interval hazards - add on a very small value to avoid underflow
       prior_hazard[, i] <- rgamma(number_mcmc, a_post0[i], b_post0[i]) + 1e-12
     }
   }
-  
+
   ### If only one of S or S0 is present, return related hazard and (if !arm2), return survival
   if (!is.null(S) & is.null(S0)) {
     posterior_hazard <- posterior_flat_hazard
-    
+
     if (!arm2) {
       posterior_survival <- posterior_flat_survival <- 1 - ppexp(
         q = surv_time,
@@ -673,7 +673,7 @@ posterior_survival <- function(S, S0, surv_time, discount_function,
     }
   } else if (is.null(S) & !is.null(S0)) {
     posterior_hazard <- prior_hazard
-    
+
     if (!arm2) {
       posterior_survival <- prior_survival <- 1 - ppexp(
         q = surv_time,
@@ -685,7 +685,7 @@ posterior_survival <- function(S, S0, surv_time, discount_function,
       posterior_survival <- prior_survival <- posterior_flat_survival <- NULL
     }
   }
-  
+
   if (!(!is.null(S) & !is.null(S0))) {
     return(list(
       alpha_discount = NULL,
@@ -698,23 +698,23 @@ posterior_survival <- function(S, S0, surv_time, discount_function,
       prior_hazard = prior_hazard
     ))
   }
-  
+
   ### If both S and S0 are present, carry out the comparison and compute alpha
   if (!arm2) {
     ### Posterior survival probability
     posterior_flat_survival <- 1 - ppexp(q = surv_time, x = posterior_flat_hazard, cuts = c(0, breaks))
     prior_survival <- 1 - ppexp(q = surv_time, x = prior_hazard, cuts = c(0, breaks))
-    
+
     ### Compute probability that survival is greater for current vs historical
     if (method == "mc") {
       logS <- log(posterior_flat_survival)
       logS0 <- log(prior_survival)
-      
+
       ### Variance of log survival, computed via delta method of hazards
       nIntervals <- sum(surv_time > c(0, breaks))
       IntLengths <- c(c(0, breaks)[1:nIntervals], surv_time)
       surv_times <- diff(IntLengths)
-      
+
       v <- as.matrix(posterior_flat_hazard[, 1:nIntervals]^2) %*% (surv_times^2 / a_post[1:nIntervals])
       v0 <- as.matrix(prior_hazard[, 1:nIntervals]^2) %*% (surv_times^2 / a_post0[1:nIntervals])
       Z <- abs(logS - logS0) / (v + v0)
@@ -724,12 +724,12 @@ posterior_survival <- function(S, S0, surv_time, discount_function,
     } else {
       stop("Unrecognized method. Use one of 'fixed' or 'mc'")
     }
-    
+
     if (fix_alpha) {
       alpha_discount <- alpha_max
     } else {
       p_hat <- 2 * ifelse(p_hat > 0.5, 1 - p_hat, p_hat)
-      
+
       # Compute alpha discount based on distribution
       if (discount_function == "weibull") {
         alpha_discount <- pweibull(p_hat,
@@ -738,7 +738,7 @@ posterior_survival <- function(S, S0, surv_time, discount_function,
         ) * alpha_max
       } else if (discount_function == "scaledweibull") {
         max_p <- pweibull(1, shape = weibull_shape, scale = weibull_scale)
-        
+
         alpha_discount <- pweibull(p_hat,
                                    shape = weibull_shape,
                                    scale = weibull_scale
@@ -767,11 +767,11 @@ posterior_survival <- function(S, S0, surv_time, discount_function,
     } else {
       stop("Unrecognized method. Use one of 'fixed' or 'mc'")
     }
-    
+
     if (fix_alpha) {
       alpha_discount <- alpha_max
     } else {
-      
+
       # Compute alpha discount based on distribution
       if (discount_function == "weibull") {
         alpha_discount <- pweibull(p_hat,
@@ -780,7 +780,7 @@ posterior_survival <- function(S, S0, surv_time, discount_function,
         ) * alpha_max
       } else if (discount_function == "scaledweibull") {
         max_p <- pweibull(1, shape = weibull_shape, scale = weibull_scale)
-        
+
         alpha_discount <- pweibull(p_hat,
                                    shape = weibull_shape,
                                    scale = weibull_scale
@@ -790,21 +790,21 @@ posterior_survival <- function(S, S0, surv_time, discount_function,
       }
     }
   }
-  
+
   ##############################################################################
   # Posterior augmentation via the interval hazards
   # - If current or historical data are missing, this will not augment(see above)
   ##############################################################################
-  
+
   posterior_hazard <- matrix(NA, number_mcmc, nInt)
-  
+
   for (i in 1:nInt) {
     a_post0[i] <- a0 + sum(subset(S0, interval == S0_int[i])$status)
     b_post0[i] <- b0 + sum(subset(S0, interval == S0_int[i])$exposure)
-    
+
     a_post[i] <- a0 + sum(subset(S, interval == S_int[i])$status)
     b_post[i] <- b0 + sum(subset(S, interval == S_int[i])$exposure)
-    
+
     ### Add on a very small value to avoid underflow
     posterior_hazard[, i] <- rgamma(
       number_mcmc,
@@ -812,15 +812,15 @@ posterior_survival <- function(S, S0, surv_time, discount_function,
       b_post[i] + b_post0[i] * alpha_discount
     ) + 1e-12
   }
-  
+
   ### Posterior of survival time (if !arm2)
   if (!arm2) {
     posterior_survival <- 1 - ppexp(q = surv_time, x = posterior_hazard, cuts = c(0, breaks))
   } else {
     posterior_survival <- posterior_flat_survival <- prior_survival <- NULL
   }
-  
-  
+
+
   return(list(
     alpha_discount = alpha_discount,
     p_hat = p_hat,
