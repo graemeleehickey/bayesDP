@@ -1,7 +1,6 @@
 ## Other notes
 
-* Minor updates included.
-* Fixed URL issue highlighted by CRAN automatic checks.
+* Per email from Kurt Hornik, this update fixes WARNING for S4 plot generic.
 
 ## Test environments
 
