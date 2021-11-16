@@ -1,5 +1,6 @@
 ## Other notes
 
+* Per email from Uwe Ligges, URL for codecov has been changed.
 * Per email from Kurt Hornik, this update fixes WARNING for S4 plot generic.
 
 ## Test environments

@@ -10,7 +10,7 @@
 [![Downloads](https://cranlogs.r-pkg.org/badges/grand-total/bayesDP?color=brightgreen)](https://www.r-pkg.org:443/pkg/bayesDP)
 [![License](https://img.shields.io/badge/license-GPL%20%28%3E=%203%29-brightgreen.svg?style=flat)](https://www.gnu.org/licenses/gpl-3.0.html)
 [![Codecov test
-coverage](https://codecov.io/gh/graemeleehickey/bayesDP/branch/master/graph/badge.svg)](https://codecov.io/gh/graemeleehickey/bayesDP?branch=master)
+coverage](https://codecov.io/gh/graemeleehickey/bayesDP/branch/master/graph/badge.svg)](https://app.codecov.io/gh/graemeleehickey/bayesDP?branch=master)
 [![AppVeyor build
 status](https://ci.appveyor.com/api/projects/status/github/graemeleehickey/bayesDP?branch=master&svg=true)](https://ci.appveyor.com/project/graemeleehickey/bayesDP)
 [![R build
@@ -23,26 +23,16 @@ trials.
 
 ## CRAN Installation
 
-Install release version from CRAN: `install.packages("bayesDP")`
+Install release version from CRAN:
+
+``` r
+install.packages("bayesDP")
+```
 
 ## GitHub Installation
 
 Install development version from GitHub:
-`devtools::install_github("graemeleehickey/bayesDP")`
 
-## Documentation
-
-See manuals and vignettes within package.
-
-## Examples
-
-See manuals and vignettes within package.
-
-## Authors
-
-Shawn Balcome, Donnie Musgrove, Tarek Haddad, Graeme L. Hickey, and
-Christopher Jackson (For the ppexp R code that was ported to C++.)
-
-## License
-
-GPL-3
+``` r
+devtools::install_github("graemeleehickey/bayesDP")
+```
