@@ -1,14 +1,12 @@
 ## Other notes
 
-* Per email from Uwe Ligges, URL for codecov has been changed.
 * Per email from Kurt Hornik, this update fixes WARNING for S4 plot generic.
 
 ## Test environments
 
-* local macOS (Catalina) install, R 4.0.2
+* local macOS (Big Sur) install, R 4.1.2 patched
 * ubuntu (via GitHub actions, release + devel)
 * macOS (via GitHub actions, release)
-* windows (via appveyor CI, release)
 * windows (via GitHub actions, release)
 * windows (via win-builder, release + devel)
 
