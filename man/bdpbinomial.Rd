@@ -2,6 +2,7 @@
 % Please edit documentation in R/bdpbinomial.R
 \name{bdpbinomial}
 \alias{bdpbinomial}
+\alias{bdpbinomial-method}
 \alias{bdpbinomial,ANY-method}
 \title{Bayesian Discount Prior: Binomial counts}
 \usage{
@@ -96,7 +97,7 @@ control. If \code{compare=TRUE}, the comparison object is accessible in the
   functions \code{\link[=summary,bdpbinomial-method]{summary}} and
   \code{\link[=print,bdpbinomial-method]{print}} are used to obtain and
   print a summary of the results, including user inputs. The
-  \code{\link[=plot,bdpbinomial,ANY-method]{plot}} function displays visual
+  \code{\link[=plot,bdpbinomial-method]{plot}} function displays visual
   outputs as well.
 
 An object of class \code{bdpbinomial} is a list containing at least
@@ -232,6 +233,6 @@ Haddad, T., Himes, A., Thompson, L., Irony, T., Nair, R. MDIC Computer
 \seealso{
 \code{\link[=summary,bdpbinomial-method]{summary}},
   \code{\link[=print,bdpbinomial-method]{print}},
-  and \code{\link[=plot,bdpbinomial,ANY-method]{plot}} for details of each of the
+  and \code{\link[=plot,bdpbinomial-method]{plot}} for details of each of the
   supported methods.
 }

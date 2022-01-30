@@ -2,6 +2,7 @@
 % Please edit documentation in R/bdplogit.R
 \name{bdplogit}
 \alias{bdplogit}
+\alias{bdplogit-method}
 \alias{bdplogit,ANY-method}
 \title{Bayesian Discount Prior: Two-Arm Logistic Regression}
 \usage{

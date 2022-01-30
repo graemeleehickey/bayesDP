@@ -2,6 +2,7 @@
 % Please edit documentation in R/bdplm.R
 \name{bdplm}
 \alias{bdplm}
+\alias{bdplm-method}
 \alias{bdplm,ANY-method}
 \title{Bayesian Discount Prior: Two-Arm Linear Regression}
 \usage{

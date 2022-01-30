@@ -97,7 +97,7 @@
 #'   functions \code{\link[=summary,bdpnormal-method]{summary}} and
 #'   \code{\link[=print,bdpnormal-method]{print}} are used to obtain and print
 #'   a summary of the results, including user inputs. The
-#'   \code{\link[=plot,bdpnormal,ANY-method]{plot}} function displays visual
+#'   \code{\link[=plot,bdpnormal-method]{plot}} function displays visual
 #'   outputs as well.
 #'
 #' An object of class \code{bdpnormal} is a list containing at least
@@ -168,7 +168,7 @@
 #'
 #' @seealso \code{\link[=summary,bdpnormal-method]{summary}},
 #'   \code{\link[=print,bdpnormal-method]{print}},
-#'   and \code{\link[=plot,bdpnormal,ANY-method]{plot}} for details of each of the
+#'   and \code{\link[=plot,bdpnormal-method]{plot}} for details of each of the
 #'   supported methods.
 #'
 #' @references
@@ -206,6 +206,7 @@
 #' @import methods
 #' @importFrom stats sd density is.empty.model median model.offset
 #'   model.response pweibull quantile rbeta rgamma rnorm var vcov
+#' @aliases bdpnormal-method
 #' @aliases bdpnormal,ANY-method
 #' @export bdpnormal
 bdpnormal <- setClass("bdpnormal", slots = c(

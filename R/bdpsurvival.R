@@ -100,7 +100,7 @@
 #'
 #' @return \code{bdpsurvival} returns an object of class "bdpsurvival".
 #' The functions \code{\link[=summary,bdpsurvival-method]{summary}} and \code{\link[=print,bdpsurvival-method]{print}} are used to obtain and
-#' print a summary of the results, including user inputs. The \code{\link[=plot,bdpsurvival,ANY-method]{plot}}
+#' print a summary of the results, including user inputs. The \code{\link[=plot,bdpsurvival-method]{plot}}
 #' function displays visual outputs as well.
 #'
 #' An object of class "\code{bdpsurvival}" is a list containing at least
@@ -166,7 +166,7 @@
 #'
 #' @seealso \code{\link[=summary,bdpsurvival-method]{summary}},
 #'   \code{\link[=print,bdpsurvival-method]{print}},
-#'   and \code{\link[=plot,bdpsurvival,ANY-method]{plot}} for details of each of the
+#'   and \code{\link[=plot,bdpsurvival-method]{plot}} for details of each of the
 #'   supported methods.
 #'
 #' @references
@@ -246,6 +246,7 @@
 #' @importFrom stats sd density is.empty.model median model.offset
 #'   model.response pweibull quantile rbeta rgamma rnorm var vcov update
 #' @importFrom survival Surv survSplit
+#' @aliases bdpsurvival-method
 #' @aliases bdpsurvival,ANY-method
 #' @export bdpsurvival
 bdpsurvival <- setClass("bdpsurvival", slots = c(

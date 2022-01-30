@@ -82,7 +82,7 @@
 #'   functions \code{\link[=summary,bdpbinomial-method]{summary}} and
 #'   \code{\link[=print,bdpbinomial-method]{print}} are used to obtain and
 #'   print a summary of the results, including user inputs. The
-#'   \code{\link[=plot,bdpbinomial,ANY-method]{plot}} function displays visual
+#'   \code{\link[=plot,bdpbinomial-method]{plot}} function displays visual
 #'   outputs as well.
 #'
 #' An object of class \code{bdpbinomial} is a list containing at least
@@ -141,7 +141,7 @@
 #'
 #' @seealso \code{\link[=summary,bdpbinomial-method]{summary}},
 #'   \code{\link[=print,bdpbinomial-method]{print}},
-#'   and \code{\link[=plot,bdpbinomial,ANY-method]{plot}} for details of each of the
+#'   and \code{\link[=plot,bdpbinomial-method]{plot}} for details of each of the
 #'   supported methods.
 #'
 #' @references
@@ -187,6 +187,7 @@
 #' @import methods
 #' @importFrom stats sd density is.empty.model median model.offset
 #'   model.response pweibull quantile rbeta rgamma rnorm var vcov
+#' @aliases bdpbinomial-method
 #' @aliases bdpbinomial,ANY-method
 #' @export bdpbinomial
 bdpbinomial <- setClass("bdpbinomial",

@@ -2,6 +2,7 @@
 % Please edit documentation in R/bdpnormal.R
 \name{bdpnormal}
 \alias{bdpnormal}
+\alias{bdpnormal-method}
 \alias{bdpnormal,ANY-method}
 \title{Bayesian Discount Prior: Gaussian mean values}
 \usage{
@@ -105,7 +106,7 @@ control. If \code{compare=TRUE}, the comparison object is accessible in the
   functions \code{\link[=summary,bdpnormal-method]{summary}} and
   \code{\link[=print,bdpnormal-method]{print}} are used to obtain and print
   a summary of the results, including user inputs. The
-  \code{\link[=plot,bdpnormal,ANY-method]{plot}} function displays visual
+  \code{\link[=plot,bdpnormal-method]{plot}} function displays visual
   outputs as well.
 
 An object of class \code{bdpnormal} is a list containing at least
@@ -245,6 +246,6 @@ Haddad, T., Himes, A., Thompson, L., Irony, T., Nair, R. MDIC Computer
 \seealso{
 \code{\link[=summary,bdpnormal-method]{summary}},
   \code{\link[=print,bdpnormal-method]{print}},
-  and \code{\link[=plot,bdpnormal,ANY-method]{plot}} for details of each of the
+  and \code{\link[=plot,bdpnormal-method]{plot}} for details of each of the
   supported methods.
 }

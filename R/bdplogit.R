@@ -154,6 +154,7 @@
 #'   lm.fit model.frame model.matrix.default offset terms terms.formula
 #'   coefficients lm qgamma runif glm binomial
 #' @importFrom MCMCpack MCMClogit
+#' @aliases bdplogit-method
 #' @aliases bdplogit,ANY-method
 #' @useDynLib bayesDP
 #' @export bdplogit
@@ -205,21 +206,21 @@ setMethod(
            weibull_scale = 0.135,
            weibull_shape = 3,
            method = "mc") {
-    
+
     ### Check validity of data input
     call <- match.call()
     if (missing(data)) {
       stop("Current data not input correctly.")
     }
-    
+
     if (is.null(data0)) {
       stop("Historical data not input correctly.")
     }
-    
+
     if (method == "mc") {
       stop("Method 'mc' not currently supported.")
     }
-    
+
     ### Parse current data
     mf <- mf0 <- match.call(expand.dots = FALSE)
     m <- match(c("formula", "data"), names(mf), 0L)
@@ -236,7 +237,7 @@ setMethod(
         names(Y) <- nm
       }
     }
-    
+
     X <- if (!is.empty.model(mt)) {
       model.matrixBayes(
         object = mt, data = data, contrasts.arg = NULL,
@@ -245,26 +246,26 @@ setMethod(
     } else {
       matrix(, NROW(Y), 0L)
     }
-    
+
     ### Alter intercept column name, if present
     imatch <- match("(Intercept)", colnames(X))
     if (!is.na(imatch)) colnames(X)[imatch] <- "intercept"
-    
+
     # Create indicator of whether each column is present
     cmatch <- match(c("intercept", "treatment"), colnames(X))
     cmatch <- !is.na(cmatch) ### == TRUE == present
-    
+
     if (!all(cmatch)) {
       stop("Current data is input incorrectly. Intercept and treatment must be present.")
     }
-    
+
     ### Count levels of treatment data and sure 0 and 1 are present
     trt_levels <- levels(as.factor(X[, "treatment"]))
-    
+
     if (!(all(trt_levels %in% c(0, 1)))) {
       stop("Treatment input has wrong levels. Values should be 0 and 1.")
     }
-    
+
     ### Parse historical data
     if (missing(data0)) {
       stop("Historical data is required.")
@@ -286,7 +287,7 @@ setMethod(
           names(Y0) <- nm0
         }
       }
-      
+
       X0 <- if (!is.empty.model(mt0)) {
         model.matrixBayes(
           object = mt0, data = data0, contrasts.arg = NULL,
@@ -295,93 +296,93 @@ setMethod(
       } else {
         matrix(, NROW(Y0), 0L)
       }
-      
+
       ### Alter intercept column name, if present
       imatch <- match("(Intercept)", colnames(X0))
       if (!is.na(imatch)) colnames(X0)[imatch] <- "intercept"
-      
+
       # Create indicator of whether each column is present
       cmatch <- match(c("intercept", "treatment"), colnames(X0))
       cmatch <- !is.na(cmatch) ### == TRUE == present
-      
+
       if (!all(cmatch)) {
         stop("Historical data is input incorrectly. Intercept and treatment must be present.")
       }
-      
+
       cnames <- colnames(X)
       cnames0 <- colnames(X0)
       if (!all(cnames == cnames0)) {
         stop("Column names in the historical data must match the current data.")
       }
-      
+
       ### Count levels of treatment data and ensure 0 and 1 are present
       trt_levels0 <- levels(as.factor(X0[, "treatment"]))
-      
+
       # Check that the levels are 0 and/or 1
       if (!(all(trt_levels0 %in% c(0, 1)))) {
         stop("Treatment input has wrong levels. Values should be 0 and 1.")
       }
     }
-    
+
     ### If method == "mc", fix_alpha must be FALSE
     if (method == "mc" & fix_alpha) {
       stop("mc method not possible with fix_alpha == TRUE. Set fix_alpha == FALSE.")
     }
-    
+
     # Check that discount_function is input correctly
     all_functions <- c("weibull", "scaledweibull", "identity")
     function_match <- match(discount_function, all_functions)
     if (is.na(function_match)) {
       stop("discount_function input incorrectly.")
     }
-    
+
     historical <- NULL
     treatment <- NULL
     intercept <- NULL
-    
+
     ##############################################################################
     # Quick check, if alpha_max, weibull_scale, or weibull_shape have length 1,
     # repeat input twice
     ##############################################################################
-    
+
     if (length(alpha_max) == 1) {
       alpha_max <- rep(alpha_max, 2)
     }
-    
+
     if (length(weibull_scale) == 1) {
       weibull_scale <- rep(weibull_scale, 2)
     }
-    
+
     if (length(weibull_shape) == 1) {
       weibull_shape <- rep(weibull_shape, 2)
     }
-    
+
     ##############################################################################
     # Format input data
     ##############################################################################
-    
+
     ### Create a master dataframe
     df <- data.frame(Y = Y, data.frame(X), historical = 0)
     df0 <- data.frame(Y = Y0, data.frame(X0), historical = 1)
-    
+
     df <- rbind(df, df0)
-    
+
     ### Split data into separate treatment & control dataframes
     df_t <- subset(df, treatment == 1)
     df_c <- subset(df, treatment == 0)
-    
+
     ### Also create current data dataframe
     df_current <- subset(df, historical == 0, select = -intercept)
-    
+
     ### Count number of covariates
     names_df <- names(df)
     covs_df <- names_df[!(names_df %in% c("Y", "intercept", "treatment", "historical"))]
     n_covs <- length(covs_df)
-    
+
     ##############################################################################
     # Estimate discount weights for each of the treatment and control arms
     ##############################################################################
-    
+
     discount_treatment <- discount_logit(
       df = df_t,
       discount_function = discount_function,
@@ -392,7 +393,7 @@ setMethod(
       weibull_scale = weibull_scale[1],
       method = method
     )
-    
+
     discount_control <- discount_logit(
       df = df_c,
       discount_function = discount_function,
@@ -403,70 +404,70 @@ setMethod(
       weibull_scale = weibull_scale[2],
       method = method
     )
-    
+
     ##############################################################################
     # Estimate historical adjusted treatment and control effects to use as the
     # priors for the current data
     ##############################################################################
-    
+
     if (is.null(prior_treatment_effect) | is.null(prior_control_effect) |
         is.null(prior_treatment_sd) | is.null(prior_control_sd)) {
       df0$control <- 1 - df0$treatment
-      
+
       cnames0 <- names(df0)
       cnames0 <- cnames0[!(cnames0 %in% c("Y", "intercept", "historical", "treatment", "control"))]
       cnames0 <- c("treatment", "control", cnames0)
       f0 <- paste0("Y~ -1+", paste0(cnames0, collapse = "+"))
-      
+
       fit_0 <- glm(f0, data = df0, family = binomial)
       summ_0 <- summary(fit_0)
-      
+
       if (is.null(prior_treatment_effect)) prior_treatment_effect <- summ_0$coef[1, 1]
       if (is.null(prior_control_effect)) prior_control_effect <- summ_0$coef[2, 1]
-      
+
       if (is.null(prior_treatment_sd)) prior_treatment_sd <- summ_0$coef[1, 2]
       if (is.null(prior_control_sd)) prior_control_sd <- summ_0$coef[2, 2]
     }
-    
+
     ### Prior covariate effects
     if (length(prior_covariate_effect) == 1) {
       prior_covariate_effect <- rep(prior_covariate_effect, n_covs)
     }
-    
+
     if (length(prior_covariate_sd) == 1) {
       prior_covariate_sd <- rep(prior_covariate_sd, n_covs)
     }
-    
+
     ##############################################################################
     # Estimate augmented treatment effect
     ##############################################################################
-    
+
     ### Compute prior terms
     ### - Covarance/variance needs to be parameterized as precision
     tau2 <- c(1 / prior_treatment_sd, 1 / prior_control_sd, 1 / prior_covariate_sd)^2
     mu0 <- c(prior_treatment_effect, prior_control_effect, prior_covariate_effect)
-    
+
     ### Calculate constants from current data
     df_current$control <- 1 - df_current$treatment
-    
+
     # Create analysis formula
     df_analysis <- df_current[, c("treatment", "control", covs_df)]
     cnames <- names(df_analysis)
     f <- paste0("Y~ -1 +", paste0(cnames, collapse = "+"))
-    
+
     ### Estimation scheme differs conditional on discounting method
     if (method == "fixed") {
-      
+
       ### Extract alpha0, append "zero" weight for the covariate effect(s)
       alpha0 <- c(
         discount_treatment$alpha_discount + 1e-12,
         discount_control$alpha_discount + 1e-12,
         rep(1e-12, n_covs)
       )
-      
+
       ### Create precision matrix
       B0 <- diag(alpha0 / tau2)
-      
+
       ### Get Bayesian fit
       fit <- MCMCpack::MCMClogit(f,
                                  data = df_analysis,
@@ -474,39 +475,39 @@ setMethod(
                                  b0 = mu0,
                                  B0 = diag(tau2)
       )
-      
+
       beta_samples <- data.frame(fit)
     } else if (method == "mc") {
       stop("Method 'mc' not currently supported.")
     }
-    
+
     ### Estimate posterior of intercept and treatment effect
     beta_samples$intercept <- beta_samples$control
     beta_samples$treatment <- beta_samples$treatment - beta_samples$control
-    
+
     ### Format posterior table
     m <- ncol(beta_samples)
     beta_samples <- beta_samples[, c(m, 1, 3:(m - 1))]
-    
+
     ### Format alpha_discount values
     alpha_discount <- data.frame(
       treatment = discount_treatment$alpha_discount,
       control = discount_control$alpha_discount
     )
-    
+
     ### Format estimates
     estimates <- list()
     estimates$coefficients <- data.frame(t(colMeans(beta_samples)))
     estimates$coefficients <- estimates$coefficients[c("intercept", "treatment", covs_df)]
     estimates$se <- data.frame(t(apply(beta_samples, 2, sd)))
     estimates$se <- estimates$se[c("intercept", "treatment", covs_df)]
-    
+
     ### Format input arguments
     args1 <- list(
       call = call,
       data = df
     )
-    
+
     ### Format output
     me <- list(
       posterior = beta_samples,
@@ -514,7 +515,7 @@ setMethod(
       estimates = estimates,
       args1 = args1
     )
-    
+
     class(me) <- "bdplm"
     return(me)
   }
@@ -532,20 +533,20 @@ discount_logit <- function(df, discount_function, alpha_max, fix_alpha,
                            number_mcmc_alpha,
                            weibull_shape, weibull_scale,
                            method) {
-  
+
   # Create formula
   cnames <- names(df)
   cnames <- cnames[!(cnames %in% c("Y", "intercept", "historical", "treatment"))]
   cnames <- c("historical", cnames)
   f <- paste0("Y~", paste0(cnames, collapse = "+"))
-  
+
   ### Get Bayesian fit
   fit <- MCMCpack::MCMClogit(f, data = df, mcmc = number_mcmc_alpha)
   posterior <- data.frame(fit)
-  
+
   ### Monte Carlo simulations of historical effect
   beta <- posterior$historical
-  
+
   ### Compute posterior comparison
   if (method == "fixed") {
     p_hat <- mean(beta > 0)
@@ -555,12 +556,12 @@ discount_logit <- function(df, discount_function, alpha_max, fix_alpha,
     # Z     <- abs(beta)/sigma2_beta
     # p_hat <- 2*(1-pnorm(Z))
   }
-  
+
   ### Compute alpha, the discount weight
   if (fix_alpha) {
     alpha_discount <- alpha_max
   } else {
-    
+
     # Compute alpha discount based on distribution
     if (discount_function == "weibull") {
       alpha_discount <- pweibull(p_hat,
@@ -569,7 +570,7 @@ discount_logit <- function(df, discount_function, alpha_max, fix_alpha,
       ) * alpha_max
     } else if (discount_function == "scaledweibull") {
       max_p <- pweibull(1, shape = weibull_shape, scale = weibull_scale)
-      
+
       alpha_discount <- pweibull(p_hat,
                                  shape = weibull_shape,
                                  scale = weibull_scale
@@ -578,7 +579,7 @@ discount_logit <- function(df, discount_function, alpha_max, fix_alpha,
       alpha_discount <- p_hat * alpha_max
     }
   }
-  
+
   res <- list(
     p_hat = p_hat,
     alpha_discount = alpha_discount
@@ -594,7 +595,7 @@ model.matrixBayes <- function(object, data = environment(object), contrasts.arg 
   } else {
     terms.formula(object, data = data, keep.order = keep.order)
   }
-  
+
   attr(t, "intercept") <- attr(object, "intercept")
   if (is.null(attr(data, "terms"))) {
     data <- model.frame(object, data, xlev = xlev)
@@ -607,7 +608,7 @@ model.matrixBayes <- function(object, data = environment(object), contrasts.arg 
       data <- data[, reorder, drop = FALSE]
     }
   }
-  
+
   int <- attr(t, "response")
   if (length(data)) { # otherwise no rhs terms, so skip all this
     if (drop.baseline) {
@@ -615,9 +616,9 @@ model.matrixBayes <- function(object, data = environment(object), contrasts.arg 
     } else {
       contr.funs <- as.character(list("contr.bayes.unordered", "contr.bayes.ordered"))
     }
-    
+
     namD <- names(data)
-    
+
     ## turn  character columns into factors
     for (i in namD) {
       if (is.character(data[[i]])) {
@@ -633,7 +634,7 @@ model.matrixBayes <- function(object, data = environment(object), contrasts.arg 
         contrasts(data[[nn]]) <- contr.funs[1 + isOF[nn]]
       }
     }
-    
+
     ## it might be safer to have numerical contrasts:
     ##    get(contr.funs[1 + isOF[nn]])(nlevels(data[[nn]]))
     if (!is.null(contrasts.arg) && is.list(contrasts.arg)) {
