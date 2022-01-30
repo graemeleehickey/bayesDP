@@ -1,3 +1,7 @@
+# bayesDP 1.3.6
+
+* Fixed CRAN CMD warnings for S4 generics
+
 # bayesDP 1.3.5
 
 * Fixed CRAN CMD warnings for S4 generics

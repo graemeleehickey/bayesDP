@@ -20,3 +20,4 @@
 ^appveyor\.yml$
 inst/image
 ^\.github$
+^CRAN-SUBMISSION$
