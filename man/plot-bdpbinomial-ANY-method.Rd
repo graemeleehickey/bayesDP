@@ -13,7 +13,7 @@
 \item{type}{character. Optional. Select plot type to print. Supports the
 following: "discount" gives the discount function; "posteriors" gives the
 posterior plots of the event rates; and "density" gives the augmented
-posterior density plot(s).  Leave NULL to display all plots in sequence.}
+posterior density plot(s). Leave NULL to display all plots in sequence.}
 
 \item{print}{logical. Optional. Produce a plot (\code{print = TRUE}; default)
 or return a ggplot object (\code{print = FALSE}). When \code{print =

@@ -305,13 +305,13 @@ setMethod("plot", signature(x = "bdpnormal"), function(x, type = NULL, print = T
 
 #' @title bdpbinomial Object Plot
 #' @description \code{plot} method for class \code{bdpbinomial}.
+#'
 #' @param x object of class \code{bdpbinomial}. The result of a call to the
 #'   \code{\link{bdpbinomial}} function.
 #' @param type character. Optional. Select plot type to print. Supports the
 #'   following: "discount" gives the discount function; "posteriors" gives the
 #'   posterior plots of the event rates; and "density" gives the augmented
-#'   posterior density plot(s).  Leave NULL to display all plots in sequence.
-#'
+#'   posterior density plot(s). Leave NULL to display all plots in sequence.
 #' @param print logical. Optional. Produce a plot (\code{print = TRUE}; default)
 #'   or return a ggplot object (\code{print = FALSE}). When \code{print =
 #'   FALSE}, it is possible to use \code{ggplot2} syntax to modify the plot
@@ -588,12 +588,12 @@ setMethod("plot", signature(x = "bdpbinomial"), function(x, type = NULL, print =
 
 #' @title bdpsurvival Object Plot
 #' @description \code{plot} method for class \code{bdpsurvival}.
+#'
 #' @param x object of class \code{bdpsurvival}. The result of a call to the
 #'   \code{\link{bdpsurvival}} function.
 #' @param type character. Optional. Select plot type to print. Supports the
 #'   following: "discount" gives the discount function and "survival" gives the
-#'   survival curves.  Leave NULL to display all plots in sequence.
-#'
+#'   survival curves. Leave NULL to display all plots in sequence.
 #' @param print logical. Optional. Produce a plot (\code{print = TRUE}; default)
 #'   or return a ggplot object (\code{print = FALSE}). When \code{print =
 #'   FALSE}, it is possible to use \code{ggplot2} syntax to modify the plot
