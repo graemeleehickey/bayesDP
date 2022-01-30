@@ -11,8 +11,6 @@
 [![License](https://img.shields.io/badge/license-GPL%20%28%3E=%203%29-brightgreen.svg?style=flat)](https://www.gnu.org/licenses/gpl-3.0.html)
 [![Codecov test
 coverage](https://codecov.io/gh/graemeleehickey/bayesDP/branch/master/graph/badge.svg)](https://app.codecov.io/gh/graemeleehickey/bayesDP?branch=master)
-[![AppVeyor build
-status](https://ci.appveyor.com/api/projects/status/github/graemeleehickey/bayesDP?branch=master&svg=true)](https://ci.appveyor.com/project/graemeleehickey/bayesDP)
 [![R build
 status](https://github.com/graemeleehickey/bayesDP/workflows/R-CMD-check/badge.svg)](https://github.com/graemeleehickey/bayesDP/actions)
 <!-- badges: end -->
