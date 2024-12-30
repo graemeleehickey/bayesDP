@@ -6,6 +6,7 @@
 * Fixed logical check in `bdpsurvival`
 * Fixed spelling mistakes in documentation
 * Minor formatting updates
+* Add reverse dependency checks
 
 # bayesDP 1.3.6
 

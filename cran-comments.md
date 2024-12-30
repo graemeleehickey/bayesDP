@@ -1,19 +1,25 @@
 ## Other notes
 
-* Per email from Kurt Hornik, this update fixes WARNING for S4 plot generic.
+Addresses all NOTES from CRAN Package Check Results.
 
 ## Test environments
 
-* local macOS (Big Sur) install, R 4.1.2 patched
+* local macOS (Sonoma 14.6.1) install, R 4.4.2
 * ubuntu (via GitHub actions, release + devel)
 * macOS (via GitHub actions, release)
+* windows (via appveyor CI, release)
 * windows (via GitHub actions, release)
-* windows (via win-builder, release + devel)
+* windows (via win-builder, old + release + devel)
 
 ## R CMD check results
 
-0 errors | 0 warnings | 0 notes
+0 errors | 0 warnings | 1 notes
+
+Win-Builder NOTE: "checking CRAN incoming feasibility ... NOTE"
 
 ## Reverse dependencies
 
-No changes in this package affect `bayesCT` package dependency.
+We checked 1 reverse dependencies, comparing R CMD check results across CRAN and dev versions of this package.
+
+ * We saw 0 new problems
+ * We failed to check 0 packages

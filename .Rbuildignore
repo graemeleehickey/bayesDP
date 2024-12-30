@@ -21,3 +21,4 @@
 inst/image
 ^\.github$
 ^CRAN-SUBMISSION$
+revdep
