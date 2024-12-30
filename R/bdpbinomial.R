@@ -1,8 +1,10 @@
 #' @title Bayesian Discount Prior: Binomial counts
-#' @description \code{bdpbinomial} is used for estimating posterior samples from a
-#'   binomial outcome where an informative prior is used. The prior weight
-#'   is determined using a discount function. This code is modeled after
-#'   the methodologies developed in Haddad et al. (2017).
+#'
+#' @description \code{bdpbinomial} is used for estimating posterior samples from
+#'   a binomial outcome where an informative prior is used. The prior weight is
+#'   determined using a discount function. This code is modeled after the
+#'   methodologies developed in Haddad et al. (2017).
+#'
 #' @param y_t scalar. Number of events for the current treatment group.
 #' @param N_t scalar. Sample size of the current treatment group.
 #' @param y0_t scalar. Number of events for the historical treatment group.
@@ -13,8 +15,8 @@
 #' @param N0_c scalar. Sample size of the historical control group.
 #' @param discount_function character. Specify the discount function to use.
 #'   Currently supports \code{weibull}, \code{scaledweibull}, and
-#'   \code{identity}. The discount function \code{scaledweibull} scales
-#'   the output of the Weibull CDF to have a max value of 1. The \code{identity}
+#'   \code{identity}. The discount function \code{scaledweibull} scales the
+#'   output of the Weibull CDF to have a max value of 1. The \code{identity}
 #'   discount function uses the posterior probability directly as the discount
 #'   weight. Default value is "\code{identity}".
 #' @param alpha_max scalar. Maximum weight the discount function can apply.
@@ -27,28 +29,33 @@
 #'   value is 3. For a two-arm trial, users may specify a vector of two values
 #'   where the first value is used to estimate the weight of the historical
 #'   treatment group and the second value is used to estimate the weight of the
-#'   historical control group. Not used when \code{discount_function} = "identity".
+#'   historical control group. Not used when \code{discount_function} =
+#'   "identity".
 #' @param weibull_scale scalar. Scale parameter of the Weibull discount function
 #'   used to compute alpha, the weight parameter of the historical data. Default
-#'   value is 0.135. For a two-arm trial, users may specify a vector of two values
-#'   where the first value is used to estimate the weight of the historical
-#'   treatment group and the second value is used to estimate the weight of the
-#'   historical control group. Not used when \code{discount_function} = "identity".
-#' @param number_mcmc scalar. Number of Monte Carlo simulations. Default is 10000.
+#'   value is 0.135. For a two-arm trial, users may specify a vector of two
+#'   values where the first value is used to estimate the weight of the
+#'   historical treatment group and the second value is used to estimate the
+#'   weight of the historical control group. Not used when
+#'   \code{discount_function} = "identity".
+#' @param number_mcmc scalar. Number of Monte Carlo simulations. Default is
+#'   10000.
 #' @param a0 scalar. Prior value for the beta rate. Default is 1.
 #' @param b0 scalar. Prior value for the beta rate. Default is 1.
-#' @param method character. Analysis method with respect to estimation of the weight
-#'   paramter alpha. Default method "\code{mc}" estimates alpha for each
-#'   Monte Carlo iteration. Alternate value "\code{fixed}" estimates alpha once and
-#'   holds it fixed throughout the analysis. See the the \code{bdpbinomial} vignette \cr
-#'   \code{vignette("bdpbinomial-vignette", package="bayesDP")} for more details.
+#' @param method character. Analysis method with respect to estimation of the
+#'   weight parameter alpha. Default method "\code{mc}" estimates alpha for each
+#'   Monte Carlo iteration. Alternate value "\code{fixed}" estimates alpha once
+#'   and holds it fixed throughout the analysis. See the the \code{bdpbinomial}
+#'   vignette \cr \code{vignette("bdpbinomial-vignette", package="bayesDP")} for
+#'   more details.
 #' @param compare logical. Should a comparison object be included in the fit?
-#'   For a one-arm analysis, the comparison object is simply the posterior
-#'   chain of the treatment group parameter. For a two-arm analysis, the comparison
-#'   object is the posterior chain of the treatment effect that compares treatment and
-#'   control. If \code{compare=TRUE}, the comparison object is accessible in the
-#'   \code{final} slot, else the \code{final} slot is \code{NULL}. Default is
-#'   \code{TRUE}.
+#'   For a one-arm analysis, the comparison object is simply the posterior chain
+#'   of the treatment group parameter. For a two-arm analysis, the comparison
+#'   object is the posterior chain of the treatment effect that compares
+#'   treatment and control. If \code{compare=TRUE}, the comparison object is
+#'   accessible in the \code{final} slot, else the \code{final} slot is
+#'   \code{NULL}. Default is \code{TRUE}.
+#'
 #' @details \code{bdpbinomial} uses a two-stage approach for determining the
 #'   strength of historical data in estimation of a binomial count mean outcome.
 #'   In the first stage, a \emph{discount function} is used that that defines
@@ -56,87 +63,89 @@
 #'   disagreement with the current data. Disagreement between current and
 #'   historical data is determined by stochastically comparing the respective
 #'   posterior distributions under noninformative priors. With binomial data,
-#'   the comparison is the proability (\code{p}) that the current count is less
+#'   the comparison is the probability (\code{p}) that the current count is less
 #'   than the historical count. The comparison metric \code{p} is then input
 #'   into the Weibull discount function and the final strength of the historical
 #'   data is returned (alpha).
 #'
-#'  In the second stage, posterior estimation is performed where the discount
-#'  function parameter, \code{alpha}, is used incorporated in all posterior
-#'  estimation procedures.
+#'   In the second stage, posterior estimation is performed where the discount
+#'   function parameter, \code{alpha}, is used incorporated in all posterior
+#'   estimation procedures.
 #'
-#'  To carry out a single arm (OPC) analysis, data for the current treatment
-#'  (\code{y_t} and \code{N_t}) and historical treatment (\code{y0_t} and
-#'  \code{N0_t}) must be input. The results are then based on the posterior
-#'  distribution of the current data augmented by the historical data.
+#'   To carry out a single arm (OPC) analysis, data for the current treatment
+#'   (\code{y_t} and \code{N_t}) and historical treatment (\code{y0_t} and
+#'   \code{N0_t}) must be input. The results are then based on the posterior
+#'   distribution of the current data augmented by the historical data.
 #'
-#'  To carry our a two-arm (RCT) analysis, data for the current treatment and
-#'  at least one of current or historical control data must be input. The results
-#'  are then based on the posterior distribution of the difference between
-#'  current treatment and control, augmented by available historical data.
+#'   To carry our a two-arm (RCT) analysis, data for the current treatment and
+#'   at least one of current or historical control data must be input. The
+#'   results are then based on the posterior distribution of the difference
+#'   between current treatment and control, augmented by available historical
+#'   data.
 #'
 #'   For more details, see the \code{bdpbinomial} vignette: \cr
 #'   \code{vignette("bdpbinomial-vignette", package="bayesDP")}
 #'
 #' @return \code{bdpbinomial} returns an object of class "bdpbinomial". The
 #'   functions \code{\link[=summary,bdpbinomial-method]{summary}} and
-#'   \code{\link[=print,bdpbinomial-method]{print}} are used to obtain and
-#'   print a summary of the results, including user inputs. The
+#'   \code{\link[=print,bdpbinomial-method]{print}} are used to obtain and print
+#'   a summary of the results, including user inputs. The
 #'   \code{\link[=plot,bdpbinomial-method]{plot}} function displays visual
 #'   outputs as well.
 #'
-#' An object of class \code{bdpbinomial} is a list containing at least
-#' the following components:
+#'   An object of class \code{bdpbinomial} is a list containing at least the
+#'   following components:
 #'
 #' \describe{
 #'  \item{\code{posterior_treatment}}{
-#'    list. Entries contain values related to the treatment group:}
+#'    list. Entries contain values related to the treatment group:
 #'    \itemize{
-#'      \item{\code{alpha_discount}}{
-#'        numeric. Alpha value, the weighting parameter of the historical data.}
-#'      \item{\code{p_hat}}{
+#'      \item \code{alpha_discount}
+#'        numeric. Alpha value, the weighting parameter of the historical data.
+#'      \item \code{p_hat}
 #'        numeric. The posterior probability of the stochastic comparison
-#'        between the current and historical data.}
-#'      \item{\code{posterior}}{
+#'        between the current and historical data.
+#'      \item \code{posterior}
 #'        vector. A vector of length \code{number_mcmc} containing
 #'        posterior Monte Carlo samples of the event rate of the treatment
 #'        group. If historical treatment data is present, the posterior
-#'        incorporates the weighted historical data.}
-#'      \item{\code{posterior_flat}}{
+#'        incorporates the weighted historical data.
+#'      \item \code{posterior_flat}
 #'        vector. A vector of length \code{number_mcmc} containing
 #'        Monte Carlo samples of the event rate of the current treatment group
 #'        under a flat/non-informative prior, i.e., no incorporation of the
-#'        historical data.}
-#'      \item{\code{prior}}{
+#'        historical data.
+#'      \item \code{prior}
 #'        vector. If historical treatment data is present, a vector of length
 #'        \code{number_mcmc} containing Monte Carlo samples of the event rate
-#'        of the historical treatment group under a flat/non-informative prior.}
-#'   }
+#'        of the historical treatment group under a flat/non-informative prior.
+#'    }
+#'  }
 #'  \item{\code{posterior_control}}{
 #'    list. Similar entries as \code{posterior_treament}. Only present if a
 #'    control group is specified.}
-#'
 #'  \item{\code{final}}{
-#'    list. Contains the final comparison object, dependent on the analysis type:}
+#'    list. Contains the final comparison object, dependent on the analysis type:
 #'    \itemize{
-#'      \item{One-arm analysis:}{
-#'        vector. Posterior chain of binomial proportion.}
-#'      \item{Two-arm analysis:}{
+#'      \item One-arm analysis:
+#'        vector. Posterior chain of binomial proportion.
+#'      \item Two-arm analysis:
 #'        vector. Posterior chain of binomial proportion difference comparing
-#'        treatment and control groups.}
-#'   }
-#'
+#'        treatment and control groups.
+#'    }
+#'  }
 #'  \item{\code{args1}}{
 #'    list. Entries contain user inputs. In addition, the following elements
-#'    are ouput:}
+#'    are output:
 #'    \itemize{
-#'      \item{\code{arm2}}{
+#'      \item \code{arm2}
 #'        binary indicator. Used internally to indicate one-arm or two-arm
-#'        analysis.}
-#'      \item{\code{intent}}{
+#'        analysis.
+#'      \item \code{intent}
 #'        character. Denotes current/historical status of treatment and
-#'        control groups.}
-#'   }
+#'        control groups.
+#'    }
+#'  }
 #' }
 #'
 #' @seealso \code{\link[=summary,bdpbinomial-method]{summary}},

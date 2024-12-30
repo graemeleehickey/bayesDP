@@ -1,3 +1,12 @@
+# bayesDP 1.3.7
+
+* Updated GitHub actions workflows
+* Updated README badges
+* Fixed .Rd file itemize list for `bdpbinomial`, `bdpnormal`, and `bdpsurvival`
+* Fixed logical check in `bdpsurvival`
+* Fixed spelling mistakes in documentation
+* Minor formatting updates
+
 # bayesDP 1.3.6
 
 * Fixed CRAN CMD warnings for S4 generics
@@ -12,7 +21,7 @@
 * Updates to .gitignore file
 * Add codecov for coverage checking
 * Updates to R code formatting
-* Added GitHub Actions CI.
+* Added GitHub Actions CI
 
 # bayesDP 1.3.3
 

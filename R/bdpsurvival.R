@@ -1,33 +1,35 @@
 #' @title Bayesian Discount Prior: Survival Analysis
+#'
 #' @description \code{bdpsurvival} is used to estimate the survival probability
 #'   (single arm trial; OPC) or hazard ratio (two-arm trial; RCT) for
 #'   right-censored data using the survival analysis implementation of the
 #'   Bayesian discount prior. In the current implementation, a two-arm analysis
 #'   requires all of current treatment, current control, historical treatment,
-#'   and historical control data. This code is modeled after
-#'   the methodologies developed in Haddad et al. (2017).
+#'   and historical control data. This code is modeled after the methodologies
+#'   developed in Haddad et al. (2017).
+#'
 #' @param formula an object of class "formula." Must have a survival object on
 #'   the left side and at most one input on the right side, treatment. See
 #'   "Details" for more information.
 #' @param data a data frame containing the current data variables in the model.
-#'   Columns denoting 'time' and 'status' must be present. See "Details" for required
-#'   structure.
-#' @param data0 optional. A data frame containing the historical data variables in the model.
-#'   If present, the column labels of data and data0 must match.
-#' @param breaks vector. Breaks (interval starts) used to compose the breaks of the
-#'   piecewise exponential model. Do not include zero. Default breaks are the
-#'   quantiles of the input times.
+#'   Columns denoting 'time' and 'status' must be present. See "Details" for
+#'   required structure.
+#' @param data0 optional. A data frame containing the historical data variables
+#'   in the model. If present, the column labels of data and data0 must match.
+#' @param breaks vector. Breaks (interval starts) used to compose the breaks of
+#'   the piecewise exponential model. Do not include zero. Default breaks are
+#'   the quantiles of the input times.
 #' @param a0 scalar. Prior value for the gamma shape of the piecewise
 #'   exponential hazards. Default is 0.1.
-#' @param b0 scalar. Prior value for the gamma rate of the piecewise
-#'   exponential hazards. Default is 0.1.
+#' @param b0 scalar. Prior value for the gamma rate of the piecewise exponential
+#'   hazards. Default is 0.1.
 #' @param surv_time scalar. Survival time of interest for computing the
-#'   probability of survival for a single arm (OPC) trial. Default is
-#'   overall, i.e., current+historical, median survival time.
+#'   probability of survival for a single arm (OPC) trial. Default is overall,
+#'   i.e., current+historical, median survival time.
 #' @param discount_function character. Specify the discount function to use.
 #'   Currently supports \code{weibull}, \code{scaledweibull}, and
-#'   \code{identity}. The discount function \code{scaledweibull} scales
-#'   the output of the Weibull CDF to have a max value of 1. The \code{identity}
+#'   \code{identity}. The discount function \code{scaledweibull} scales the
+#'   output of the Weibull CDF to have a max value of 1. The \code{identity}
 #'   discount function uses the posterior probability directly as the discount
 #'   weight. Default value is "\code{identity}".
 #' @param alpha_max scalar. Maximum weight the discount function can apply.
@@ -35,7 +37,8 @@
 #'   where the first value is used to weight the historical treatment group and
 #'   the second value is used to weight the historical control group.
 #' @param fix_alpha logical. Fix alpha at alpha_max? Default value is FALSE.
-#' @param number_mcmc scalar. Number of Monte Carlo simulations. Default is 10000.
+#' @param number_mcmc scalar. Number of Monte Carlo simulations. Default is
+#'   10000.
 #' @param weibull_shape scalar. Shape parameter of the Weibull discount function
 #'   used to compute alpha, the weight parameter of the historical data. Default
 #'   value is 3. For a two-arm trial, users may specify a vector of two values
@@ -48,120 +51,124 @@
 #'   values where the first value is used to estimate the weight of the
 #'   historical treatment group and the second value is used to estimate the
 #'   weight of the historical control group.
-#' @param method character. Analysis method with respect to estimation of the weight
-#'   paramter alpha. Default method "\code{mc}" estimates alpha for each
+#' @param method character. Analysis method with respect to estimation of the
+#'   weight parameter alpha. Default method "\code{mc}" estimates alpha for each
 #'   Monte Carlo iteration. Alternate value "\code{fixed}" estimates alpha once
-#'   and holds it fixed throughout the analysis.  See the the
-#'   \code{bdpsurvival} vignette \cr
-#'   \code{vignette("bdpsurvival-vignette", package="bayesDP")} for more details.
+#'   and holds it fixed throughout the analysis.  See the the \code{bdpsurvival}
+#'   vignette \cr \code{vignette("bdpsurvival-vignette", package="bayesDP")} for
+#'   more details.
 #' @param compare logical. Should a comparison object be included in the fit?
-#'   For a one-arm analysis, the comparison object is simply the posterior
-#'   chain of the treatment group parameter. For a two-arm analysis, the comparison
-#'   object is the posterior chain of the treatment effect that compares treatment and
-#'   control. If \code{compare=TRUE}, the comparison object is accessible in the
-#'   \code{final} slot, else the \code{final} slot is \code{NULL}. Default is
-#'   \code{TRUE}.
+#'   For a one-arm analysis, the comparison object is simply the posterior chain
+#'   of the treatment group parameter. For a two-arm analysis, the comparison
+#'   object is the posterior chain of the treatment effect that compares
+#'   treatment and control. If \code{compare=TRUE}, the comparison object is
+#'   accessible in the \code{final} slot, else the \code{final} slot is
+#'   \code{NULL}. Default is \code{TRUE}.
+#'
 #' @details \code{bdpsurvival} uses a two-stage approach for determining the
-#'   strength of historical data in estimation of a survival probability outcome.
-#'   In the first stage, a \emph{discount function} is used that
-#'   that defines the maximum strength of the
-#'   historical data and discounts based on disagreement with the current data.
-#'   Disagreement between current and historical data is determined by stochastically
-#'   comparing the respective posterior distributions under noninformative priors.
-#'   With a single arm survival data analysis, the comparison is the
-#'   probability (\code{p}) that the current survival is less than the historical
-#'   survival. For a two-arm survival data, analysis the comparison is the
-#'   probability that the hazard ratio comparing treatment and control is
-#'   different from zero. The comparison metric \code{p} is then
-#'   input into the discount function and the final strength of the
-#'   historical data is returned (alpha).
+#'   strength of historical data in estimation of a survival probability
+#'   outcome. In the first stage, a \emph{discount function} is used that that
+#'   defines the maximum strength of the historical data and discounts based on
+#'   disagreement with the current data. Disagreement between current and
+#'   historical data is determined by stochastically comparing the respective
+#'   posterior distributions under noninformative priors. With a single arm
+#'   survival data analysis, the comparison is the probability (\code{p}) that
+#'   the current survival is less than the historical survival. For a two-arm
+#'   survival data, analysis the comparison is the probability that the hazard
+#'   ratio comparing treatment and control is different from zero. The
+#'   comparison metric \code{p} is then input into the discount function and the
+#'   final strength of the historical data is returned (alpha).
 #'
 #'   In the second stage, posterior estimation is performed where the discount
 #'   function parameter, \code{alpha}, is used incorporated in all posterior
 #'   estimation procedures.
 #'
 #'   To carry out a single arm (OPC) analysis, data for the current and
-#'   historical treatments are specified in separate data frames, data and data0,
-#'   respectively. The data frames must have matching columns denoting time and status.
-#'   The 'time' column is the survival (censor) time of the event and the 'status' column
-#'   is the event indicator. The results are then based on the posterior probability of
-#'   survival at \code{surv_time} for the current data augmented by the historical data.
+#'   historical treatments are specified in separate data frames, data and
+#'   data0, respectively. The data frames must have matching columns denoting
+#'   time and status. The 'time' column is the survival (censor) time of the
+#'   event and the 'status' column is the event indicator. The results are then
+#'   based on the posterior probability of survival at \code{surv_time} for the
+#'   current data augmented by the historical data.
 #'
 #'   Two-arm (RCT) analyses are specified similarly to a single arm trial. Again
 #'   the input data frames must have columns denoting time and status, but now
-#'   an additional column named 'treatment' is required to denote treatment and control
-#'   data. The 'treatment' column must use 0 to indicate the control group. The current data
-#'   are augmented by historical data (if present) and the results are then based
-#'   on the posterior distribution of the hazard ratio between the treatment
-#'   and control groups.
+#'   an additional column named 'treatment' is required to denote treatment and
+#'   control data. The 'treatment' column must use 0 to indicate the control
+#'   group. The current data are augmented by historical data (if present) and
+#'   the results are then based on the posterior distribution of the hazard
+#'   ratio between the treatment and control groups.
 #'
 #'   For more details, see the \code{bdpsurvival} vignette: \cr
 #'   \code{vignette("bdpsurvival-vignette", package="bayesDP")}
 #'
-#' @return \code{bdpsurvival} returns an object of class "bdpsurvival".
-#' The functions \code{\link[=summary,bdpsurvival-method]{summary}} and \code{\link[=print,bdpsurvival-method]{print}} are used to obtain and
-#' print a summary of the results, including user inputs. The \code{\link[=plot,bdpsurvival-method]{plot}}
-#' function displays visual outputs as well.
+#' @return \code{bdpsurvival} returns an object of class "bdpsurvival". The
+#'   functions \code{\link[=summary,bdpsurvival-method]{summary}} and
+#'   \code{\link[=print,bdpsurvival-method]{print}} are used to obtain and print
+#'   a summary of the results, including user inputs. The
+#'   \code{\link[=plot,bdpsurvival-method]{plot}} function displays visual
+#'   outputs as well.
 #'
 #' An object of class "\code{bdpsurvival}" is a list containing at least
 #' the following components:
 #' \describe{
 #'  \item{\code{posterior_treatment}}{
-#'    list. Entries contain values related to the treatment group:}
+#'    list. Entries contain values related to the treatment group:
 #'    \itemize{
-#'      \item{\code{alpha_discount}}{
-#'        numeric. Alpha value, the weighting parameter of the historical data.}
-#'      \item{\code{p_hat}}{
+#'      \item \code{alpha_discount}
+#'        numeric. Alpha value, the weighting parameter of the historical data.
+#'      \item \code{p_hat}
 #'        numeric. The posterior probability of the stochastic comparison
-#'        between the current and historical data.}
-#'      \item{\code{posterior_survival}}{
+#'        between the current and historical data.
+#'      \item \code{posterior_survival}
 #'        vector. If one-arm trial, a vector of length \code{number_mcmc}
 #'        containing the posterior probability draws of survival at
-#'        \code{surv_time}.}
-#'      \item{\code{posterior_flat_survival}}{
+#'        \code{surv_time}.
+#'      \item \code{posterior_flat_survival}
 #'        vector. If one-arm trial, a vector of length \code{number_mcmc}
 #'        containing the probability draws of survival at \code{surv_time}
-#'        for the current treatment not augmented by historical treatment.}
-#'      \item{\code{prior_survival}}{
+#'        for the current treatment not augmented by historical treatment.
+#'      \item \code{prior_survival}
 #'        vector. If one-arm trial, a vector of length \code{number_mcmc}
 #'        containing the probability draws of survival at \code{surv_time}
-#'        for the historical treatment.}
-#'      \item{\code{posterior_hazard}}{
+#'        for the historical treatment.
+#'      \item \code{posterior_hazard}
 #'        matrix. A matrix with \code{number_mcmc} rows and \code{length(breaks)}
 #'        columns containing the posterior draws of the piecewise hazards
-#'        for each interval break point.}
-#'      \item{\code{posterior_flat_hazard}}{
+#'        for each interval break point.
+#'      \item \code{posterior_flat_hazard}
 #'        matrix. A matrix with \code{number_mcmc} rows and \code{length(breaks)}
 #'        columns containing the draws of piecewise hazards for each interval
-#'        break point for current treatment not augmented by historical treatment.}
-#'      \item{\code{prior_hazard}}{
+#'        break point for current treatment not augmented by historical treatment.
+#'      \item \code{prior_hazard}
 #'        matrix. A matrix with \code{number_mcmc} rows and \code{length(breaks)}
 #'        columns containing the draws of piecewise hazards for each interval break point
-#'        for historical treatment.}
-#'   }
+#'        for historical treatment.
+#'    }
+#'  }
 #'  \item{\code{posterior_control}}{
 #'    list. If two-arm trial, contains values related to the control group
-#'    analagous to the \code{posterior_treatment} output.}
-#'
+#'    analogous to the \code{posterior_treatment} output.}
 #'  \item{\code{final}}{
-#'    list. Contains the final comparison object, dependent on the analysis type:}
+#'    list. Contains the final comparison object, dependent on the analysis type:
 #'    \itemize{
-#'      \item{One-arm analysis:}{
-#'        vector. Posterior chain of survival probability at requested time.}
-#'      \item{Two-arm analysis:}{
-#'        vector. Posterior chain of log-hazard rate comparing treatment and control groups.}
-#'   }
-#'
+#'      \item One-arm analysis:
+#'        vector. Posterior chain of survival probability at requested time.
+#'      \item Two-arm analysis:
+#'        vector. Posterior chain of log-hazard rate comparing treatment and control groups.
+#'    }
+#'  }
 #'  \item{\code{args1}}{
 #'    list. Entries contain user inputs. In addition, the following elements
-#'    are ouput:}
+#'    are output:
 #'    \itemize{
-#'      \item{\code{S_t}, \code{S_c}, \code{S0_t}, \code{S0_c}}{
+#'      \item \code{S_t}, \code{S_c}, \code{S0_t}, \code{S0_c}
 #'        survival objects. Used internally to pass survival data between
-#'        functions.}
-#'      \item{\code{arm2}}{
-#'        logical. Used internally to indicate one-arm or two-arm analysis.}
-#'   }
+#'        functions.
+#'      \item \code{arm2}
+#'        logical. Used internally to indicate one-arm or two-arm analysis.
+#'    }
+#'  }
 #' }
 #'
 #' @seealso \code{\link[=summary,bdpsurvival-method]{summary}},
@@ -245,7 +252,7 @@
 #' @import methods
 #' @importFrom stats sd density is.empty.model median model.offset
 #'   model.response pweibull quantile rbeta rgamma rnorm var vcov update
-#' @importFrom survival Surv survSplit
+#' @importFrom survival Surv survSplit is.Surv
 #' @aliases bdpsurvival-method
 #' @aliases bdpsurvival,ANY-method
 #' @export bdpsurvival
@@ -323,7 +330,7 @@ setMethod(
       }
     }
 
-    if (class(Y) != "Surv") stop("Data input incorrectly.")
+    if (!is.Surv(Y)) stop("Data input incorrectly.")
 
     ##############################################################################
     ### Parse historical data
