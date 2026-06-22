@@ -1,13 +1,7 @@
 # bayesDP 1.3.7.9000
 
-* Removed AppVeyor continuous integration
-* Replaced deprecated `ggplot2::aes_string()` with `aes()` and the `.data`
-  pronoun in all `plot` methods
-* Replaced deprecated `size` aesthetic with `linewidth` in `geom_line()` calls
-* De-duplicated the internal `model.matrixBayes()` helper (previously defined
-  identically in both `bdplm` and `bdplogit`) into a single internal file
-* Removed leftover commented-out debugging code
-* Removed a redundant `useDynLib()` directive in the package namespace
+## Bug fixes
+
 * Fixed a bug where the `summary` methods for `bdpnormal` and `bdpbinomial`
   read the one-/two-arm indicator from the wrong list element (`args` instead
   of `args1`), causing two-arm fits to be summarised as one-arm
@@ -22,6 +16,9 @@
 * Fixed `plot` methods hanging on the interactive "Hit <Return>" prompt in
   non-interactive sessions (e.g. tests, CI); `par(ask = ...)` now respects
   `interactive()`
+
+## Tests
+
 * Re-enabled the `testthat` test harness (`tests/testthat.R`)
 * Rewrote the test suite with `expect_*()` assertions: augmented one-arm
   binomial and normal posterior means are pinned against their closed-form
@@ -34,10 +31,21 @@
   the `ppexp()` vector and matrix paths, the `print` methods (now fully
   covered), additional `plot` branches, input-validation paths, and the
   `mc` discounting method for `bdpnormal` and `bdpbinomial`
+
+## Housekeeping
+
+* Removed AppVeyor continuous integration
 * Updated GitHub Actions workflows to the latest `r-lib/actions` examples
   (`actions/checkout@v6`, `codecov/codecov-action@v6`,
   `actions/upload-artifact@v7`)
 * Added a `pkgdown` website and accompanying GitHub Actions workflow
+* Replaced deprecated `ggplot2::aes_string()` with `aes()` and the `.data`
+  pronoun in all `plot` methods
+* Replaced deprecated `size` aesthetic with `linewidth` in `geom_line()` calls
+* De-duplicated the internal `model.matrixBayes()` helper (previously defined
+  identically in both `bdplm` and `bdplogit`) into a single internal file
+* Removed leftover commented-out debugging code
+* Removed a redundant `useDynLib()` directive in the package namespace
 
 # bayesDP 1.3.7
 
