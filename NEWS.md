@@ -29,6 +29,11 @@
   `compare` flag, default survival time, two-arm survival summary) are now
   guarded by tests. Plot calls in tests pass an explicit `type` so they no
   longer prompt for input.
+* Expanded test coverage from ~60% to ~71%, adding tests for
+  `alpha_discount()` and `probability_discount()` (both now fully covered),
+  the `ppexp()` vector and matrix paths, the `print` methods (now fully
+  covered), additional `plot` branches, input-validation paths, and the
+  `mc` discounting method for `bdpnormal` and `bdpbinomial`
 * Updated GitHub Actions workflows to the latest `r-lib/actions` examples
   (`actions/checkout@v6`, `codecov/codecov-action@v6`,
   `actions/upload-artifact@v7`)
