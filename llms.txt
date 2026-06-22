@@ -1,0 +1,76 @@
+# bayesDP ![](reference/figures/hex.png)
+
+`bayesDP` provides tools and functions for data augmentation using the
+Bayesian discount prior function for one arm and two arm clinical
+trials.
+
+## CRAN Installation
+
+Install release version from CRAN:
+
+``` r
+
+install.packages("bayesDP")
+```
+
+## GitHub Installation
+
+Install development version from GitHub:
+
+``` r
+
+devtools::install_github("graemeleehickey/bayesDP")
+```
+
+# Package index
+
+## All functions
+
+- [`alpha_discount()`](https://graemeleehickey.github.io/bayesDP/reference/alpha_discount.md)
+  : Bayesian Discount Prior: Historical Data Weight (alpha)
+- [`bdpbinomial()`](https://graemeleehickey.github.io/bayesDP/reference/bdpbinomial.md)
+  : Bayesian Discount Prior: Binomial counts
+- [`bdplm()`](https://graemeleehickey.github.io/bayesDP/reference/bdplm.md)
+  : Bayesian Discount Prior: Two-Arm Linear Regression
+- [`bdplogit()`](https://graemeleehickey.github.io/bayesDP/reference/bdplogit.md)
+  : Bayesian Discount Prior: Two-Arm Logistic Regression
+- [`bdpnormal()`](https://graemeleehickey.github.io/bayesDP/reference/bdpnormal.md)
+  : Bayesian Discount Prior: Gaussian mean values
+- [`bdpsurvival()`](https://graemeleehickey.github.io/bayesDP/reference/bdpsurvival.md)
+  : Bayesian Discount Prior: Survival Analysis
+- [`plot(`*`<bdpbinomial>`*`)`](https://graemeleehickey.github.io/bayesDP/reference/plot-bdpbinomial-method.md)
+  : bdpbinomial Object Plot
+- [`plot(`*`<bdpnormal>`*`)`](https://graemeleehickey.github.io/bayesDP/reference/plot-bdpnormal-method.md)
+  : bdpnormal Object Plot
+- [`plot(`*`<bdpsurvival>`*`)`](https://graemeleehickey.github.io/bayesDP/reference/plot-bdpsurvival-method.md)
+  : bdpsurvival Object Plot
+- [`ppexp()`](https://graemeleehickey.github.io/bayesDP/reference/ppexp.md)
+  : Compute cdf of the piecewise exponential distribution
+- [`print(`*`<bdpbinomial>`*`)`](https://graemeleehickey.github.io/bayesDP/reference/print-bdpbinomial-method.md)
+  : bdpbinomial Object Print
+- [`print(`*`<bdplm>`*`)`](https://graemeleehickey.github.io/bayesDP/reference/print-bdplm-method.md)
+  : bdplm Object Print
+- [`print(`*`<bdpnormal>`*`)`](https://graemeleehickey.github.io/bayesDP/reference/print-bdpnormal-method.md)
+  : bdpnormal Object Print
+- [`print(`*`<bdpsurvival>`*`)`](https://graemeleehickey.github.io/bayesDP/reference/print-bdpsurvival-method.md)
+  : bdpsurvival Object Print
+- [`probability_discount()`](https://graemeleehickey.github.io/bayesDP/reference/probability_discount.md)
+  : Bayesian Discount Prior: Comparison Between Current and Historical
+  Data
+- [`summary(`*`<bdpbinomial>`*`)`](https://graemeleehickey.github.io/bayesDP/reference/summary-bdpbinomial-method.md)
+  : bdpbinomial Object Summary
+- [`summary(`*`<bdplm>`*`)`](https://graemeleehickey.github.io/bayesDP/reference/summary-bdplm-method.md)
+  : bdplm Object Summary
+- [`summary(`*`<bdpnormal>`*`)`](https://graemeleehickey.github.io/bayesDP/reference/summary-bdpnormal-method.md)
+  : bdpnormal Object Summary
+- [`summary(`*`<bdpsurvival>`*`)`](https://graemeleehickey.github.io/bayesDP/reference/summary-bdpsurvival-method.md)
+  : bdpsurvival Object Summary
+
+# Articles
+
+### All vignettes
+
+- [BayesDP](https://graemeleehickey.github.io/bayesDP/articles/bdpbinomial-vignette.md):
+- [BayesDP](https://graemeleehickey.github.io/bayesDP/articles/bdplm-vignette.md):
+- [BayesDP](https://graemeleehickey.github.io/bayesDP/articles/bdpnormal-vignette.md):
+- [BayesDP](https://graemeleehickey.github.io/bayesDP/articles/bdpsurvival-vignette.md):
