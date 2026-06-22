@@ -1,3 +1,25 @@
+# bayesDP 1.3.7.9000
+
+* Removed AppVeyor continuous integration
+* Replaced deprecated `ggplot2::aes_string()` with `aes()` and the `.data`
+  pronoun in all `plot` methods
+* Replaced deprecated `size` aesthetic with `linewidth` in `geom_line()` calls
+* De-duplicated the internal `model.matrixBayes()` helper (previously defined
+  identically in both `bdplm` and `bdplogit`) into a single internal file
+* Removed leftover commented-out debugging code
+* Removed a redundant `useDynLib()` directive in the package namespace
+* Fixed a bug where the `summary` methods for `bdpnormal` and `bdpbinomial`
+  read the one-/two-arm indicator from the wrong list element (`args` instead
+  of `args1`), causing two-arm fits to be summarised as one-arm
+* Fixed a bug in the two-arm `bdpsurvival` summary that errored when current
+  control data were absent
+* Fixed an invalid matrix index (`Y[, 0]`) used when computing the default
+  `surv_time` in `bdpsurvival`
+* Fixed the `compare` argument being silently dropped (passed into `paste()`)
+  rather than stored in the `bdpnormal` and `bdpbinomial` fit objects
+* Fixed the `mc` discount-weight Z-statistic in `bdplm` to divide by the
+  standard error rather than the variance
+
 # bayesDP 1.3.7
 
 * Updated GitHub actions workflows

@@ -470,9 +470,11 @@ setMethod(
 
     # if(arm2) stop("Two arm trials are not currently supported.")
 
-    ### If surv_time is null, replace with median time
+    ### If surv_time is null, replace with median of combined
+    ### current + historical times
     if (is.null(surv_time) & !arm2) {
-      surv_time <- median(c(Y[, 1], Y[, 0]))
+      all_times <- if (!is.null(Y0)) c(Y[, 1], Y0[, 1]) else Y[, 1]
+      surv_time <- median(all_times)
     }
 
     ### Check inputs

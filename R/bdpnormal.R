@@ -272,7 +272,6 @@ setMethod(
     intent <- c()
     if (length(mu_t + sigma_t + N_t) != 0) {
       intent <- c(intent, "current treatment")
-      # cat("Current Treatment\n")
     } else {
       if (is.null(mu_t) == TRUE) {
         cat("mu_t missing\n")
@@ -288,7 +287,6 @@ setMethod(
 
     if (length(mu0_t + sigma0_t + N0_t) != 0) {
       intent <- c(intent, "historical treatment")
-      # cat("Historical Treatment\n")
     } else {
       if (length(c(mu0_t, sigma0_t, N0_t)) > 0) {
         if (is.null(mu0_t) == TRUE) {
@@ -306,7 +304,6 @@ setMethod(
 
     if (length(mu_c + sigma_c + N_c) != 0) {
       intent <- c(intent, "current control")
-      # cat("Current Control\n")
     } else {
       if (length(c(mu_c, sigma_c, N_c)) > 0) {
         if (is.null(mu_c) == TRUE) {
@@ -324,7 +321,6 @@ setMethod(
 
     if (length(mu0_c + sigma0_c + N0_c) != 0) {
       intent <- c(intent, "historical control")
-      # cat("Historical Contro\nl")
     } else {
       if (length(c(mu0_c, sigma0_c, N0_c)) > 0) {
         if (is.null(mu0_c) == TRUE) {
@@ -433,10 +429,8 @@ setMethod(
       number_mcmc = number_mcmc,
       method = method,
       arm2 = arm2,
-      intent = paste(intent,
-                     collapse = ", ",
-                     compare = compare
-      )
+      compare = compare,
+      intent = paste(intent, collapse = ", ")
     )
 
     ##############################################################################

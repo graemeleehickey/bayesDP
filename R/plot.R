@@ -20,7 +20,8 @@
 #'
 #' @import methods
 #' @importFrom utils head
-#' @importFrom ggplot2 aes_string ggtitle ylim guides guide_legend theme
+#' @importFrom ggplot2 aes ggtitle ylim guides guide_legend theme
+#' @importFrom ggplot2 .data
 #'   element_blank
 #' @importFrom graphics par
 #' @importFrom stats sd density is.empty.model median model.offset
@@ -123,12 +124,12 @@ setMethod("plot", signature(x = "bdpnormal"), function(x, type = NULL, print = T
   ### Posterior Type Plots
   ##############################################################################
 
-  post_typeplot <- ggplot(D, aes_string(x = "x", y = "y")) +
+  post_typeplot <- ggplot(D, aes(x = .data[["x"]], y = .data[["y"]])) +
     geom_line(
-      size = 2,
-      aes_string(
-        colour = "information_sources",
-        lty = "information_sources"
+      linewidth = 2,
+      aes(
+        colour = .data[["information_sources"]],
+        lty = .data[["information_sources"]]
       )
     ) +
     facet_wrap(~group, ncol = 1, scales = "free") +
@@ -145,9 +146,9 @@ setMethod("plot", signature(x = "bdpnormal"), function(x, type = NULL, print = T
 
   densityplot <- ggplot(
     subset(D, information_sources == "Posterior"),
-    aes_string(x = "x", y = "y")
+    aes(x = .data[["x"]], y = .data[["y"]])
   ) +
-    geom_line(size = 2, aes_string(colour = "group")) +
+    geom_line(linewidth = 2, aes(colour = .data[["group"]])) +
     ylab("Density (PDF)") +
     xlab("Values") +
     theme_bw() +
@@ -202,9 +203,9 @@ setMethod("plot", signature(x = "bdpnormal"), function(x, type = NULL, print = T
     )
 
     discountfun_plot <- ggplot() +
-      geom_line(data = D1, aes_string(y = "y", x = "x", color = "group"), size = 1) +
-      geom_vline(data = D2, aes_string(xintercept = "p_hat", color = "group"), lty = 2) +
-      geom_hline(data = D3, aes_string(yintercept = "p_hat", color = "group"), lty = 2)
+      geom_line(data = D1, aes(y = .data[["y"]], x = .data[["x"]], color = .data[["group"]]), linewidth = 1) +
+      geom_vline(data = D2, aes(xintercept = .data[["p_hat"]], color = .data[["group"]]), lty = 2) +
+      geom_hline(data = D3, aes(yintercept = .data[["p_hat"]], color = .data[["group"]]), lty = 2)
   }
 
   if (arm2) {
@@ -242,9 +243,9 @@ setMethod("plot", signature(x = "bdpnormal"), function(x, type = NULL, print = T
       D6 <- data.frame(group = "Control", p_hat = median(posterior_control$alpha_discount))
 
       discountfun_plot <- discountfun_plot +
-        geom_line(data = D4, aes_string(y = "y", x = "x", color = "group"), size = 1) +
-        geom_vline(data = D5, aes_string(xintercept = "p_hat", color = "group"), lty = 2) +
-        geom_hline(data = D6, aes_string(yintercept = "p_hat", color = "group"), lty = 2)
+        geom_line(data = D4, aes(y = .data[["y"]], x = .data[["x"]], color = .data[["group"]]), linewidth = 1) +
+        geom_vline(data = D5, aes(xintercept = .data[["p_hat"]], color = .data[["group"]]), lty = 2) +
+        geom_hline(data = D6, aes(yintercept = .data[["p_hat"]], color = .data[["group"]]), lty = 2)
     }
   }
 
@@ -326,7 +327,8 @@ setMethod("plot", signature(x = "bdpnormal"), function(x, type = NULL, print = T
 #'
 #' @import methods
 #' @importFrom utils head
-#' @importFrom ggplot2 aes_string ggtitle ylim guides guide_legend theme
+#' @importFrom ggplot2 aes ggtitle ylim guides guide_legend theme
+#' @importFrom ggplot2 .data
 #'   element_blank
 #' @importFrom graphics par
 #' @importFrom stats density is.empty.model median model.offset model.response
@@ -419,8 +421,8 @@ setMethod("plot", signature(x = "bdpbinomial"), function(x, type = NULL, print =
   ### Posterior Type Plots
   ##############################################################################
 
-  post_typeplot <- ggplot(D, aes_string(x = "x", y = "y")) +
-    geom_line(size = 2, aes_string(color = "information_sources", lty = "information_sources")) +
+  post_typeplot <- ggplot(D, aes(x = .data[["x"]], y = .data[["y"]])) +
+    geom_line(linewidth = 2, aes(color = .data[["information_sources"]], lty = .data[["information_sources"]])) +
     theme_bw() +
     facet_wrap(~group, ncol = 1, scales = "free") +
     ylab("Density (PDF)") +
@@ -435,9 +437,9 @@ setMethod("plot", signature(x = "bdpbinomial"), function(x, type = NULL, print =
 
   densityplot <- ggplot(
     subset(D, information_sources == "Posterior"),
-    aes_string(x = "x", y = "y")
+    aes(x = .data[["x"]], y = .data[["y"]])
   ) +
-    geom_line(size = 2, aes_string(color = "group")) +
+    geom_line(linewidth = 2, aes(color = .data[["group"]])) +
     ylab("Density (PDF)") +
     xlab("Values") +
     theme_bw() +
@@ -485,9 +487,9 @@ setMethod("plot", signature(x = "bdpbinomial"), function(x, type = NULL, print =
     D3 <- data.frame(group = "Treatment", p_hat = median(posterior_treatment$alpha_discount))
 
     discountfun_plot <- ggplot() +
-      geom_line(data = D1, aes_string(y = "y", x = "x", color = "group"), size = 1) +
-      geom_vline(data = D2, aes_string(xintercept = "p_hat", color = "group"), lty = 2) +
-      geom_hline(data = D3, aes_string(yintercept = "p_hat", color = "group"), lty = 2)
+      geom_line(data = D1, aes(y = .data[["y"]], x = .data[["x"]], color = .data[["group"]]), linewidth = 1) +
+      geom_vline(data = D2, aes(xintercept = .data[["p_hat"]], color = .data[["group"]]), lty = 2) +
+      geom_hline(data = D3, aes(yintercept = .data[["p_hat"]], color = .data[["group"]]), lty = 2)
   }
 
   if (arm2) {
@@ -525,9 +527,9 @@ setMethod("plot", signature(x = "bdpbinomial"), function(x, type = NULL, print =
       D6 <- data.frame(group = "Control", p_hat = median(posterior_control$alpha_discount))
 
       discountfun_plot <- discountfun_plot +
-        geom_line(data = D4, aes_string(y = "y", x = "x", color = "group"), size = 1) +
-        geom_vline(data = D5, aes_string(xintercept = "p_hat", color = "group"), lty = 2) +
-        geom_hline(data = D6, aes_string(yintercept = "p_hat", color = "group"), lty = 2)
+        geom_line(data = D4, aes(y = .data[["y"]], x = .data[["x"]], color = .data[["group"]]), linewidth = 1) +
+        geom_vline(data = D5, aes(xintercept = .data[["p_hat"]], color = .data[["group"]]), lty = 2) +
+        geom_hline(data = D6, aes(yintercept = .data[["p_hat"]], color = .data[["group"]]), lty = 2)
     }
   }
 
@@ -608,7 +610,8 @@ setMethod("plot", signature(x = "bdpbinomial"), function(x, type = NULL, print =
 #'
 #' @import methods
 #' @importFrom utils head
-#' @importFrom ggplot2 aes_string ggtitle ylim guides guide_legend theme
+#' @importFrom ggplot2 aes ggtitle ylim guides guide_legend theme
+#' @importFrom ggplot2 .data
 #'   element_blank
 #' @importFrom graphics par
 #' @importFrom stats density is.empty.model median model.offset model.response
@@ -751,8 +754,8 @@ setMethod("plot", signature(x = "bdpsurvival"), function(x, type = NULL, print =
   D$group <- factor(D$group, levels = c("Treatment", "Control"))
 
   ### Plot survival curve
-  survival_curves <- ggplot(D, aes_string(x = "x", y = "y")) +
-    geom_line(size = 1.4, aes_string(color = "source", lty = "source")) +
+  survival_curves <- ggplot(D, aes(x = .data[["x"]], y = .data[["y"]])) +
+    geom_line(linewidth = 1.4, aes(color = .data[["source"]], lty = .data[["source"]])) +
     facet_wrap(~group, ncol = 1, scales = "free") +
     ylab("Survival probability") +
     xlab("Time") +
@@ -802,9 +805,9 @@ setMethod("plot", signature(x = "bdpsurvival"), function(x, type = NULL, print =
     D3 <- data.frame(group = "Treatment", p_hat = c(median(posterior_treatment$alpha_discount)))
 
     discountfun_plot <- ggplot() +
-      geom_line(data = D1, aes_string(y = "y", x = "x", color = "group"), size = 1) +
-      geom_vline(data = D2, aes_string(xintercept = "p_hat", color = "group"), lty = 2) +
-      geom_hline(data = D3, aes_string(yintercept = "p_hat", color = "group"), lty = 2)
+      geom_line(data = D1, aes(y = .data[["y"]], x = .data[["x"]], color = .data[["group"]]), linewidth = 1) +
+      geom_vline(data = D2, aes(xintercept = .data[["p_hat"]], color = .data[["group"]]), lty = 2) +
+      geom_hline(data = D3, aes(yintercept = .data[["p_hat"]], color = .data[["group"]]), lty = 2)
   }
 
   if (arm2) {
@@ -842,9 +845,9 @@ setMethod("plot", signature(x = "bdpsurvival"), function(x, type = NULL, print =
       D6 <- data.frame(group = "Control", p_hat = c(median(posterior_control$alpha_discount)))
 
       discountfun_plot <- discountfun_plot +
-        geom_line(data = D4, aes_string(y = "y", x = "x", color = "group"), size = 1) +
-        geom_vline(data = D5, aes_string(xintercept = "p_hat", color = "group"), lty = 2) +
-        geom_hline(data = D6, aes_string(yintercept = "p_hat", color = "group"), lty = 2)
+        geom_line(data = D4, aes(y = .data[["y"]], x = .data[["x"]], color = .data[["group"]]), linewidth = 1) +
+        geom_vline(data = D5, aes(xintercept = .data[["p_hat"]], color = .data[["group"]]), lty = 2) +
+        geom_hline(data = D6, aes(yintercept = .data[["p_hat"]], color = .data[["group"]]), lty = 2)
     }
   }
 

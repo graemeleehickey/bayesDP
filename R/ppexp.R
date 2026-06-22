@@ -26,7 +26,7 @@
 #' x <- matrix(rgamma(4 * 10, 0.1, 0.1), nrow = 10)
 #' pp <- ppexp(q, x, cuts)
 #' @import methods
-#' @useDynLib bayesDP
+#' @useDynLib bayesDP, .registration = TRUE
 #' @export
 ppexp <- function(q, x, cuts) {
   if (!is.matrix(x)) {

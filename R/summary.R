@@ -27,7 +27,7 @@
 #'   model.response pweibull quantile rbeta rgamma rnorm var vcov
 #' @export
 setMethod("summary", signature(object = "bdpnormal"), function(object) {
-  arm2 <- object$args$arm2
+  arm2 <- object$args1$arm2
   posterior_treatment <- object$posterior_treatment
   posterior_control <- object$posterior_control
   mu_t <- object$args1$mu_t
@@ -176,7 +176,7 @@ setMethod("summary", signature(object = "bdpnormal"), function(object) {
 #'   pweibull quantile rbeta rgamma rnorm var vcov
 #' @export
 setMethod("summary", signature(object = "bdpbinomial"), function(object) {
-  arm2 <- object$args$arm2
+  arm2 <- object$args1$arm2
   posterior_treatment <- object$posterior_treatment
   posterior_control <- object$posterior_control
   y_t <- object$args1$y_t
@@ -411,6 +411,7 @@ setMethod("summary", signature(object = "bdpsurvival"), function(object) {
       n_c <- nrow(data_c)
       e_c <- sum(data_c$status)
     } else {
+      data_c <- subset(data, historical == 1 & treatment == 0)
       n_c <- nrow(data_c)
       e_c <- sum(data_c$status)
     }

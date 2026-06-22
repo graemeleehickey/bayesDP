@@ -156,7 +156,7 @@
 #' @importFrom MCMCpack MCMClogit
 #' @aliases bdplogit-method
 #' @aliases bdplogit,ANY-method
-#' @useDynLib bayesDP
+#' @useDynLib bayesDP, .registration = TRUE
 #' @export bdplogit
 bdplogit <- setClass("bdplogit", slots = c(
   posterior_treatment = "list",
@@ -516,6 +516,8 @@ setMethod(
       args1 = args1
     )
 
+    ### bdplogit reuses the bdplm S4 print/summary methods, since the output
+    ### structure is identical. The object is therefore classed as "bdplm".
     class(me) <- "bdplm"
     return(me)
   }
@@ -586,109 +588,3 @@ discount_logit <- function(df, discount_function, alpha_max, fix_alpha,
   )
   res
 }
-
-
-model.matrixBayes <- function(object, data = environment(object), contrasts.arg = NULL,
-                              xlev = NULL, keep.order = FALSE, drop.baseline = FALSE, ...) {
-  t <- if (missing(data)) {
-    terms(object)
-  } else {
-    terms.formula(object, data = data, keep.order = keep.order)
-  }
-
-  attr(t, "intercept") <- attr(object, "intercept")
-  if (is.null(attr(data, "terms"))) {
-    data <- model.frame(object, data, xlev = xlev)
-  } else {
-    reorder <- match(sapply(attr(t, "variables"), deparse, width.cutoff = 500)[-1], names(data))
-    if (anyNA(reorder)) {
-      stop("model frame and formula mismatch in model.matrix()")
-    }
-    if (!identical(reorder, seq_len(ncol(data)))) {
-      data <- data[, reorder, drop = FALSE]
-    }
-  }
-
-  int <- attr(t, "response")
-  if (length(data)) { # otherwise no rhs terms, so skip all this
-    if (drop.baseline) {
-      contr.funs <- as.character(getOption("contrasts"))
-    } else {
-      contr.funs <- as.character(list("contr.bayes.unordered", "contr.bayes.ordered"))
-    }
-
-    namD <- names(data)
-
-    ## turn  character columns into factors
-    for (i in namD) {
-      if (is.character(data[[i]])) {
-        data[[i]] <- factor(data[[i]])
-        warning(gettextf("variable '%s' converted to a factor", i), domain = NA)
-      }
-    }
-    isF <- vapply(data, function(x) is.factor(x) || is.logical(x), NA)
-    isF[int] <- FALSE
-    isOF <- vapply(data, is.ordered, NA)
-    for (nn in namD[isF]) { # drop response
-      if (is.null(attr(data[[nn]], "contrasts"))) {
-        contrasts(data[[nn]]) <- contr.funs[1 + isOF[nn]]
-      }
-    }
-
-    ## it might be safer to have numerical contrasts:
-    ##    get(contr.funs[1 + isOF[nn]])(nlevels(data[[nn]]))
-    if (!is.null(contrasts.arg) && is.list(contrasts.arg)) {
-      if (is.null(namC <- names(contrasts.arg))) {
-        stop("invalid 'contrasts.arg' argument")
-      }
-      for (nn in namC) {
-        if (is.na(ni <- match(nn, namD))) {
-          warning(gettextf("variable '%s' is absent, its contrast will be ignored", nn), domain = NA)
-        }
-        else {
-          ca <- contrasts.arg[[nn]]
-          if (is.matrix(ca)) {
-            contrasts(data[[ni]], ncol(ca)) <- ca
-          }
-          else {
-            contrasts(data[[ni]]) <- contrasts.arg[[nn]]
-          }
-        }
-      }
-    }
-  } else {
-    isF <- FALSE
-    data <- data.frame(x = rep(0, nrow(data)))
-  }
-  ans <- model.matrix.default(object = t, data = data)
-  cons <- if (any(isF)) {
-    lapply(data[isF], function(x) attr(x, "contrasts"))
-  } else {
-    NULL
-  }
-  attr(ans, "contrasts") <- cons
-  ans
-}
-
-# library(MCMCpack)
-# df0 <- data.frame(y = c(1,1,1,rep(0,138)),
-#                   x = rnorm(141,5,0.5),
-#                   historical = 1)
-#
-# df <- data.frame(y = rbinom(100,1,0.03),
-#                  x = rnorm(100,3,1),
-#                  historical = 0)
-#
-# df_ <- rbind(df0,df)
-#
-# fit <- MCMClogit(y~x+historical, data=df_,
-#                  mcmc = 1e4)
-#
-# posterior <- data.frame(fit)
-# p_hat <- mean(posterior$historical > 0)
-# p_hat  <- 2*ifelse(p_hat > 0.5, 1 - p_hat, p_hat)
-#
-#
-#
-# # b0=c(0,0,1),
-# # B0=B0)

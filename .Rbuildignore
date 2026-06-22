@@ -18,6 +18,7 @@
 ^codecov\.yml$
 ^README\.Rmd$
 ^appveyor\.yml$
+^\.posit$
 inst/image
 ^\.github$
 ^CRAN-SUBMISSION$

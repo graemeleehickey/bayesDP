@@ -262,7 +262,6 @@ setMethod(
     intent <- c()
     if (length(y_t + N_t) != 0) {
       intent <- c(intent, "current treatment")
-      # cat('Current Treatment\n')
     } else {
       if (is.null(y_t) == TRUE) {
         cat("y_t missing\n")
@@ -275,7 +274,6 @@ setMethod(
 
     if (length(y0_t + N0_t) != 0) {
       intent <- c(intent, "historical treatment")
-      # cat('Historical Treatment\n')
     } else {
       if (length(c(y0_t, N0_t)) > 0) {
         if (is.null(y0_t) == TRUE) {
@@ -290,7 +288,6 @@ setMethod(
 
     if (length(y_c + N_c) != 0) {
       intent <- c(intent, "current control")
-      # cat('Current Control\n')
     } else {
       if (length(c(y_c, N_c)) > 0) {
         if (is.null(y_c) == TRUE) {
@@ -305,7 +302,6 @@ setMethod(
 
     if (length(y0_c + N0_c) != 0) {
       intent <- c(intent, "historical control")
-      # cat('Historical Control\n')
     } else {
       if (length(c(y0_c, N0_c)) > 0) {
         if (is.null(y0_c) == TRUE) {
@@ -407,10 +403,8 @@ setMethod(
       weibull_shape = weibull_shape,
       method = method,
       arm2 = arm2,
-      intent = paste(intent,
-                     collapse = ", ",
-                     compare = compare
-      )
+      compare = compare,
+      intent = paste(intent, collapse = ", ")
     )
 
     ##############################################################################
