@@ -31,7 +31,8 @@ Description: Functions for data augmentation using the Bayesian discount prior
     Innovation Consortium (MDIC) Computer Modeling & Simulation Working Group.
 LazyLoad: yes
 License: GPL-3 | file LICENSE
-URL: https://github.com/graemeleehickey/bayesDP
+URL: https://github.com/graemeleehickey/bayesDP,
+    https://graemeleehickey.github.io/bayesDP/
 BugReports: https://github.com/graemeleehickey/bayesDP/issues
 NeedsCompilation: yes
 Repository: CRAN

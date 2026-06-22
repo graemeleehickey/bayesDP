@@ -22,4 +22,7 @@
 inst/image
 ^\.github$
 ^CRAN-SUBMISSION$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
 revdep

@@ -263,7 +263,7 @@ setMethod("plot", signature(x = "bdpnormal"), function(x, type = NULL, print = T
 
   if (print) {
     if (is.null(type)) {
-      op <- par(ask = TRUE)
+      op <- par(ask = interactive())
       plot(post_typeplot)
       plot(densityplot)
       if (!is.null(discountfun_plot)) {
@@ -547,7 +547,7 @@ setMethod("plot", signature(x = "bdpbinomial"), function(x, type = NULL, print =
 
   if (print) {
     if (is.null(type)) {
-      op <- par(ask = TRUE)
+      op <- par(ask = interactive())
       plot(post_typeplot)
       plot(densityplot)
       if (!is.null(discountfun_plot)) {
@@ -865,7 +865,7 @@ setMethod("plot", signature(x = "bdpsurvival"), function(x, type = NULL, print =
 
   if (print) {
     if (is.null(type)) {
-      op <- par(ask = TRUE)
+      op <- par(ask = interactive())
       plot(survival_curves)
       if (!is.null(args1$S0_t) | (!is.null(args1$S_c) & !is.null(args1$S0_c))) {
         plot(discountfun_plot)

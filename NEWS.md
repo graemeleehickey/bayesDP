@@ -19,6 +19,14 @@
   rather than stored in the `bdpnormal` and `bdpbinomial` fit objects
 * Fixed the `mc` discount-weight Z-statistic in `bdplm` to divide by the
   standard error rather than the variance
+* Fixed `plot` methods hanging on the interactive "Hit <Return>" prompt in
+  non-interactive sessions (e.g. tests, CI); `par(ask = ...)` now respects
+  `interactive()`
+* Re-enabled the `testthat` test harness (`tests/testthat.R`)
+* Updated GitHub Actions workflows to the latest `r-lib/actions` examples
+  (`actions/checkout@v6`, `codecov/codecov-action@v6`,
+  `actions/upload-artifact@v7`)
+* Added a `pkgdown` website and accompanying GitHub Actions workflow
 
 # bayesDP 1.3.7
 
