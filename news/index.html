@@ -55,6 +55,7 @@
 <li>Fixed the <code>mc</code> discount-weight Z-statistic in <code>bdplm</code> to divide by the standard error rather than the variance</li>
 <li>Fixed <code>plot</code> methods hanging on the interactive “Hit <return>” prompt in non-interactive sessions (e.g. tests, CI); <code>par(ask = ...)</code> now respects <code><a href="https://rdrr.io/r/base/interactive.html" class="external-link">interactive()</a></code></return></li>
 <li>Re-enabled the <code>testthat</code> test harness (<code>tests/testthat.R</code>)</li>
+<li>Rewrote the test suite with <code>expect_*()</code> assertions: augmented one-arm binomial and normal posterior means are pinned against their closed-form conjugate values, and the fixed bugs (one-/two-arm dispatch, stored <code>compare</code> flag, default survival time, two-arm survival summary) are now guarded by tests. Plot calls in tests pass an explicit <code>type</code> so they no longer prompt for input.</li>
 <li>Updated GitHub Actions workflows to the latest <code>r-lib/actions</code> examples (<code>actions/checkout@v6</code>, <code>codecov/codecov-action@v6</code>, <code>actions/upload-artifact@v7</code>)</li>
 <li>Added a <code>pkgdown</code> website and accompanying GitHub Actions workflow</li>
 </ul></div>

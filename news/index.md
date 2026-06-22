@@ -30,6 +30,12 @@
   non-interactive sessions (e.g. tests, CI); `par(ask = ...)` now
   respects [`interactive()`](https://rdrr.io/r/base/interactive.html)
 - Re-enabled the `testthat` test harness (`tests/testthat.R`)
+- Rewrote the test suite with `expect_*()` assertions: augmented one-arm
+  binomial and normal posterior means are pinned against their
+  closed-form conjugate values, and the fixed bugs (one-/two-arm
+  dispatch, stored `compare` flag, default survival time, two-arm
+  survival summary) are now guarded by tests. Plot calls in tests pass
+  an explicit `type` so they no longer prompt for input.
 - Updated GitHub Actions workflows to the latest `r-lib/actions`
   examples (`actions/checkout@v6`, `codecov/codecov-action@v6`,
   `actions/upload-artifact@v7`)
