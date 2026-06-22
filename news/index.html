@@ -41,26 +41,35 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.3.7.9000" id="bayesdp-1379000">bayesDP 1.3.7.9000<a class="anchor" aria-label="anchor" href="#bayesdp-1379000"></a></h2>
-<ul><li>Removed AppVeyor continuous integration</li>
-<li>Replaced deprecated <code><a href="https://ggplot2.tidyverse.org/reference/aes_.html" class="external-link">ggplot2::aes_string()</a></code> with <code>aes()</code> and the <code>.data</code> pronoun in all <code>plot</code> methods</li>
-<li>Replaced deprecated <code>size</code> aesthetic with <code>linewidth</code> in <code>geom_line()</code> calls</li>
-<li>De-duplicated the internal <code>model.matrixBayes()</code> helper (previously defined identically in both <code>bdplm</code> and <code>bdplogit</code>) into a single internal file</li>
-<li>Removed leftover commented-out debugging code</li>
-<li>Removed a redundant <code>useDynLib()</code> directive in the package namespace</li>
-<li>Fixed a bug where the <code>summary</code> methods for <code>bdpnormal</code> and <code>bdpbinomial</code> read the one-/two-arm indicator from the wrong list element (<code>args</code> instead of <code>args1</code>), causing two-arm fits to be summarised as one-arm</li>
+<div class="section level3">
+<h3 id="bug-fixes-1-3-7-9000">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-3-7-9000"></a></h3>
+<ul><li>Fixed a bug where the <code>summary</code> methods for <code>bdpnormal</code> and <code>bdpbinomial</code> read the one-/two-arm indicator from the wrong list element (<code>args</code> instead of <code>args1</code>), causing two-arm fits to be summarised as one-arm</li>
 <li>Fixed a bug in the two-arm <code>bdpsurvival</code> summary that errored when current control data were absent</li>
 <li>Fixed an invalid matrix index (<code>Y[, 0]</code>) used when computing the default <code>surv_time</code> in <code>bdpsurvival</code>
 </li>
 <li>Fixed the <code>compare</code> argument being silently dropped (passed into <code><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste()</a></code>) rather than stored in the <code>bdpnormal</code> and <code>bdpbinomial</code> fit objects</li>
 <li>Fixed the <code>mc</code> discount-weight Z-statistic in <code>bdplm</code> to divide by the standard error rather than the variance</li>
 <li>Fixed <code>plot</code> methods hanging on the interactive “Hit <return>” prompt in non-interactive sessions (e.g. tests, CI); <code>par(ask = ...)</code> now respects <code><a href="https://rdrr.io/r/base/interactive.html" class="external-link">interactive()</a></code></return></li>
-<li>Re-enabled the <code>testthat</code> test harness (<code>tests/testthat.R</code>)</li>
+</ul></div>
+<div class="section level3">
+<h3 id="tests-1-3-7-9000">Tests<a class="anchor" aria-label="anchor" href="#tests-1-3-7-9000"></a></h3>
+<ul><li>Re-enabled the <code>testthat</code> test harness (<code>tests/testthat.R</code>)</li>
 <li>Rewrote the test suite with <code>expect_*()</code> assertions: augmented one-arm binomial and normal posterior means are pinned against their closed-form conjugate values, and the fixed bugs (one-/two-arm dispatch, stored <code>compare</code> flag, default survival time, two-arm survival summary) are now guarded by tests. Plot calls in tests pass an explicit <code>type</code> so they no longer prompt for input.</li>
 <li>Expanded test coverage from ~60% to ~71%, adding tests for <code><a href="../reference/alpha_discount.html">alpha_discount()</a></code> and <code><a href="../reference/probability_discount.html">probability_discount()</a></code> (both now fully covered), the <code><a href="../reference/ppexp.html">ppexp()</a></code> vector and matrix paths, the <code>print</code> methods (now fully covered), additional <code>plot</code> branches, input-validation paths, and the <code>mc</code> discounting method for <code>bdpnormal</code> and <code>bdpbinomial</code>
 </li>
+</ul></div>
+<div class="section level3">
+<h3 id="housekeeping-1-3-7-9000">Housekeeping<a class="anchor" aria-label="anchor" href="#housekeeping-1-3-7-9000"></a></h3>
+<ul><li>Removed AppVeyor continuous integration</li>
 <li>Updated GitHub Actions workflows to the latest <code>r-lib/actions</code> examples (<code>actions/checkout@v6</code>, <code>codecov/codecov-action@v6</code>, <code>actions/upload-artifact@v7</code>)</li>
 <li>Added a <code>pkgdown</code> website and accompanying GitHub Actions workflow</li>
+<li>Replaced deprecated <code><a href="https://ggplot2.tidyverse.org/reference/aes_.html" class="external-link">ggplot2::aes_string()</a></code> with <code>aes()</code> and the <code>.data</code> pronoun in all <code>plot</code> methods</li>
+<li>Replaced deprecated <code>size</code> aesthetic with <code>linewidth</code> in <code>geom_line()</code> calls</li>
+<li>De-duplicated the internal <code>model.matrixBayes()</code> helper (previously defined identically in both <code>bdplm</code> and <code>bdplogit</code>) into a single internal file</li>
+<li>Removed leftover commented-out debugging code</li>
+<li>Removed a redundant <code>useDynLib()</code> directive in the package namespace</li>
 </ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.3.7" id="bayesdp-137">bayesDP 1.3.7<a class="anchor" aria-label="anchor" href="#bayesdp-137"></a></h2><p class="text-muted">CRAN release: 2025-01-12</p>
 <ul><li>Updated GitHub actions workflows</li>
