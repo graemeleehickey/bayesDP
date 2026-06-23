@@ -1,4 +1,4 @@
-# BayesDP
+# Survival Outcome Estimation with bayesDP
 
 ## Introduction
 

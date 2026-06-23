@@ -1,4 +1,4 @@
-# BayesDP
+# Normal Mean Estimation with bayesDP
 
 ## Introduction
 

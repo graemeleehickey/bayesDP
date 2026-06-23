@@ -1,4 +1,4 @@
-# BayesDP
+# Linear Regression Estimation with bayesDP
 
 ## Introduction
 

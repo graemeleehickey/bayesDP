@@ -18,10 +18,10 @@
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/bdpbinomial-vignette.html">BayesDP</a></li>
-    <li><a class="dropdown-item" href="../articles/bdplm-vignette.html">BayesDP</a></li>
-    <li><a class="dropdown-item" href="../articles/bdpnormal-vignette.html">BayesDP</a></li>
-    <li><a class="dropdown-item" href="../articles/bdpsurvival-vignette.html">BayesDP</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/bdpbinomial-vignette.html">Binomial Count Estimation with bayesDP</a></li>
+    <li><a class="dropdown-item" href="../articles/bdplm-vignette.html">Linear Regression Estimation with bayesDP</a></li>
+    <li><a class="dropdown-item" href="../articles/bdpnormal-vignette.html">Normal Mean Estimation with bayesDP</a></li>
+    <li><a class="dropdown-item" href="../articles/bdpsurvival-vignette.html">Survival Outcome Estimation with bayesDP</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -59,6 +59,9 @@
 <li>Rewrote the test suite with <code>expect_*()</code> assertions: augmented one-arm binomial and normal posterior means are pinned against their closed-form conjugate values, and the fixed bugs (one-/two-arm dispatch, stored <code>compare</code> flag, default survival time, two-arm survival summary) are now guarded by tests. Plot calls in tests pass an explicit <code>type</code> so they no longer prompt for input.</li>
 <li>Expanded test coverage from ~60% to ~76%, adding tests for <code><a href="../reference/alpha_discount.html">alpha_discount()</a></code> and <code><a href="../reference/probability_discount.html">probability_discount()</a></code> (both now fully covered), the <code><a href="../reference/ppexp.html">ppexp()</a></code> vector and matrix paths, the <code>print</code> methods (now fully covered), additional <code>plot</code> branches, input-validation paths, the <code><a href="../reference/bdplogit.html">bdplogit()</a></code> main fit path, factor-covariate handling in <code><a href="../reference/bdplm.html">bdplm()</a></code> and <code><a href="../reference/bdplogit.html">bdplogit()</a></code>, and the <code>mc</code> discounting method for <code>bdpnormal</code> and <code>bdpbinomial</code>
 </li>
+<li>Added a regression test pinning the <code>bdpnormal</code> flat-prior draw of the mean (<code>posterior_flat_mu</code>) against its closed-form conjugate (Student-t) variance</li>
+<li>Guarded the plotting tests with a null graphics device so they no longer write a stray <code>Rplots.pdf</code>
+</li>
 </ul></div>
 <div class="section level3">
 <h3 id="housekeeping-1-3-7-9000">Housekeeping<a class="anchor" aria-label="anchor" href="#housekeeping-1-3-7-9000"></a></h3>
@@ -80,6 +83,8 @@
 <li>Added contributor guidance documenting the <code>NEWS.md</code> subsection convention for future releases</li>
 <li>Expanded <code>README.md</code> with links, supported analyses, examples, and citation guidance (<a href="https://github.com/graemeleehickey/bayesDP/issues/13" class="external-link">#13</a>)</li>
 <li>Added the CRAN package URL to <code>DESCRIPTION</code> (<a href="https://github.com/graemeleehickey/bayesDP/issues/14" class="external-link">#14</a>)</li>
+<li>Clarified in <code>posterior_normal()</code> that the flat-prior draw of the mean is the conjugate posterior (scale <code>sqrt(sigma^2 / N)</code>), not the posterior predictive</li>
+<li>Gave each vignette a descriptive title (previously all titled “BayesDP”) and removed unused <code>params</code>/<code>EVAL</code> scaffolding from the vignette headers</li>
 </ul></div>
 </div>
     <div class="section level2">

@@ -1,4 +1,4 @@
-# BayesDP
+# Binomial Count Estimation with bayesDP
 
 ## Introduction
 
