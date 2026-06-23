@@ -30,6 +30,14 @@
   [`alpha_discount()`](https://graemeleehickey.github.io/bayesDP/reference/alpha_discount.md)
   so `alpha_max` is respected when `discount_function = "identity"`
   ([\#6](https://github.com/graemeleehickey/bayesDP/issues/6)).
+- Fixed
+  [`bdpnormal()`](https://graemeleehickey.github.io/bayesDP/reference/bdpnormal.md)
+  one-arm normal fits with only one source of data for an arm
+  (current-only or historical-only internally) returning an
+  over-dispersed `posterior_mu`. These branches now return the conjugate
+  posterior of the mean rather than adding an extra observation-level
+  draw (posterior-predictive-like variance)
+  ([\#15](https://github.com/graemeleehickey/bayesDP/issues/15)).
 
 ### Tests
 
@@ -54,9 +62,9 @@
   and
   [`bdplogit()`](https://graemeleehickey.github.io/bayesDP/reference/bdplogit.md),
   and the `mc` discounting method for `bdpnormal` and `bdpbinomial`
-- Added a regression test pinning the `bdpnormal` flat-prior draw of the
-  mean (`posterior_flat_mu`) against its closed-form conjugate
-  (Student-t) variance
+- Added regression tests pinning the `bdpnormal` flat-prior draw of the
+  mean (`posterior_flat_mu`) and the fixed current-only `posterior_mu`
+  against their closed-form conjugate (Student-t) variance
 - Guarded the plotting tests with a null graphics device so they no
   longer write a stray `Rplots.pdf`
 
