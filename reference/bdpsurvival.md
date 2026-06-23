@@ -297,7 +297,7 @@ print(fit1)
 #> 
 #> 
 #>   n events surv_time median lower 95% CI upper 95% CI
-#>  50     33         5 0.7933       0.6826       0.8783
+#>  50     29         5  0.794       0.6771       0.8832
 if (FALSE) { # \dontrun{
 plot(fit1)
 } # }
@@ -334,15 +334,15 @@ summary(fit2)
 #>     Two-armed bdp survival
 #> 
 #> data:
-#>   Current treatment: n = 168, number of events = 35
-#>   Current control: n = 131, number of events = 44
-#> Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.0092
-#> Stochastic comparison (p_hat) - control (current vs. historical data): 0.0032
-#> Discount function value (alpha) - treatment: 0.0092
-#> Discount function value (alpha) - control: 0.0032
+#>   Current treatment: n = 181, number of events = 29
+#>   Current control: n = 132, number of events = 40
+#> Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.633
+#> Stochastic comparison (p_hat) - control (current vs. historical data): 0.0018
+#> Discount function value (alpha) - treatment: 0.633
+#> Discount function value (alpha) - control: 0.0018
 #> 
 #>              coef exp(coef) se(coef) lower 95% CI upper 95% CI
-#> treatment -0.7812    0.4578   0.2466      -1.2657      -0.2995
+#> treatment -1.0753    0.3412   0.2337      -1.5287      -0.6158
 
 ### Fix alpha at 1
 fit2_1 <- bdpsurvival(Surv(time, status) ~ treatment,
@@ -356,13 +356,13 @@ summary(fit2_1)
 #>     Two-armed bdp survival
 #> 
 #> data:
-#>   Current treatment: n = 168, number of events = 35
-#>   Current control: n = 131, number of events = 44
-#> Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.0108
-#> Stochastic comparison (p_hat) - control (current vs. historical data): 0.0038
+#>   Current treatment: n = 181, number of events = 29
+#>   Current control: n = 132, number of events = 40
+#> Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.6106
+#> Stochastic comparison (p_hat) - control (current vs. historical data): 8e-04
 #> Discount function value (alpha) - treatment: 1
 #> Discount function value (alpha) - control: 1
 #> 
 #>              coef exp(coef) se(coef) lower 95% CI upper 95% CI
-#> treatment -1.3491    0.2595   0.1837      -1.7125      -0.9937
+#> treatment -1.3787    0.2519   0.1895      -1.7559      -1.0089
 ```

@@ -20,6 +20,12 @@
 - Fixed `plot` methods hanging on the interactive “Hit ” prompt in
   non-interactive sessions (e.g. tests, CI); `par(ask = ...)` now
   respects [`interactive()`](https://rdrr.io/r/base/interactive.html)
+- Fixed
+  [`bdplogit()`](https://graemeleehickey.github.io/bayesDP/reference/bdplogit.md)
+  failing during its main model fit because the analysis data passed to
+  `MCMClogit()` omitted the response variable. The discounted prior
+  precision matrix is now also passed to `MCMClogit()` correctly
+  ([\#12](https://github.com/graemeleehickey/bayesDP/issues/12)).
 
 ### Tests
 
@@ -30,15 +36,17 @@
   dispatch, stored `compare` flag, default survival time, two-arm
   survival summary) are now guarded by tests. Plot calls in tests pass
   an explicit `type` so they no longer prompt for input.
-- Expanded test coverage from ~60% to ~71%, adding tests for
+- Expanded test coverage from ~60% to ~76%, adding tests for
   [`alpha_discount()`](https://graemeleehickey.github.io/bayesDP/reference/alpha_discount.md)
   and
   [`probability_discount()`](https://graemeleehickey.github.io/bayesDP/reference/probability_discount.md)
   (both now fully covered), the
   [`ppexp()`](https://graemeleehickey.github.io/bayesDP/reference/ppexp.md)
   vector and matrix paths, the `print` methods (now fully covered),
-  additional `plot` branches, input-validation paths, and the `mc`
-  discounting method for `bdpnormal` and `bdpbinomial`
+  additional `plot` branches, input-validation paths, the
+  [`bdplogit()`](https://graemeleehickey.github.io/bayesDP/reference/bdplogit.md)
+  main fit path, and the `mc` discounting method for `bdpnormal` and
+  `bdpbinomial`
 
 ### Housekeeping
 
@@ -57,6 +65,8 @@
   internal file
 - Removed leftover commented-out debugging code
 - Removed a redundant `useDynLib()` directive in the package namespace
+- Added contributor guidance documenting the `NEWS.md` subsection
+  convention for future releases
 
 ## bayesDP 1.3.7
 

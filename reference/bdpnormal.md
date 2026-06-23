@@ -289,13 +289,13 @@ summary(fit)
 #> data:
 #>   Current treatment: mu_t = 30, sigma_t = 10, N_t = 50
 #>   Historical treatment: mu0_t = 32, sigma0_t = 10, N0_t = 50
-#> Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.3178
-#> Discount function value (alpha) - treatment: 0.3178
+#> Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.326
+#> Discount function value (alpha) - treatment: 0.326
 #> 95 percent CI: 
-#>  28.0952  32.9469
+#>  27.9583  33.0088
 #> posterior sample estimate:
 #> mean of treatment group
-#>  30.4756
+#>  30.4735
 if (FALSE) { # \dontrun{
 plot(fit)
 } # }
@@ -317,16 +317,16 @@ summary(fit2)
 #>   Current control: mu_c = 25, sigma_c = 10, N_c = 50
 #>   Historical treatment: mu0_t = 32, sigma0_t = 10, N0_t = 50
 #>   Historical control: mu0_c = 25, sigma0_c = 10, N0_c = 50
-#> Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.324
-#> Stochastic comparison (p_hat) - control (current vs. historical data): 0.9658
-#> Discount function value (alpha) - treatment: 0.324
-#> Discount function value (alpha) - control: 0.9658
+#> Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.33
+#> Stochastic comparison (p_hat) - control (current vs. historical data): 0.993
+#> Discount function value (alpha) - treatment: 0.33
+#> Discount function value (alpha) - control: 0.993
 #> alternative hypothesis: two.sided
 #> 95 percent CI: 
-#>  2.2828  8.7016
+#>  2.3734  8.6811
 #> posterior sample estimates:
 #> treatment group  control group
-#>           30.47          25.00
+#>           30.50          25.00
 if (FALSE) { # \dontrun{
 plot(fit2)
 } # }
