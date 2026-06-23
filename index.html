@@ -60,20 +60,179 @@
 </h1></div>
 <!-- badges: start -->
 
-<p><code>bayesDP</code> provides tools and functions for data augmentation using the Bayesian discount prior function for one arm and two arm clinical trials.</p>
+<p><code>bayesDP</code> implements the Bayesian discount prior approach for borrowing historical information in one-arm and two-arm clinical trials. The package supports binomial, normal, survival, linear-model, and logistic-regression settings, and provides plotting and summary methods for inspecting posterior estimates and discount weights.</p>
+<p>The method adaptively discounts historical information according to the agreement between current and historical data. See Haddad et al. (2017) (<a href="doi:10.1080/10543406.2017.1300907" class="uri">doi:10.1080/10543406.2017.1300907</a>) for methodological details.</p>
 <div class="section level2">
-<h2 id="cran-installation">CRAN Installation<a class="anchor" aria-label="anchor" href="#cran-installation"></a>
+<h2 id="links">Links<a class="anchor" aria-label="anchor" href="#links"></a>
 </h2>
-<p>Install release version from CRAN:</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"bayesDP"</span><span class="op">)</span></span></code></pre></div>
+<ul>
+<li>Package website: <a href="https://graemeleehickey.github.io/bayesDP/" class="uri">https://graemeleehickey.github.io/bayesDP/</a>
+</li>
+<li>Source code: <a href="https://github.com/graemeleehickey/bayesDP" class="external-link uri">https://github.com/graemeleehickey/bayesDP</a>
+</li>
+<li>CRAN: <a href="https://CRAN.R-project.org/package=bayesDP" class="external-link uri">https://CRAN.R-project.org/package=bayesDP</a>
+</li>
+<li>Issues: <a href="https://github.com/graemeleehickey/bayesDP/issues" class="external-link uri">https://github.com/graemeleehickey/bayesDP/issues</a>
+</li>
+</ul>
 </div>
 <div class="section level2">
-<h2 id="github-installation">GitHub Installation<a class="anchor" aria-label="anchor" href="#github-installation"></a>
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>Install development version from GitHub:</p>
+<p>Install the released version from CRAN:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"bayesDP"</span><span class="op">)</span></span></code></pre></div>
+<p>Install the development version from GitHub:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"graemeleehickey/bayesDP"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># install.packages("remotes")</span></span>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"graemeleehickey/bayesDP"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="supported-analyses">Supported analyses<a class="anchor" aria-label="anchor" href="#supported-analyses"></a>
+</h2>
+<table class="table">
+<colgroup>
+<col width="33%">
+<col width="33%">
+<col width="33%">
+</colgroup>
+<thead><tr>
+<th>Function</th>
+<th>Outcome / model</th>
+<th>Typical use</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code><a href="reference/bdpbinomial.html">bdpbinomial()</a></code></td>
+<td>Binomial response</td>
+<td>Event rates and proportions</td>
+</tr>
+<tr>
+<td><code><a href="reference/bdpnormal.html">bdpnormal()</a></code></td>
+<td>Normal summary statistics</td>
+<td>Continuous endpoints with known summaries</td>
+</tr>
+<tr>
+<td><code><a href="reference/bdpsurvival.html">bdpsurvival()</a></code></td>
+<td>Survival response</td>
+<td>Time-to-event endpoints</td>
+</tr>
+<tr>
+<td><code><a href="reference/bdplm.html">bdplm()</a></code></td>
+<td>Linear model</td>
+<td>Individual-level continuous outcomes</td>
+</tr>
+<tr>
+<td><code><a href="reference/bdplogit.html">bdplogit()</a></code></td>
+<td>Logistic regression</td>
+<td>Individual-level binary outcomes</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section level2">
+<h2 id="basic-examples">Basic examples<a class="anchor" aria-label="anchor" href="#basic-examples"></a>
+</h2>
+<div class="section level3">
+<h3 id="binomial-endpoint">Binomial endpoint<a class="anchor" aria-label="anchor" href="#binomial-endpoint"></a>
+</h3>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/graemeleehickey/bayesDP" class="external-link">bayesDP</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">fit_bin</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/bdpbinomial.html">bdpbinomial</a></span><span class="op">(</span></span>
+<span>  y_t <span class="op">=</span> <span class="fl">10</span>, N_t <span class="op">=</span> <span class="fl">500</span>,</span>
+<span>  y0_t <span class="op">=</span> <span class="fl">25</span>, N0_t <span class="op">=</span> <span class="fl">250</span>,</span>
+<span>  method <span class="op">=</span> <span class="st">"fixed"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit_bin</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     One-armed bdp binomial</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Current treatment data: 10 and 500</span></span>
+<span><span class="co">#&gt; Historical treatment data: 25 and 250</span></span>
+<span><span class="co">#&gt; Stochastic comparison (p_hat) - treatment (current vs. historical data): 0</span></span>
+<span><span class="co">#&gt; Discount function value (alpha) - treatment: 0</span></span>
+<span><span class="co">#&gt; 95 percent CI: </span></span>
+<span><span class="co">#&gt;  0.011  0.0366</span></span>
+<span><span class="co">#&gt; sample estimates:</span></span>
+<span><span class="co">#&gt;  0.0213</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="normal-endpoint">Normal endpoint<a class="anchor" aria-label="anchor" href="#normal-endpoint"></a>
+</h3>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit_norm</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/bdpnormal.html">bdpnormal</a></span><span class="op">(</span></span>
+<span>  mu_t <span class="op">=</span> <span class="fl">30</span>, sigma_t <span class="op">=</span> <span class="fl">10</span>, N_t <span class="op">=</span> <span class="fl">250</span>,</span>
+<span>  mu0_t <span class="op">=</span> <span class="fl">50</span>, sigma0_t <span class="op">=</span> <span class="fl">5</span>, N0_t <span class="op">=</span> <span class="fl">250</span>,</span>
+<span>  method <span class="op">=</span> <span class="st">"fixed"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit_norm</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     One-armed bdp normal</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; data:</span></span>
+<span><span class="co">#&gt;   Current treatment: mu_t = 30, sigma_t = 10, N_t = 250</span></span>
+<span><span class="co">#&gt;   Historical treatment: mu0_t = 50, sigma0_t = 5, N0_t = 250</span></span>
+<span><span class="co">#&gt; Stochastic comparison (p_hat) - treatment (current vs. historical data): 0</span></span>
+<span><span class="co">#&gt; Discount function value (alpha) - treatment: 0</span></span>
+<span><span class="co">#&gt; 95 percent CI: </span></span>
+<span><span class="co">#&gt;  28.7334  31.2652</span></span>
+<span><span class="co">#&gt; posterior sample estimate:</span></span>
+<span><span class="co">#&gt; mean of treatment group</span></span>
+<span><span class="co">#&gt;  29.9875</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="individual-level-linear-model">Individual-level linear model<a class="anchor" aria-label="anchor" href="#individual-level-linear-model"></a>
+</h3>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">2710</span><span class="op">)</span></span>
+<span><span class="va">n_t</span> <span class="op">&lt;-</span> <span class="fl">30</span></span>
+<span><span class="va">n_c</span> <span class="op">&lt;-</span> <span class="fl">30</span></span>
+<span><span class="va">n_t0</span> <span class="op">&lt;-</span> <span class="fl">80</span></span>
+<span><span class="va">n_c0</span> <span class="op">&lt;-</span> <span class="fl">80</span></span>
+<span></span>
+<span><span class="va">treatment</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span>, <span class="va">n_t</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">n_c</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">treatment0</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span>, <span class="va">n_t0</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">n_c0</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n_t</span> <span class="op">+</span> <span class="va">n_c</span>, <span class="fl">1</span>, <span class="fl">5</span><span class="op">)</span></span>
+<span><span class="va">x0</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n_t0</span> <span class="op">+</span> <span class="va">n_c0</span>, <span class="fl">1</span>, <span class="fl">5</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">Y</span> <span class="op">&lt;-</span> <span class="fl">10</span> <span class="op">+</span> <span class="fl">31</span> <span class="op">*</span> <span class="va">treatment</span> <span class="op">+</span> <span class="fl">3</span> <span class="op">*</span> <span class="va">x</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n_t</span> <span class="op">+</span> <span class="va">n_c</span>, <span class="fl">0</span>, <span class="fl">5</span><span class="op">)</span></span>
+<span><span class="va">Y0</span> <span class="op">&lt;-</span> <span class="fl">10</span> <span class="op">+</span> <span class="fl">30</span> <span class="op">*</span> <span class="va">treatment0</span> <span class="op">+</span> <span class="fl">3</span> <span class="op">*</span> <span class="va">x0</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n_t0</span> <span class="op">+</span> <span class="va">n_c0</span>, <span class="fl">0</span>, <span class="fl">5</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Y <span class="op">=</span> <span class="va">Y</span>, treatment <span class="op">=</span> <span class="va">treatment</span>, x <span class="op">=</span> <span class="va">x</span><span class="op">)</span></span>
+<span><span class="va">df0</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Y <span class="op">=</span> <span class="va">Y0</span>, treatment <span class="op">=</span> <span class="va">treatment0</span>, x <span class="op">=</span> <span class="va">x0</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">fit_lm</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/bdplm.html">bdplm</a></span><span class="op">(</span><span class="va">Y</span> <span class="op">~</span> <span class="va">treatment</span> <span class="op">+</span> <span class="va">x</span>, data <span class="op">=</span> <span class="va">df</span>, data0 <span class="op">=</span> <span class="va">df0</span>, method <span class="op">=</span> <span class="st">"fixed"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit_lm</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Call:</span></span>
+<span><span class="co">#&gt; bdplm(formula = Y ~ treatment + x, data = df, data0 = df0, method = "fixed")</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Residuals:</span></span>
+<span><span class="co">#&gt;      Min     1Q Median    3Q    Max</span></span>
+<span><span class="co">#&gt;  -13.772 -3.582  0.441 4.401 11.814</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Coefficients:</span></span>
+<span><span class="co">#&gt;             Estimate Std. Error</span></span>
+<span><span class="co">#&gt; (Intercept)   9.8316     0.6865</span></span>
+<span><span class="co">#&gt; treatment    32.3608     1.1310</span></span>
+<span><span class="co">#&gt; x             3.1235     0.1288</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Discount function value (alpha):</span></span>
+<span><span class="co">#&gt;  treatment control</span></span>
+<span><span class="co">#&gt;       0.07  0.3812</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Residual standard error: 5.4521</span></span></code></pre></div>
+</div>
+</div>
+<div class="section level2">
+<h2 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
+</h2>
+<p>If you use <code>bayesDP</code>, please cite the package and the methodological paper:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/citation.html" class="external-link">citation</a></span><span class="op">(</span><span class="st">"bayesDP"</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">
@@ -126,7 +285,6 @@
 <li><a href="https://CRAN.R-project.org/package=bayesDP" class="external-link"><img src="https://cranlogs.r-pkg.org/badges/bayesDP"></a></li>
 <li><a href="https://www.r-pkg.org:443/pkg/bayesDP" class="external-link"><img src="https://cranlogs.r-pkg.org/badges/grand-total/bayesDP?color=brightgreen" alt="Downloads"></a></li>
 <li><a href="https://www.gnu.org/licenses/gpl-3.0.html" class="external-link"><img src="https://img.shields.io/badge/license-GPL%20%28%3E=%203%29-brightgreen.svg?style=flat" alt="License"></a></li>
-<li><a href="https://github.com/graemeleehickey/bayesDP/actions" class="external-link"><img src="https://github.com/graemeleehickey/bayesDP/workflows/R-CMD-check/badge.svg" alt="R build status"></a></li>
 <li><a href="https://github.com/graemeleehickey/bayesDP/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/graemeleehickey/bayesDP/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a></li>
 <li><a href="https://app.codecov.io/gh/graemeleehickey/bayesDP" class="external-link"><img src="https://codecov.io/gh/graemeleehickey/bayesDP/graph/badge.svg" alt="Codecov test coverage"></a></li>
 </ul>

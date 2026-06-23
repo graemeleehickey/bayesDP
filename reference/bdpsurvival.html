@@ -318,7 +318,7 @@ the following components:</p><dl><dt><code>posterior_treatment</code></dt>
 <span class="r-in"><span><span class="va">df0</span><span class="op">$</span><span class="va">status</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">df0</span><span class="op">$</span><span class="va">time</span> <span class="op">&lt;</span> <span class="va">df0</span><span class="op">$</span><span class="va">status</span>, <span class="fl">1</span>, <span class="fl">0</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">fit1</span> <span class="op">&lt;-</span> <span class="fu">bdpsurvival</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">time</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="fl">1</span>,</span></span>
+<span class="r-in"><span><span class="va">fit1</span> <span class="op">&lt;-</span> <span class="fu">bdpsurvival</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="fl">1</span>,</span></span>
 <span class="r-in"><span>  data <span class="op">=</span> <span class="va">df_</span>,</span></span>
 <span class="r-in"><span>  data0 <span class="op">=</span> <span class="va">df0</span>,</span></span>
 <span class="r-in"><span>  surv_time <span class="op">=</span> <span class="fl">5</span>,</span></span>
@@ -358,7 +358,7 @@ the following components:</p><dl><dt><code>posterior_treatment</code></dt>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">df0</span><span class="op">$</span><span class="va">status</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">df0</span><span class="op">$</span><span class="va">time</span> <span class="op">&lt;</span> <span class="va">df0</span><span class="op">$</span><span class="va">status</span>, <span class="fl">1</span>, <span class="fl">0</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">fit2</span> <span class="op">&lt;-</span> <span class="fu">bdpsurvival</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">time</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="va">treatment</span>,</span></span>
+<span class="r-in"><span><span class="va">fit2</span> <span class="op">&lt;-</span> <span class="fu">bdpsurvival</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="va">treatment</span>,</span></span>
 <span class="r-in"><span>  data <span class="op">=</span> <span class="va">df_</span>,</span></span>
 <span class="r-in"><span>  data0 <span class="op">=</span> <span class="va">df0</span>,</span></span>
 <span class="r-in"><span>  method <span class="op">=</span> <span class="st">"fixed"</span></span></span>
@@ -379,7 +379,7 @@ the following components:</p><dl><dt><code>posterior_treatment</code></dt>
 <span class="r-out co"><span class="r-pr">#&gt;</span> treatment -1.0753    0.3412   0.2337      -1.5287      -0.6158</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">### Fix alpha at 1</span></span></span>
-<span class="r-in"><span><span class="va">fit2_1</span> <span class="op">&lt;-</span> <span class="fu">bdpsurvival</span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">time</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="va">treatment</span>,</span></span>
+<span class="r-in"><span><span class="va">fit2_1</span> <span class="op">&lt;-</span> <span class="fu">bdpsurvival</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="va">treatment</span>,</span></span>
 <span class="r-in"><span>  data <span class="op">=</span> <span class="va">df_</span>,</span></span>
 <span class="r-in"><span>  data0 <span class="op">=</span> <span class="va">df0</span>,</span></span>
 <span class="r-in"><span>  fix_alpha <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>

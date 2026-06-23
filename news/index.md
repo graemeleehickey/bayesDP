@@ -63,8 +63,10 @@
 - Added a `pkgdown` website and accompanying GitHub Actions workflow
 - Replaced deprecated
   [`ggplot2::aes_string()`](https://ggplot2.tidyverse.org/reference/aes_.html)
-  with `aes()` and the `.data` pronoun in all `plot` methods
-- Replaced deprecated `size` aesthetic with `linewidth` in `geom_line()`
+  with [`aes()`](https://ggplot2.tidyverse.org/reference/aes.html) and
+  the `.data` pronoun in all `plot` methods
+- Replaced deprecated `size` aesthetic with `linewidth` in
+  [`geom_line()`](https://ggplot2.tidyverse.org/reference/geom_path.html)
   calls
 - De-duplicated the internal `model.matrixBayes()` helper (previously
   defined identically in both `bdplm` and `bdplogit`) into a single
@@ -73,6 +75,11 @@
 - Removed a redundant `useDynLib()` directive in the package namespace
 - Added contributor guidance documenting the `NEWS.md` subsection
   convention for future releases
+- Expanded `README.md` with links, supported analyses, examples, and
+  citation guidance
+  ([\#13](https://github.com/graemeleehickey/bayesDP/issues/13))
+- Added the CRAN package URL to `DESCRIPTION`
+  ([\#14](https://github.com/graemeleehickey/bayesDP/issues/14))
 
 ## bayesDP 1.3.7
 

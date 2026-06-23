@@ -65,12 +65,14 @@
 <li>Updated GitHub Actions workflows to the latest <code>r-lib/actions</code> examples (<code>actions/checkout@v6</code>, <code>codecov/codecov-action@v6</code>, <code>actions/upload-artifact@v7</code>)</li>
 <li>Made Codecov upload issues non-fatal in the coverage workflow so tests and coverage generation remain the CI gate while Codecov service/signature failures do not fail the build</li>
 <li>Added a <code>pkgdown</code> website and accompanying GitHub Actions workflow</li>
-<li>Replaced deprecated <code><a href="https://ggplot2.tidyverse.org/reference/aes_.html" class="external-link">ggplot2::aes_string()</a></code> with <code>aes()</code> and the <code>.data</code> pronoun in all <code>plot</code> methods</li>
-<li>Replaced deprecated <code>size</code> aesthetic with <code>linewidth</code> in <code>geom_line()</code> calls</li>
+<li>Replaced deprecated <code><a href="https://ggplot2.tidyverse.org/reference/aes_.html" class="external-link">ggplot2::aes_string()</a></code> with <code><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes()</a></code> and the <code>.data</code> pronoun in all <code>plot</code> methods</li>
+<li>Replaced deprecated <code>size</code> aesthetic with <code>linewidth</code> in <code><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line()</a></code> calls</li>
 <li>De-duplicated the internal <code>model.matrixBayes()</code> helper (previously defined identically in both <code>bdplm</code> and <code>bdplogit</code>) into a single internal file</li>
 <li>Removed leftover commented-out debugging code</li>
 <li>Removed a redundant <code>useDynLib()</code> directive in the package namespace</li>
 <li>Added contributor guidance documenting the <code>NEWS.md</code> subsection convention for future releases</li>
+<li>Expanded <code>README.md</code> with links, supported analyses, examples, and citation guidance (<a href="https://github.com/graemeleehickey/bayesDP/issues/13" class="external-link">#13</a>)</li>
+<li>Added the CRAN package URL to <code>DESCRIPTION</code> (<a href="https://github.com/graemeleehickey/bayesDP/issues/14" class="external-link">#14</a>)</li>
 </ul></div>
 </div>
     <div class="section level2">

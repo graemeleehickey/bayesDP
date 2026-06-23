@@ -489,7 +489,7 @@ which returns a <code>ggplot2</code> object. Below is an example using
 the discount function plot:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit02</span>, type<span class="op">=</span><span class="st">"discount"</span>, print<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="va">p1</span> <span class="op">+</span> <span class="fu">ggtitle</span><span class="op">(</span><span class="st">"Discount Function Plot :-)"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">p1</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Discount Function Plot :-)"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="bdpsurvival-vignette_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" alt="" width="60%" style="display: block; margin: auto;"></p>
 </div>
 </div>
@@ -609,7 +609,7 @@ trial, we will request the survival probability at
 inputs is carried out:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
-<span><span class="va">fit1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bdpsurvival.html">bdpsurvival</a></span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">time</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="fl">1</span>,</span>
+<span><span class="va">fit1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bdpsurvival.html">bdpsurvival</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="fl">1</span>,</span>
 <span>                    data  <span class="op">=</span> <span class="va">surv_1arm</span>,</span>
 <span>                    data0 <span class="op">=</span> <span class="va">surv_1arm0</span>,</span>
 <span>                    surv_time <span class="op">=</span> <span class="fl">5</span>,</span>
@@ -661,7 +661,7 @@ data. This can be accomplished by setting <code>alpha_max=1</code> and
 <code>fix_alpha=TRUE</code> as follows:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
-<span><span class="va">fit1a</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bdpsurvival.html">bdpsurvival</a></span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">time</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="fl">1</span>,</span>
+<span><span class="va">fit1a</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bdpsurvival.html">bdpsurvival</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="fl">1</span>,</span>
 <span>                    data  <span class="op">=</span> <span class="va">surv_1arm</span>,</span>
 <span>                    data0 <span class="op">=</span> <span class="va">surv_1arm0</span>,</span>
 <span>                    surv_time <span class="op">=</span> <span class="fl">5</span>,</span>
@@ -753,7 +753,7 @@ treatment and control data. Now, let’s carry out the two-arm analysis
 using default inputs:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
-<span><span class="va">fit2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bdpsurvival.html">bdpsurvival</a></span><span class="op">(</span><span class="fu">Surv</span><span class="op">(</span><span class="va">time</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="va">treatment</span>,</span>
+<span><span class="va">fit2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bdpsurvival.html">bdpsurvival</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="va">treatment</span>,</span>
 <span>                    data <span class="op">=</span> <span class="va">surv_2arm</span>,</span>
 <span>                    data0 <span class="op">=</span> <span class="va">surv_2arm0</span>,</span>
 <span>                    method <span class="op">=</span> <span class="st">"fixed"</span><span class="op">)</span></span>
