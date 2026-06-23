@@ -75,6 +75,7 @@
 <li>
 <code><a href="../reference/ppexp.html">ppexp()</a></code> now validates its <code>x</code> argument and errors with an informative message when it is neither a numeric vector nor a matrix (<a href="https://github.com/graemeleehickey/bayesDP/issues/10" class="external-link">#10</a>)</li>
 <li>Survival curves in the <code>plot</code> and <code>summary</code> methods are now computed with a vectorised C++ routine (<code>ppexpMV</code>) that transposes the hazard matrix once across all time points, instead of looping <code><a href="../reference/ppexp.html">ppexp()</a></code> per time point (<a href="https://github.com/graemeleehickey/bayesDP/issues/11" class="external-link">#11</a>)</li>
+<li>Avoided recomputing the per-interval sufficient statistics in <code>posterior_survival()</code>; the augmentation step now reuses the values already computed during the discount phase (<a href="https://github.com/graemeleehickey/bayesDP/issues/7" class="external-link">#7</a>)</li>
 <li>Removed a redundant <code>useDynLib()</code> directive in the package namespace</li>
 <li>Added contributor guidance documenting the <code>NEWS.md</code> subsection convention for future releases</li>
 <li>Expanded <code>README.md</code> with links, supported analyses, examples, and citation guidance (<a href="https://github.com/graemeleehickey/bayesDP/issues/13" class="external-link">#13</a>)</li>

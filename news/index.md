@@ -94,6 +94,10 @@
   [`ppexp()`](https://graemeleehickey.github.io/bayesDP/reference/ppexp.md)
   per time point
   ([\#11](https://github.com/graemeleehickey/bayesDP/issues/11))
+- Avoided recomputing the per-interval sufficient statistics in
+  `posterior_survival()`; the augmentation step now reuses the values
+  already computed during the discount phase
+  ([\#7](https://github.com/graemeleehickey/bayesDP/issues/7))
 - Removed a redundant `useDynLib()` directive in the package namespace
 - Added contributor guidance documenting the `NEWS.md` subsection
   convention for future releases
