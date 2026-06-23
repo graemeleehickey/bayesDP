@@ -19,6 +19,8 @@
 * Fixed `bdplogit()` failing during its main model fit because the analysis
   data passed to `MCMClogit()` omitted the response variable. The discounted
   prior precision matrix is now also passed to `MCMClogit()` correctly (#12).
+* Fixed `alpha_discount()` so `alpha_max` is respected when
+  `discount_function = "identity"` (#6).
 
 ## Tests
 

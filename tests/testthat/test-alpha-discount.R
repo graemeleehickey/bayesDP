@@ -13,8 +13,12 @@ test_that("alpha_discount matches the Weibull CDF discount functions", {
     pweibull(0.1, shape = 3, scale = 0.135) / pweibull(1, shape = 3, scale = 0.135)
   )
 
-  # identity: returns p_hat directly
+  # identity: returns p_hat directly when alpha_max is left at its default
   expect_equal(alpha_discount(0.4, discount_function = "identity"), 0.4)
+  expect_equal(
+    alpha_discount(0.4, discount_function = "identity", alpha_max = 0.5),
+    0.2
+  )
 })
 
 test_that("alpha_discount respects alpha_max and weibull parameters", {

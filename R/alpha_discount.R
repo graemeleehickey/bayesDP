@@ -99,7 +99,7 @@ setMethod(
       
       alpha_hat <- pweibull(p_hat, shape = weibull_shape, scale = weibull_scale) * alpha_max / max_p
     } else if (discount_function == "identity") {
-      alpha_hat <- p_hat
+      alpha_hat <- p_hat * alpha_max
     }
     
     return(alpha_hat)
