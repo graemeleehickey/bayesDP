@@ -33,8 +33,9 @@
   `alpha_discount()` and `probability_discount()` (both now fully covered),
   the `ppexp()` vector and matrix paths, the `print` methods (now fully
   covered), additional `plot` branches, input-validation paths, the
-  `bdplogit()` main fit path, and the `mc` discounting method for
-  `bdpnormal` and `bdpbinomial`
+  `bdplogit()` main fit path, factor-covariate handling in `bdplm()` and
+  `bdplogit()`, and the `mc` discounting method for `bdpnormal` and
+  `bdpbinomial`
 
 ## Housekeeping
 
@@ -42,6 +43,9 @@
 * Updated GitHub Actions workflows to the latest `r-lib/actions` examples
   (`actions/checkout@v6`, `codecov/codecov-action@v6`,
   `actions/upload-artifact@v7`)
+* Made Codecov upload issues non-fatal in the coverage workflow so tests and
+  coverage generation remain the CI gate while Codecov service/signature
+  failures do not fail the build
 * Added a `pkgdown` website and accompanying GitHub Actions workflow
 * Replaced deprecated `ggplot2::aes_string()` with `aes()` and the `.data`
   pronoun in all `plot` methods

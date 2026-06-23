@@ -38,8 +38,13 @@ jobs:
 
       - uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6
         with:
-          # Fail if error if not on PR, or if on PR and token is given
-          fail_ci_if_error: ${{ github.event_name != 'pull_request' || secrets.CODECOV_TOKEN }}
+          # Keep tests/coverage generation as the CI gate, but don't fail the
+          # workflow on Codecov service, token, or uploader signature issues.
+          fail_ci_if_error: false
+          # Codecov CLI signature verification has failed on GitHub-hosted
+          # runners when the signing key was unavailable; skip uploader
+          # validation so service/key issues don't fail package CI.
+          skip_validation: true
           files: ./cobertura.xml
           plugins: noop
           disable_search: true
