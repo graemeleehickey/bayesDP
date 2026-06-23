@@ -56,6 +56,9 @@
 * Removed a redundant `useDynLib()` directive in the package namespace
 * Added contributor guidance documenting the `NEWS.md` subsection convention
   for future releases
+* Expanded `README.md` with links, supported analyses, examples, and citation
+  guidance (#13)
+* Added the CRAN package URL to `DESCRIPTION` (#14)
 
 # bayesDP 1.3.7
 

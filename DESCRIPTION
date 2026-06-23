@@ -32,7 +32,8 @@ Description: Functions for data augmentation using the Bayesian discount prior
 LazyLoad: yes
 License: GPL-3 | file LICENSE
 URL: https://github.com/graemeleehickey/bayesDP,
-    https://graemeleehickey.github.io/bayesDP/
+    https://graemeleehickey.github.io/bayesDP/,
+    https://CRAN.R-project.org/package=bayesDP
 BugReports: https://github.com/graemeleehickey/bayesDP/issues
 NeedsCompilation: yes
 Repository: CRAN
