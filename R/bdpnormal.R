@@ -546,13 +546,19 @@ posterior_normal <- function(mu, sigma, N, mu0, sigma0, N0, discount_function,
   #   will return the posterior of the non-missing data (with flat prior)
   ##############################################################################
 
-  ### If only the historical data is present, compute posterior on historical
+  ### If only the current data are present, return its conjugate posterior of
+  ### the mean. posterior_flat_mu is already drawn from N(mu, sigma2 / N), so it
+  ### is the posterior of the mean -- do not add a second (observation-level)
+  ### rnorm layer, which would inflate the variance to ~ sigma2 (a posterior-
+  ### predictive draw). The variance of the mean is sigma2 / N.
   if (is.null(N0) & !is.null(N)) {
-    posterior_sigma2 <- posterior_flat_sigma2
-    posterior_mu <- rnorm(number_mcmc, posterior_flat_mu, sqrt(posterior_sigma2))
+    posterior_sigma2 <- posterior_flat_sigma2 / N
+    posterior_mu <- posterior_flat_mu
   } else if (!is.null(N0) & is.null(N)) {
-    posterior_sigma2 <- prior_sigma2
-    posterior_mu <- rnorm(number_mcmc, prior_mu, sqrt(posterior_sigma2))
+    ### Only the historical data are present: return its conjugate posterior of
+    ### the mean (prior_mu is already drawn from N(mu0, sigma2_0 / N0)).
+    posterior_sigma2 <- prior_sigma2 / N0
+    posterior_mu <- prior_mu
   } else if (!is.null(N0) & !is.null(N)) {
     effective_N0 <- N0 * alpha_discount
 

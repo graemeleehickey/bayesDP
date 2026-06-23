@@ -69,6 +69,40 @@ test_that("bdpnormal flat-prior draw is the conjugate posterior, not the predict
   expect_equal(var(post_flat_mu), conjugate_var, tolerance = 0.05 * conjugate_var)
   # Sanity check that we are nowhere near the posterior-predictive variance.
   expect_lt(var(post_flat_mu), predictive_var / 10)
+
+  # The returned (augmented) posterior_mu for a current-only one-arm trial must
+  # also be the conjugate posterior of the mean, not a posterior-predictive
+  # draw (regression test for #15).
+  post_mu <- fit$posterior_treatment$posterior_mu
+  expect_equal(mean(post_mu), mu_t, tolerance = 0.05)
+  expect_equal(var(post_mu), conjugate_var, tolerance = 0.05 * conjugate_var)
+  expect_lt(var(post_mu), predictive_var / 10)
+})
+
+test_that("bdpnormal augmented one-arm posterior matches the both-present limit", {
+  # As the historical weight goes to zero, the augmented (both-data-present)
+  # posterior of the mean should match the current-only conjugate posterior.
+  # This guards consistency between the single-data and both-present branches
+  # (regression test for #15).
+  mu_t <- 30
+  sigma_t <- 10
+  N_t <- 50
+
+  set.seed(515)
+  fit_current_only <- bdpnormal(
+    mu_t = mu_t, sigma_t = sigma_t, N_t = N_t,
+    method = "fixed", number_mcmc = 5e5
+  )
+  set.seed(515)
+  fit_both <- bdpnormal(
+    mu_t = mu_t, sigma_t = sigma_t, N_t = N_t,
+    mu0_t = mu_t, sigma0_t = sigma_t, N0_t = N_t,
+    fix_alpha = TRUE, alpha_max = 1e-9, method = "fixed", number_mcmc = 5e5
+  )
+
+  v_current <- var(fit_current_only$posterior_treatment$posterior_mu)
+  v_both <- var(fit_both$posterior_treatment$posterior_mu)
+  expect_equal(v_both, v_current, tolerance = 0.05 * v_current)
 })
 
 test_that("bdpnormal two-arm summary, plot, and comparison object are correct", {
