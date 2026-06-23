@@ -79,6 +79,11 @@
 - Collapsed a redundant conditional in `posterior_survival()` where both
   branches initialized identical hazard matrices
   ([\#8](https://github.com/graemeleehickey/bayesDP/issues/8))
+- Tidied the `mc` sigma2 sampling in
+  [`bdplm()`](https://graemeleehickey.github.io/bayesDP/reference/bdplm.md)
+  and kept the sampling weights aligned with the candidate grid when
+  some marginal log-likelihoods are non-finite
+  ([\#9](https://github.com/graemeleehickey/bayesDP/issues/9))
 - Removed a redundant `useDynLib()` directive in the package namespace
 - Added contributor guidance documenting the `NEWS.md` subsection
   convention for future releases
