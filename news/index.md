@@ -45,8 +45,11 @@
   vector and matrix paths, the `print` methods (now fully covered),
   additional `plot` branches, input-validation paths, the
   [`bdplogit()`](https://graemeleehickey.github.io/bayesDP/reference/bdplogit.md)
-  main fit path, and the `mc` discounting method for `bdpnormal` and
-  `bdpbinomial`
+  main fit path, factor-covariate handling in
+  [`bdplm()`](https://graemeleehickey.github.io/bayesDP/reference/bdplm.md)
+  and
+  [`bdplogit()`](https://graemeleehickey.github.io/bayesDP/reference/bdplogit.md),
+  and the `mc` discounting method for `bdpnormal` and `bdpbinomial`
 
 ### Housekeeping
 
@@ -54,6 +57,9 @@
 - Updated GitHub Actions workflows to the latest `r-lib/actions`
   examples (`actions/checkout@v6`, `codecov/codecov-action@v6`,
   `actions/upload-artifact@v7`)
+- Made Codecov upload issues non-fatal in the coverage workflow so tests
+  and coverage generation remain the CI gate while Codecov
+  service/signature failures do not fail the build
 - Added a `pkgdown` website and accompanying GitHub Actions workflow
 - Replaced deprecated
   [`ggplot2::aes_string()`](https://ggplot2.tidyverse.org/reference/aes_.html)
