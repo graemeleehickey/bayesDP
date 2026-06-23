@@ -26,6 +26,10 @@
   `MCMClogit()` omitted the response variable. The discounted prior
   precision matrix is now also passed to `MCMClogit()` correctly
   ([\#12](https://github.com/graemeleehickey/bayesDP/issues/12)).
+- Fixed
+  [`alpha_discount()`](https://graemeleehickey.github.io/bayesDP/reference/alpha_discount.md)
+  so `alpha_max` is respected when `discount_function = "identity"`
+  ([\#6](https://github.com/graemeleehickey/bayesDP/issues/6)).
 
 ### Tests
 
