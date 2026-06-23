@@ -11,3 +11,4 @@ doc
 Meta
 docs
 .DS_Store
+.posit/assistant/settings.json
