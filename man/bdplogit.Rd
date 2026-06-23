@@ -171,16 +171,16 @@ treatment <- c(rep(1, n_t), rep(0, n_c))
 treatment0 <- c(rep(1, n_t0), rep(0, n_c0))
 
 # Simulate a covariate effect for current and historical data
-x <- rnorm(n_t + n_c, 1, 5)
-x0 <- rnorm(n_t0 + n_c0, 1, 5)
+x <- rnorm(n_t + n_c, 1, 1)
+x0 <- rnorm(n_t0 + n_c0, 1, 1)
 
-# Simulate outcome:
-# - Intercept of 10 for current and historical data
-# - Treatment effect of 31 for current data
-# - Treatment effect of 30 for historical data
-# - Covariate effect of 3 for current and historical data
-Y <- 10 + 31 * treatment + x * 3 + rnorm(n_t + n_c, 0, 5)
-Y0 <- 10 + 30 * treatment0 + x0 * 3 + rnorm(n_t0 + n_c0, 0, 5)
+# Simulate a binary outcome on the logit scale:
+# - Intercept of -1 for current and historical data
+# - Treatment (log-odds) effect of 1.0 for current data
+# - Treatment (log-odds) effect of 0.9 for historical data
+# - Covariate effect of 0.3 for current and historical data
+Y <- rbinom(n_t + n_c, 1, plogis(-1 + 1.0 * treatment + 0.3 * x))
+Y0 <- rbinom(n_t0 + n_c0, 1, plogis(-1 + 0.9 * treatment0 + 0.3 * x0))
 
 # Place data into separate treatment and control data frames and
 # assign historical = 0 (current) or historical = 1 (historical)
@@ -188,7 +188,7 @@ df_ <- data.frame(Y = Y, treatment = treatment, x = x)
 df0 <- data.frame(Y = Y0, treatment = treatment0, x = x0)
 
 # Fit model using default settings
-fit <- bdplm(
+fit <- bdplogit(
   formula = Y ~ treatment + x, data = df_, data0 = df0,
   method = "fixed"
 )

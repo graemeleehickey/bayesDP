@@ -122,16 +122,16 @@
 #' treatment0 <- c(rep(1, n_t0), rep(0, n_c0))
 #'
 #' # Simulate a covariate effect for current and historical data
-#' x <- rnorm(n_t + n_c, 1, 5)
-#' x0 <- rnorm(n_t0 + n_c0, 1, 5)
+#' x <- rnorm(n_t + n_c, 1, 1)
+#' x0 <- rnorm(n_t0 + n_c0, 1, 1)
 #'
-#' # Simulate outcome:
-#' # - Intercept of 10 for current and historical data
-#' # - Treatment effect of 31 for current data
-#' # - Treatment effect of 30 for historical data
-#' # - Covariate effect of 3 for current and historical data
-#' Y <- 10 + 31 * treatment + x * 3 + rnorm(n_t + n_c, 0, 5)
-#' Y0 <- 10 + 30 * treatment0 + x0 * 3 + rnorm(n_t0 + n_c0, 0, 5)
+#' # Simulate a binary outcome on the logit scale:
+#' # - Intercept of -1 for current and historical data
+#' # - Treatment (log-odds) effect of 1.0 for current data
+#' # - Treatment (log-odds) effect of 0.9 for historical data
+#' # - Covariate effect of 0.3 for current and historical data
+#' Y <- rbinom(n_t + n_c, 1, plogis(-1 + 1.0 * treatment + 0.3 * x))
+#' Y0 <- rbinom(n_t0 + n_c0, 1, plogis(-1 + 0.9 * treatment0 + 0.3 * x0))
 #'
 #' # Place data into separate treatment and control data frames and
 #' # assign historical = 0 (current) or historical = 1 (historical)
@@ -139,7 +139,7 @@
 #' df0 <- data.frame(Y = Y0, treatment = treatment0, x = x0)
 #'
 #' # Fit model using default settings
-#' fit <- bdplm(
+#' fit <- bdplogit(
 #'   formula = Y ~ treatment + x, data = df_, data0 = df0,
 #'   method = "fixed"
 #' )
@@ -443,17 +443,18 @@ setMethod(
     ##############################################################################
 
     ### Compute prior terms
-    ### - Covarance/variance needs to be parameterized as precision
+    ### - Covariance/variance needs to be parameterized as precision
     tau2 <- c(1 / prior_treatment_sd, 1 / prior_control_sd, 1 / prior_covariate_sd)^2
     mu0 <- c(prior_treatment_effect, prior_control_effect, prior_covariate_effect)
 
     ### Calculate constants from current data
     df_current$control <- 1 - df_current$treatment
 
-    # Create analysis formula
-    df_analysis <- df_current[, c("treatment", "control", covs_df)]
-    cnames <- names(df_analysis)
-    f <- paste0("Y~ -1 +", paste0(cnames, collapse = "+"))
+    # Create analysis formula. The data frame must retain the response Y so
+    # that MCMClogit can resolve it from the formula.
+    predictors <- c("treatment", "control", covs_df)
+    df_analysis <- df_current[, c("Y", predictors)]
+    f <- paste0("Y ~ -1 +", paste0(predictors, collapse = "+"))
 
     ### Estimation scheme differs conditional on discounting method
     if (method == "fixed") {
@@ -465,15 +466,16 @@ setMethod(
         rep(1e-12, n_covs)
       )
 
-      ### Create precision matrix
-      B0 <- diag(alpha0 / tau2)
+      ### Create the discounted prior precision matrix. tau2 is already a
+      ### precision (1 / sd^2), so the discount weight multiplies it.
+      B0 <- diag(alpha0 * tau2)
 
       ### Get Bayesian fit
       fit <- MCMCpack::MCMClogit(f,
                                  data = df_analysis,
                                  mcmc = number_mcmc_beta,
                                  b0 = mu0,
-                                 B0 = diag(tau2)
+                                 B0 = B0
       )
 
       beta_samples <- data.frame(fit)

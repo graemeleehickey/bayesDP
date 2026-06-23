@@ -1,8 +1,4 @@
-## Tests for bdplogit() input validation.
-##
-## A full bdplogit() fit currently errors in the second-stage MCMClogit() call
-## (see GitHub issue #12), so these tests exercise the input-validation
-## branches, which is where the function's logic is otherwise untested.
+## Tests for bdplogit() input validation and the fixed-effect fit path.
 
 make_logit_data <- function() {
   set.seed(88)
@@ -65,4 +61,42 @@ test_that("bdplogit errors when treatment levels are not 0/1", {
     bdplogit(Y ~ treatment + x, data = bad, data0 = d$data0, method = "fixed"),
     "Treatment input has wrong levels"
   )
+})
+
+test_that("bdplogit fixed-effect fit recovers the treatment effect", {
+  d <- make_logit_data()
+  set.seed(204)
+  fit <- bdplogit(Y ~ treatment + x,
+    data = d$data, data0 = d$data0, method = "fixed"
+  )
+
+  # The fitted object reuses the bdplm class for its print/summary methods.
+  expect_s3_class(fit, "bdplm")
+  expect_named(
+    fit$estimates$coefficients,
+    c("intercept", "treatment", "x")
+  )
+
+  # Treatment effect on the log-odds scale should be near the simulated 1.0.
+  expect_equal(fit$estimates$coefficients$treatment, 1.0, tolerance = 0.6)
+
+  # Discount weights are valid probabilities.
+  alpha <- unlist(fit$alpha_discount)
+  expect_true(all(alpha >= 0 & alpha <= 1))
+
+  # print/summary (inherited from bdplm) run without error.
+  expect_output(summary(fit), "Coefficients:")
+  expect_output(print(fit), "Coefficients:")
+})
+
+test_that("bdplogit honours user-specified priors", {
+  d <- make_logit_data()
+  set.seed(77)
+  fit <- bdplogit(Y ~ treatment + x,
+    data = d$data, data0 = d$data0, method = "fixed",
+    prior_treatment_effect = 0, prior_control_effect = 0,
+    prior_treatment_sd = 1, prior_control_sd = 1
+  )
+  expect_s3_class(fit, "bdplm")
+  expect_true(is.finite(fit$estimates$coefficients$treatment))
 })
