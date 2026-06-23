@@ -44,6 +44,33 @@ test_that("bdpnormal one-arm augmented posterior matches conjugate mean", {
   expect_length(fit$final$posterior, n_mcmc)
 })
 
+test_that("bdpnormal flat-prior draw is the conjugate posterior, not the predictive", {
+  # With only current data and a non-informative prior, the marginal posterior
+  # of mu (posterior_flat_mu) is Student-t_{N-1}(mu_t, sigma_t^2 / N_t). Its
+  # variance is (sigma^2 / N) * (N - 1) / (N - 3). This pins the construction
+  # against the conjugate posterior and rules out a posterior-predictive draw
+  # (which would instead scale by sigma^2 * (1 + 1/N), ~50x larger here).
+  mu_t <- 30
+  sigma_t <- 10
+  N_t <- 50
+
+  set.seed(6691)
+  fit <- bdpnormal(
+    mu_t = mu_t, sigma_t = sigma_t, N_t = N_t,
+    method = "fixed", number_mcmc = 5e5
+  )
+
+  post_flat_mu <- fit$posterior_treatment$posterior_flat_mu
+
+  conjugate_var <- (sigma_t^2 / N_t) * (N_t - 1) / (N_t - 3)
+  predictive_var <- (sigma_t^2 * (1 + 1 / N_t)) * (N_t - 1) / (N_t - 3)
+
+  expect_equal(mean(post_flat_mu), mu_t, tolerance = 0.05)
+  expect_equal(var(post_flat_mu), conjugate_var, tolerance = 0.05 * conjugate_var)
+  # Sanity check that we are nowhere near the posterior-predictive variance.
+  expect_lt(var(post_flat_mu), predictive_var / 10)
+})
+
 test_that("bdpnormal two-arm summary, plot, and comparison object are correct", {
   set.seed(2218)
   fit <- bdpnormal(

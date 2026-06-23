@@ -473,7 +473,12 @@ posterior_normal <- function(mu, sigma, N, mu0, sigma0, N0, discount_function,
                              weibull_shape, method) {
 
   # Compute posterior(s) of current (flat) and historical (prior) data
-  # with non-informative priors
+  # with non-informative priors p(mu, sigma2) propto 1 / sigma2. This gives the
+  # standard conjugate posterior:
+  #   sigma2 | data ~ Inv-Gamma((N - 1) / 2, (N - 1) * sigma^2 / 2)
+  #   mu | sigma2   ~ Normal(mu, sigma2 / N)
+  # The scale below uses ((N - 1) + 1) = N, i.e. the conjugate posterior of the
+  # mean (not the posterior predictive, which would use sigma2 * (1 + 1 / N)).
   # Current data:
   if (!is.null(N)) {
     posterior_flat_sigma2 <- 1 / rgamma(number_mcmc, (N - 1) / 2, ((N - 1) * sigma^2) / 2)
