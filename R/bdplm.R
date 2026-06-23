@@ -569,15 +569,18 @@ setMethod(
         ystar = ystar
       )
 
-      ### Normalize the marginal posteriors (log-likelihoods) and exponentiate
+      ### Normalize the marginal posteriors (log-likelihoods) and exponentiate.
+      ### Non-finite log-likelihoods are given zero sampling weight so that the
+      ### weight vector stays aligned with the candidate grid.
       logL <- sigma2candidates$logL
-      logL <- logL[is.finite(logL)]
-      normL <- logL[which.min(abs(logL))]
-      L <- exp(logL - normL)
+      finite <- is.finite(logL)
+      normL <- logL[finite][which.min(abs(logL[finite]))]
+      L <- numeric(length(logL))
+      L[finite] <- exp(logL[finite] - normL)
 
       ### Sample with replacement from marginal posterior density of sigma2
       sigma2_sampleid <- sample(
-        x = 1:number_mcmc_sigmagrid,
+        x = seq_len(number_mcmc_sigmagrid),
         size = number_mcmc_sigma,
         replace = TRUE,
         prob = L
