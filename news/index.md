@@ -76,6 +76,9 @@
   defined identically in both `bdplm` and `bdplogit`) into a single
   internal file
 - Removed leftover commented-out debugging code
+- Collapsed a redundant conditional in `posterior_survival()` where both
+  branches initialized identical hazard matrices
+  ([\#8](https://github.com/graemeleehickey/bayesDP/issues/8))
 - Removed a redundant `useDynLib()` directive in the package namespace
 - Added contributor guidance documenting the `NEWS.md` subsection
   convention for future releases

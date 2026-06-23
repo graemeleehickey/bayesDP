@@ -70,6 +70,7 @@
 <li>Replaced deprecated <code>size</code> aesthetic with <code>linewidth</code> in <code><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line()</a></code> calls</li>
 <li>De-duplicated the internal <code>model.matrixBayes()</code> helper (previously defined identically in both <code>bdplm</code> and <code>bdplogit</code>) into a single internal file</li>
 <li>Removed leftover commented-out debugging code</li>
+<li>Collapsed a redundant conditional in <code>posterior_survival()</code> where both branches initialized identical hazard matrices (<a href="https://github.com/graemeleehickey/bayesDP/issues/8" class="external-link">#8</a>)</li>
 <li>Removed a redundant <code>useDynLib()</code> directive in the package namespace</li>
 <li>Added contributor guidance documenting the <code>NEWS.md</code> subsection convention for future releases</li>
 <li>Expanded <code>README.md</code> with links, supported analyses, examples, and citation guidance (<a href="https://github.com/graemeleehickey/bayesDP/issues/13" class="external-link">#13</a>)</li>
