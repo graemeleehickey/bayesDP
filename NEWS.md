@@ -60,6 +60,11 @@
 * Tidied the `mc` sigma2 sampling in `bdplm()` and kept the sampling weights
   aligned with the candidate grid when some marginal log-likelihoods are
   non-finite (#9)
+* `ppexp()` now validates its `x` argument and errors with an informative
+  message when it is neither a numeric vector nor a matrix (#10)
+* Survival curves in the `plot` and `summary` methods are now computed with a
+  vectorised C++ routine (`ppexpMV`) that transposes the hazard matrix once
+  across all time points, instead of looping `ppexp()` per time point (#11)
 * Removed a redundant `useDynLib()` directive in the package namespace
 * Added contributor guidance documenting the `NEWS.md` subsection convention
   for future releases

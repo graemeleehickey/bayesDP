@@ -106,6 +106,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// ppexpMV
+arma::mat ppexpMV(const arma::vec& q, const arma::mat& x, const arma::vec& cuts);
+RcppExport SEXP _bayesDP_ppexpMV(SEXP qSEXP, SEXP xSEXP, SEXP cutsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type q(qSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type cuts(cutsSEXP);
+    rcpp_result_gen = Rcpp::wrap(ppexpMV(q, x, cuts));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_bayesDP_sigma2marginal", (DL_FUNC) &_bayesDP_sigma2marginal, 8},
@@ -114,6 +127,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_bayesDP_betaRegSamplermc", (DL_FUNC) &_bayesDP_betaRegSamplermc, 7},
     {"_bayesDP_ppexpV", (DL_FUNC) &_bayesDP_ppexpV, 3},
     {"_bayesDP_ppexpM", (DL_FUNC) &_bayesDP_ppexpM, 3},
+    {"_bayesDP_ppexpMV", (DL_FUNC) &_bayesDP_ppexpMV, 3},
     {NULL, NULL, 0}
 };
 

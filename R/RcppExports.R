@@ -25,3 +25,7 @@ ppexpM <- function(q, x, cuts) {
     .Call(`_bayesDP_ppexpM`, q, x, cuts)
 }
 
+ppexpMV <- function(q, x, cuts) {
+    .Call(`_bayesDP_ppexpMV`, q, x, cuts)
+}
+

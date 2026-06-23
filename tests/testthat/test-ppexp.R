@@ -27,3 +27,31 @@ test_that("ppexp is monotonically non-decreasing in q", {
   vals <- vapply(qs, ppexp, numeric(1), x = x, cuts = cuts)
   expect_true(all(diff(vals) >= 0))
 })
+
+test_that("ppexp rejects non-numeric, non-matrix input", {
+  expect_error(
+    ppexp(12, "a", c(0, 6, 12, 18)),
+    "numeric vector or matrix"
+  )
+  expect_error(
+    ppexp(12, list(1, 2), c(0, 6, 12, 18)),
+    "numeric vector or matrix"
+  )
+})
+
+test_that("ppexp_times matches per-time ppexp evaluation", {
+  set.seed(8841)
+  x <- matrix(rgamma(4 * 30, 0.1, 0.1), nrow = 30)
+  cuts <- c(0, 6, 12, 18)
+  times <- c(2, 5, 9, 14, 20)
+
+  vectorized <- bayesDP:::ppexp_times(times, x, cuts)
+  per_time <- lapply(times, ppexp, x, cuts = cuts)
+
+  expect_length(vectorized, length(times))
+  for (i in seq_along(times)) {
+    # ppexpM() returns an n-by-1 column; ppexp_times() returns a plain vector.
+    # The values must match (attributes such as dim are allowed to differ).
+    expect_equal(vectorized[[i]], as.numeric(per_time[[i]]))
+  }
+})

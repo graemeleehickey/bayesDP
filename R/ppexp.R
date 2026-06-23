@@ -29,14 +29,35 @@
 #' @useDynLib bayesDP, .registration = TRUE
 #' @export
 ppexp <- function(q, x, cuts) {
-  if (!is.matrix(x)) {
-    ppout <- ppexpV(q, x, cuts)
-  } else if (is.matrix(x)) {
+  if (is.matrix(x)) {
     ppout <- ppexpM(q, x, cuts)
+  } else if (is.numeric(x)) {
+    ppout <- ppexpV(q, x, cuts)
   } else {
-    stop("Error: input x is in the wrong format.")
+    stop("`x` must be a numeric vector or matrix of hazard rates.")
   }
   return(ppout)
+}
+
+#' Evaluate ppexp() at multiple time points for a hazard matrix
+#'
+#' Internal helper that evaluates the piecewise-exponential cdf at every time
+#' in \code{q} for a matrix of hazard-rate draws \code{x}, transposing the
+#' matrix only once. Returns a list with one element per time point, each a
+#' vector of cdf values (one per row of \code{x}), matching the structure of
+#' \code{lapply(q, ppexp, x, cuts = cuts)}.
+#'
+#' @param q vector. Time points at which the cdf is to be computed.
+#' @param x matrix. The hazard-rate draws (one draw per row).
+#' @param cuts vector. Interval cut points; see \code{\link{ppexp}}.
+#'
+#' @return A list of length \code{length(q)} of cdf vectors.
+#' @keywords internal
+#' @noRd
+ppexp_times <- function(q, x, cuts) {
+  res <- ppexpMV(q, x, cuts)
+  ### Return as a list of rows to match lapply(q, ppexp, x, cuts) output
+  lapply(seq_len(nrow(res)), function(i) res[i, ])
 }
 
 .onUnload <- function(libpath) {

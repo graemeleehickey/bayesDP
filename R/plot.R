@@ -634,7 +634,7 @@ setMethod("plot", signature(x = "bdpsurvival"), function(x, type = NULL, print =
 
   ### Organize data for current treatment
   time_t <- sort(unique(args1$S_t$time))
-  survival_times_posterior_flat <- lapply(time_t, ppexp,
+  survival_times_posterior_flat <- ppexp_times(time_t,
                                           posterior_treatment$posterior_flat_hazard,
                                           cuts = c(0, breaks)
   )
@@ -650,7 +650,7 @@ setMethod("plot", signature(x = "bdpsurvival"), function(x, type = NULL, print =
   ### Organize data for historical treatment
   if (!is.null(args1$S0_t)) {
     time0_t <- sort(unique(args1$S0_t$time))
-    survival_times_prior <- lapply(time0_t, ppexp,
+    survival_times_prior <- ppexp_times(time0_t,
                                    posterior_treatment$prior_hazard,
                                    cuts = c(0, breaks)
     )
@@ -667,7 +667,7 @@ setMethod("plot", signature(x = "bdpsurvival"), function(x, type = NULL, print =
   }
 
   ### Organize data for treatment posterior
-  survival_times_posterior <- lapply(time_t, ppexp, posterior_treatment$posterior_hazard, cuts = c(0, breaks))
+  survival_times_posterior <- ppexp_times(time_t, posterior_treatment$posterior_hazard, cuts = c(0, breaks))
   survival_median_posterior <- 1 - sapply(survival_times_posterior, median)
 
   D3 <- data.frame(
@@ -680,7 +680,7 @@ setMethod("plot", signature(x = "bdpsurvival"), function(x, type = NULL, print =
   ### Organize data for current control
   if (!is.null(args1$S_c)) {
     time_c <- sort(unique(args1$S_c$time))
-    survival_times_posterior_flat <- lapply(time_c, ppexp,
+    survival_times_posterior_flat <- ppexp_times(time_c,
                                             posterior_control$posterior_flat_hazard,
                                             cuts = c(0, breaks)
     )
@@ -699,7 +699,7 @@ setMethod("plot", signature(x = "bdpsurvival"), function(x, type = NULL, print =
   ### Organize data for historical control
   if (!is.null(args1$S0_c)) {
     time0_c <- sort(unique(args1$S0_c$time))
-    survival_times_prior <- lapply(time0_c, ppexp,
+    survival_times_prior <- ppexp_times(time0_c,
                                    posterior_control$prior_hazard,
                                    cuts = c(0, breaks)
     )
@@ -717,7 +717,7 @@ setMethod("plot", signature(x = "bdpsurvival"), function(x, type = NULL, print =
 
   ### Organize data for control posterior
   if (!is.null(args1$S_c) & !is.null(args1$S0_c)) {
-    survival_times_posterior <- lapply(time_c, ppexp, posterior_control$posterior_hazard, cuts = c(0, breaks))
+    survival_times_posterior <- ppexp_times(time_c, posterior_control$posterior_hazard, cuts = c(0, breaks))
     survival_median_posterior <- 1 - sapply(survival_times_posterior, median)
 
     D6 <- data.frame(
@@ -727,7 +727,7 @@ setMethod("plot", signature(x = "bdpsurvival"), function(x, type = NULL, print =
       y = survival_median_posterior
     )
   } else if (is.null(args1$S_c) & !is.null(args1$S0_c)) {
-    survival_times_posterior <- lapply(time0_c, ppexp, posterior_control$posterior_hazard, cuts = c(0, breaks))
+    survival_times_posterior <- ppexp_times(time0_c, posterior_control$posterior_hazard, cuts = c(0, breaks))
     survival_median_posterior <- 1 - sapply(survival_times_posterior, median)
 
     D6 <- data.frame(
@@ -737,7 +737,7 @@ setMethod("plot", signature(x = "bdpsurvival"), function(x, type = NULL, print =
       y = survival_median_posterior
     )
   } else if (!is.null(args1$S_c) & is.null(args1$S0_c)) {
-    survival_times_posterior <- lapply(time_c, ppexp, posterior_control$posterior_hazard, cuts = c(0, breaks))
+    survival_times_posterior <- ppexp_times(time_c, posterior_control$posterior_hazard, cuts = c(0, breaks))
     survival_median_posterior <- 1 - sapply(survival_times_posterior, median)
 
     D6 <- data.frame(

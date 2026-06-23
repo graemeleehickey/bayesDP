@@ -64,3 +64,24 @@ arma::vec ppexpM(double q, const arma::mat& x, const arma::vec& cuts) {
   }
   return(ret);
 }
+
+
+// [[Rcpp::export]]
+arma::mat ppexpMV(const arma::vec& q, const arma::mat& x, const arma::vec& cuts) {
+
+  // Transpose the hazard matrix once, then evaluate the cdf at every query
+  // time. Returns a matrix with one row per query time and one column per
+  // hazard draw (i.e. nrow(q) x nrow(x)).
+  arma::mat y = x.t();
+
+  int nq = q.n_elem;
+  int ny = y.n_cols;
+  arma::mat ret(nq, ny);
+  for(int j = 0; j < ny; j++){
+    arma::vec xj = y.col(j);
+    for(int i = 0; i < nq; i++){
+      ret(i, j) = ppexpV(q(i), xj, cuts);
+    }
+  }
+  return(ret);
+}

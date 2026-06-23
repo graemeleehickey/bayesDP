@@ -338,7 +338,7 @@ setMethod("summary", signature(object = "bdpsurvival"), function(object) {
     n <- nrow(data_t)
     s_t <- survival::survfitKM(factor(rep(1, n)), s_t)
     
-    survival_times_posterior <- lapply(s_t$time, ppexp,
+    survival_times_posterior <- ppexp_times(s_t$time,
                                        posterior_treatment$posterior_hazard,
                                        cuts = c(0, breaks)
     )
