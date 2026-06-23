@@ -84,6 +84,16 @@
   and kept the sampling weights aligned with the candidate grid when
   some marginal log-likelihoods are non-finite
   ([\#9](https://github.com/graemeleehickey/bayesDP/issues/9))
+- [`ppexp()`](https://graemeleehickey.github.io/bayesDP/reference/ppexp.md)
+  now validates its `x` argument and errors with an informative message
+  when it is neither a numeric vector nor a matrix
+  ([\#10](https://github.com/graemeleehickey/bayesDP/issues/10))
+- Survival curves in the `plot` and `summary` methods are now computed
+  with a vectorised C++ routine (`ppexpMV`) that transposes the hazard
+  matrix once across all time points, instead of looping
+  [`ppexp()`](https://graemeleehickey.github.io/bayesDP/reference/ppexp.md)
+  per time point
+  ([\#11](https://github.com/graemeleehickey/bayesDP/issues/11))
 - Removed a redundant `useDynLib()` directive in the package namespace
 - Added contributor guidance documenting the `NEWS.md` subsection
   convention for future releases
