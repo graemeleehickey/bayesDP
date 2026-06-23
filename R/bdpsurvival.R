@@ -804,13 +804,10 @@ posterior_survival <- function(S, S0, surv_time, discount_function,
 
   posterior_hazard <- matrix(NA, number_mcmc, nInt)
 
+  ### Reuse the interval sufficient statistics (a_post, b_post, a_post0,
+  ### b_post0) computed in the discount phase above; both S and S0 are
+  ### guaranteed to be present here, so they do not need recomputing.
   for (i in 1:nInt) {
-    a_post0[i] <- a0 + sum(subset(S0, interval == S0_int[i])$status)
-    b_post0[i] <- b0 + sum(subset(S0, interval == S0_int[i])$exposure)
-
-    a_post[i] <- a0 + sum(subset(S, interval == S_int[i])$status)
-    b_post[i] <- b0 + sum(subset(S, interval == S_int[i])$exposure)
-
     ### Add on a very small value to avoid underflow
     posterior_hazard[, i] <- rgamma(
       number_mcmc,

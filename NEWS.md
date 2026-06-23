@@ -65,6 +65,9 @@
 * Survival curves in the `plot` and `summary` methods are now computed with a
   vectorised C++ routine (`ppexpMV`) that transposes the hazard matrix once
   across all time points, instead of looping `ppexp()` per time point (#11)
+* Avoided recomputing the per-interval sufficient statistics in
+  `posterior_survival()`; the augmentation step now reuses the values already
+  computed during the discount phase (#7)
 * Removed a redundant `useDynLib()` directive in the package namespace
 * Added contributor guidance documenting the `NEWS.md` subsection convention
   for future releases
