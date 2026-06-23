@@ -617,11 +617,7 @@ posterior_survival <- function(S, S0, surv_time, discount_function,
     a_post <- b_post <- numeric(nInt)
     a_post0 <- b_post0 <- numeric(nInt)
 
-    if (!is.null(S)) {
-      posterior_flat_hazard <- prior_hazard <- matrix(NA, number_mcmc, nInt)
-    } else {
-      posterior_flat_hazard <- prior_hazard <- matrix(NA, number_mcmc, nInt)
-    }
+    posterior_flat_hazard <- prior_hazard <- matrix(NA, number_mcmc, nInt)
 
     ### Compute posterior values
     for (i in 1:nInt) {
