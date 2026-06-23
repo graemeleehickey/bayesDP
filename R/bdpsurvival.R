@@ -555,6 +555,10 @@ setMethod(
       final <- NULL
     } else {
       if (arm2) {
+        ### Approximate common log-hazard ratio across piecewise intervals using
+        ### inverse-variance weighting of R_j = log(lambda_jT) - log(lambda_jC).
+        ### See the bdpsurvival vignette, 'Piecewise Exponential Model
+        ### Background', lines 72-93.
         R0 <- log(posterior_treatment$posterior_hazard) - log(posterior_control$posterior_hazard)
         V0 <- 1 / apply(R0, 2, var)
         logHR0 <- R0 %*% V0 / sum(V0)
@@ -765,9 +769,13 @@ posterior_survival <- function(S, S0, surv_time, discount_function,
       Z <- abs(R) / V0
       p_hat <- 2 * (1 - pnorm(Z))
     } else if (method == "fixed") {
+      ### Approximate common log-hazard ratio across piecewise intervals using
+      ### inverse-variance weighting of R_j = log(lambda_j,0) - log(lambda_j).
+      ### See the bdpsurvival vignette, 'Piecewise Exponential Model
+      ### Background', lines 72-93.
       R0 <- log(prior_hazard) - log(posterior_flat_hazard)
       V0 <- 1 / apply(R0, 2, var)
-      logHR0 <- R0 %*% V0 / sum(V0) # weighted average  of SE^2
+      logHR0 <- R0 %*% V0 / sum(V0)
       p_hat <- mean(logHR0 > 0) # larger is higher failure
       p_hat <- 2 * ifelse(p_hat > 0.5, 1 - p_hat, p_hat)
     } else {

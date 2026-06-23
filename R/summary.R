@@ -389,7 +389,10 @@ setMethod("summary", signature(object = "bdpsurvival"), function(object) {
   ### - Only print if arm2
   ##############################################################################
   if (arm2) {
-    ### Compute treatment effect of treatment vs control and create table
+    ### Compute treatment effect of treatment vs control via the same
+    ### inverse-variance-weighted piecewise log-hazard-ratio estimator used in
+    ### bdpsurvival(); see the bdpsurvival vignette, 'Piecewise Exponential
+    ### Model Background', lines 72-93.
     R0 <- log(posterior_treatment$posterior_hazard) - log(posterior_control$posterior_hazard)
     V0 <- 1 / apply(R0, 2, var)
     logHR0 <- R0 %*% V0 / sum(V0)
