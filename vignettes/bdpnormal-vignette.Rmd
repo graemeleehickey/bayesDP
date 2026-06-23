@@ -1,14 +1,11 @@
 ---
-title: "BayesDP"
+title: "Normal Mean Estimation with bayesDP"
 author: "Donnie Musgrove"
 date: "`r Sys.Date()`"
 output: 
   rmarkdown::html_vignette:
     toc: yes
     fig_caption: yes
-params:
-  # EVAL: !r identical(Sys.getenv("NOT_CRAN"), "true")
-  # EVAL: !r FALSE
 vignette: >
   %\VignetteIndexEntry{Normal Mean Estimation}
   %\VignetteEngine{knitr::rmarkdown}
@@ -19,10 +16,6 @@ vignette: >
 library(bayesDP)
 stopifnot(require(knitr))
 opts_chunk$set(
-  #comment = NA,
-  #message = FALSE,
-  #warning = FALSE,
-  #eval = if (isTRUE(exists("params"))) params$EVAL else FALSE,
   dev = "png",
   dpi = 150,
   fig.asp = 0.8,

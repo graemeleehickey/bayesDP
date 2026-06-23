@@ -38,6 +38,10 @@
   `bdplogit()` main fit path, factor-covariate handling in `bdplm()` and
   `bdplogit()`, and the `mc` discounting method for `bdpnormal` and
   `bdpbinomial`
+* Added a regression test pinning the `bdpnormal` flat-prior draw of the mean
+  (`posterior_flat_mu`) against its closed-form conjugate (Student-t) variance
+* Guarded the plotting tests with a null graphics device so they no longer
+  write a stray `Rplots.pdf`
 
 ## Housekeeping
 
@@ -74,6 +78,10 @@
 * Expanded `README.md` with links, supported analyses, examples, and citation
   guidance (#13)
 * Added the CRAN package URL to `DESCRIPTION` (#14)
+* Clarified in `posterior_normal()` that the flat-prior draw of the mean is the
+  conjugate posterior (scale `sqrt(sigma^2 / N)`), not the posterior predictive
+* Gave each vignette a descriptive title (previously all titled "BayesDP") and
+  removed unused `params`/`EVAL` scaffolding from the vignette headers
 
 # bayesDP 1.3.7
 
