@@ -73,6 +73,18 @@
 - Guarded the plotting tests with a null graphics device so they no
   longer write a stray `Rplots.pdf`
 
+### Documentation
+
+- Clarified the `prior_covariate_sd` documentation in
+  [`bdplm()`](https://graemeleehickey.github.io/bayesDP/reference/bdplm.md)
+  and
+  [`bdplogit()`](https://graemeleehickey.github.io/bayesDP/reference/bdplogit.md)
+  to note that covariate effects carry an intentional near-zero discount
+  weight, making their priors effectively flat. The supplied value has
+  negligible influence on the posterior, and the effective prior
+  standard deviation is roughly 1e6 larger than the nominal value at the
+  default ([\#2](https://github.com/graemeleehickey/bayesDP/issues/2))
+
 ### Housekeeping
 
 - Removed AppVeyor continuous integration

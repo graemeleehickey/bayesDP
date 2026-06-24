@@ -66,6 +66,10 @@
 </li>
 </ul></div>
 <div class="section level3">
+<h3 id="documentation-1-3-7-9000">Documentation<a class="anchor" aria-label="anchor" href="#documentation-1-3-7-9000"></a></h3>
+<ul><li>Clarified the <code>prior_covariate_sd</code> documentation in <code><a href="../reference/bdplm.html">bdplm()</a></code> and <code><a href="../reference/bdplogit.html">bdplogit()</a></code> to note that covariate effects carry an intentional near-zero discount weight, making their priors effectively flat. The supplied value has negligible influence on the posterior, and the effective prior standard deviation is roughly 1e6 larger than the nominal value at the default (<a href="https://github.com/graemeleehickey/bayesDP/issues/2" class="external-link">#2</a>)</li>
+</ul></div>
+<div class="section level3">
 <h3 id="housekeeping-1-3-7-9000">Housekeeping<a class="anchor" aria-label="anchor" href="#housekeeping-1-3-7-9000"></a></h3>
 <ul><li>Removed AppVeyor continuous integration</li>
 <li>Updated GitHub Actions workflows to the latest <code>r-lib/actions</code> examples (<code>actions/checkout@v6</code>, <code>codecov/codecov-action@v6</code>, <code>actions/upload-artifact@v7</code>)</li>
