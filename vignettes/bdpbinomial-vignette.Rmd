@@ -75,7 +75,7 @@ where $w$ may be one or more parameters associated with the discount function an
 
 There are several model inputs at this first stage. First, the user can select the discount function type via the `discount_function` input (see below). Next, choosing `fix_alpha=TRUE` forces a fixed value of $\hat{\alpha}$ (at the `alpha_max` input), as opposed to estimation via the discount function. In the next modeling stage, a Monte Carlo estimation approach is used, requiring several samples from the posterior distributions. Thus, the user can input a sample size greater than or less than the default value of `number_mcmc=10000`. Finally, the Beta rate parameters can be changed from the defaults of $a_0=b_0=1$ (`a0` and `b0` inputs). 
 
-An alternate Monte Carlo-based estimation scheme of $\hat{\alpha}$ has been implemented, controlled by the function input `method="mc"`. Here, instead of treating $\hat{\alpha}$ as a fixed quantity, $\hat{\alpha}$ is treated as random. First, $p$, is computed as 
+An alternate Monte Carlo-based estimation scheme of $\hat{\alpha}$ has been implemented, controlled by the function input `method="mc"`. Here, instead of treating $\hat{\alpha}$ as a fixed quantity, $\hat{\alpha}$ is treated as random. Because $p$ is recomputed at each Monte Carlo draw using a single pair of posterior samples, the resulting sequence of $\hat{\alpha}$ values can exhibit noticeable Monte Carlo variability. First, $p$, is computed as 
 
 $$ \begin{array}{rcl}
 v^2 & = & \displaystyle{\tilde{\theta}\left(1-\tilde{\theta}\right)/N} ,\\

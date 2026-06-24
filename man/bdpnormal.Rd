@@ -89,8 +89,11 @@ historical control group. Not used when \code{discount_function} =
 
 \item{method}{character. Analysis method with respect to estimation of the
 weight parameter alpha. Default method "\code{mc}" estimates alpha for each
-Monte Carlo iteration. Alternate value "\code{fixed}" estimates alpha once
-and holds it fixed throughout the analysis.  See the the \code{bdpnormal}
+Monte Carlo iteration. Under "\code{mc}", the stochastic comparison
+probability is recomputed at each Monte Carlo draw, so the resulting
+\code{alpha_discount} is a random vector and may exhibit substantial
+Monte Carlo variability. Alternate value "\code{fixed}" estimates alpha
+once and holds it fixed throughout the analysis. See the \code{bdpnormal}
 vignette \cr \code{vignette("bdpnormal-vignette", package="bayesDP")} for
 more details.}
 

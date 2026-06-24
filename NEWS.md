@@ -46,6 +46,10 @@
 * Added regression tests pinning the `bdpnormal` flat-prior draw of the mean
   (`posterior_flat_mu`) and the fixed current-only `posterior_mu` against their
   closed-form conjugate (Student-t) variance
+* Expanded `method="mc"` documentation in the binomial, normal, and survival
+  interfaces/vignettes to note that per-iteration recomputation of the
+  stochastic comparison yields a random `alpha_discount` sequence that can show
+  noticeable Monte Carlo variability (#4)
 * Guarded the plotting tests with a null graphics device so they no longer
   write a stray `Rplots.pdf`
 
