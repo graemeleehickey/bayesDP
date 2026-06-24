@@ -196,6 +196,26 @@ The formula must include an intercept (i.e., do not use `-1` in the
 formula) and both data and data0 must be present. The column names of
 data and data0 must match. See `examples` below for example usage.
 
+Internally, the model is parameterized without a fixed intercept, using
+separate treatment and control (log-odds) means rather than an intercept
+plus a treatment effect. In this parameterization the arm means are the
+fitted values at covariate = 0, so when covariates are not centered the
+treatment- and control-mean estimators become strongly correlated and
+their standard errors are extrapolation errors at covariate = 0. This
+distorts the discount-prior construction and the historical borrowing.
+To guard against this, `bdplogit` automatically mean-centers each
+covariate on its pooled (current plus historical) mean before fitting,
+and back-transforms the reported intercept onto the original covariate
+scale. Specifically, if \\\bar{x}\_j\\ is the pooled mean of covariate
+\\j\\ and \\\beta_j\\ its estimated effect, the reported intercept is
+\\\beta_0 = \beta_0^{c} - \sum_j \beta_j \bar{x}\_j\\, where
+\\\beta_0^{c}\\ is the control-arm log-odds estimated on the centered
+scale. The treatment effect and covariate slopes are unchanged by
+centering; the reported `intercept` remains the control-arm log-odds at
+covariate = 0 on the original scale. As a result, estimates are
+invariant to a location shift of any covariate, and users do not need to
+center covariates themselves.
+
 The underlying model uses the `MCMClogit` function of the MCMCpack
 package to carryout posterior estimation. Add more.
 
@@ -244,18 +264,18 @@ summary(fit)
 #> 
 #> Residuals:
 #>     Min    1Q Median    3Q   Max
-#>  -0.358 0.431  0.834 1.073 1.964
+#>  -0.116 0.685  1.075 1.332 2.212
 #> 
 #> Coefficients:
 #>             Estimate Std. Error
-#> (Intercept)  -1.0762     0.3163
-#> treatment     0.8538     0.4161
+#> (Intercept)  -1.0822     0.3901
+#> treatment     0.8140     0.4008
 #> 
 #> Discount function value (alpha):
 #>  treatment control
-#>      0.332   0.456
+#>      0.244   0.422
 #> 
-#> Residual standard error: 0.2321
+#> Residual standard error: 0.2548
 print(fit)
 #> 
 #> Call:
@@ -265,11 +285,11 @@ print(fit)
 #> 
 #> Coefficients:
 #>  (Intercept) treatment
-#>       -1.076     0.854
+#>       -1.082     0.814
 #> 
 #> 
 #> Discount function value (alpha):
 #>  treatment control
-#>      0.332   0.456
+#>      0.244   0.422
 #> 
 ```

@@ -152,7 +152,7 @@ is the unknown error variance.</p>
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>𝐱</mi><mi>i</mi><mi>T</mi></msubsup><msub><mi>𝛃</mi><mrow><mi>−</mi><mo stretchy="false" form="prefix">(</mo><mn>0</mn><mo>,</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo></mrow></msub><mo>=</mo><msub><mi>x</mi><mrow><mn>2</mn><mi>i</mi></mrow></msub><msub><mi>β</mi><mn>2</mn></msub><mo>+</mo><mi>⋯</mi><mo>+</mo><msub><mi>x</mi><mrow><mi>m</mi><mi>i</mi></mrow></msub><msub><mi>β</mi><mi>m</mi></msub></mrow><annotation encoding="application/x-tex">\boldsymbol{x}_i^T\boldsymbol{\beta}_{-(0,1)} = x_{2i}\beta_2 + \cdots+x_{mi}\beta_m</annotation></semantics></math>.
 Then, in order to place prior values on the treatment effect, we
 reparameterize the linear regression model as
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>y</mi><mi>i</mi></msub><mo>=</mo><msubsup><mi>β</mi><mn>0</mn><mo>*</mo></msubsup><mi>I</mi><mo stretchy="false" form="prefix">(</mo><mi>c</mi><mi>o</mi><mi>n</mi><mi>t</mi><mi>r</mi><mi>o</mi><msub><mi>l</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">)</mo><mo>+</mo><msubsup><mi>β</mi><mn>1</mn><mo>*</mo></msubsup><mi>I</mi><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mi>r</mi><mi>e</mi><mi>a</mi><mi>t</mi><mi>m</mi><mi>e</mi><mi>n</mi><msub><mi>t</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">)</mo><mo>+</mo><msubsup><mi>𝐱</mi><mi>i</mi><mi>T</mi></msubsup><msub><mi>β</mi><mrow><mi>−</mi><mo stretchy="false" form="prefix">(</mo><mn>0</mn><mo>,</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo></mrow></msub><mo>+</mo><msub><mi>ε</mi><mi>i</mi></msub><mo>,</mo><msub><mi>ε</mi><mi>i</mi></msub><mo>∼</mo><mi>𝒩</mi><mi>o</mi><mi>r</mi><mi>m</mi><mi>a</mi><mi>l</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>0</mn><mo>,</mo><mspace width="0.167em"></mspace><msup><mi>σ</mi><mn>2</mn></msup><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo><mspace width="0.167em"></mspace><mspace width="0.167em"></mspace><mspace width="0.167em"></mspace><mi>i</mi><mo>=</mo><mn>1</mn><mo>,</mo><mi>…</mi><mo>,</mo><mi>n</mi><mo>,</mo></mrow><annotation encoding="application/x-tex">y_i = \beta_0^{\ast}I(control_i) + \beta_1^{\ast}I(treatment_i) + \boldsymbol{x}_i^T\beta_{-(0,1)} + \varepsilon_i, \varepsilon_i \sim \mathcal{N}ormal\left(0,\,\sigma^2\right),\,\,\,i=1,\dots,n,</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>y</mi><mi>i</mi></msub><mo>=</mo><msubsup><mi>β</mi><mn>0</mn><mo>*</mo></msubsup><mi>I</mi><mo stretchy="false" form="prefix">(</mo><mi>c</mi><mi>o</mi><mi>n</mi><mi>t</mi><mi>r</mi><mi>o</mi><msub><mi>l</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">)</mo><mo>+</mo><msubsup><mi>β</mi><mn>1</mn><mo>*</mo></msubsup><mi>I</mi><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mi>r</mi><mi>e</mi><mi>a</mi><mi>t</mi><mi>m</mi><mi>e</mi><mi>n</mi><msub><mi>t</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">)</mo><mo>+</mo><msubsup><mi>𝐱</mi><mi>i</mi><mi>T</mi></msubsup><msub><mi>β</mi><mrow><mi>−</mi><mo stretchy="false" form="prefix">(</mo><mn>0</mn><mo>,</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo></mrow></msub><mo>+</mo><msub><mi>ε</mi><mi>i</mi></msub><mo>,</mo><msub><mi>ε</mi><mi>i</mi></msub><mo>∼</mo><mi>𝒩</mi><mi>o</mi><mi>r</mi><mi>m</mi><mi>a</mi><mi>l</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>0</mn><mo>,</mo><mspace width="0.167em"></mspace><msup><mi>σ</mi><mn>2</mn></msup><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo><mspace width="0.167em"></mspace><mspace width="0.167em"></mspace><mspace width="0.167em"></mspace><mi>i</mi><mo>=</mo><mn>1</mn><mo>,</mo><mi>…</mi><mo>,</mo><mi>n</mi><mo>,</mo></mrow><annotation encoding="application/x-tex">y_i = \beta_0^{\ast}I(control_i) + \beta_1^{\ast}I(treatment_i) + \boldsymbol{x}_i^T\beta_{-(0,1)} + \varepsilon_i, \varepsilon_i \sim \mathcal{N}ormal\left(0,\,\sigma^2\right),\,\,\,i=1,\dots,n,</annotation></semantics></math>
 where now
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>I</mi><mo stretchy="false" form="prefix">(</mo><mi>c</mi><mi>o</mi><mi>n</mi><mi>t</mi><mi>r</mi><mi>o</mi><msub><mi>l</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">I(control_i)</annotation></semantics></math>
 indicates whether observation
@@ -163,6 +163,41 @@ It is then straightforward to show that
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>β</mi><mn>0</mn></msub><mo>=</mo><msubsup><mi>β</mi><mn>0</mn><mo>*</mo></msubsup></mrow><annotation encoding="application/x-tex">\beta_0 = \beta^{\ast}_0</annotation></semantics></math>
 and
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>β</mi><mn>1</mn></msub><mo>=</mo><msubsup><mi>β</mi><mn>1</mn><mo>*</mo></msubsup><mo>−</mo><msubsup><mi>β</mi><mn>0</mn><mo>*</mo></msubsup></mrow><annotation encoding="application/x-tex">\beta_1 = \beta_1^{\ast} - \beta^{\ast}_0</annotation></semantics></math>.</p>
+<p>In this reparameterization,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>β</mi><mn>0</mn><mo>*</mo></msubsup><annotation encoding="application/x-tex">\beta_0^{\ast}</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>β</mi><mn>1</mn><mo>*</mo></msubsup><annotation encoding="application/x-tex">\beta_1^{\ast}</annotation></semantics></math>
+are the control and treatment arm means evaluated at covariate
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">= 0</annotation></semantics></math>.
+When the covariates are not centered, these arm-mean parameters become
+strongly correlated and their (historical) standard errors are
+extrapolation errors at covariate
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">= 0</annotation></semantics></math>.
+Because the historical information is incorporated through an
+independent (diagonal) prior on each arm mean, this correlation and the
+inflated standard errors distort the borrowing of historical data. To
+avoid this, <code>bdplm</code> automatically mean-centers each covariate
+on its pooled (current plus historical) mean before fitting, so that
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>β</mi><mn>0</mn><mo>*</mo></msubsup><annotation encoding="application/x-tex">\beta_0^{\ast}</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>β</mi><mn>1</mn><mo>*</mo></msubsup><annotation encoding="application/x-tex">\beta_1^{\ast}</annotation></semantics></math>
+are the arm means at the average covariate value. The intercept is then
+back-transformed onto the original covariate scale: with pooled
+covariate means
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>x</mi><mo accent="true">‾</mo></mover><mi>j</mi></msub><annotation encoding="application/x-tex">\bar{x}_j</annotation></semantics></math>
+and estimated covariate effects
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>β</mi><mi>j</mi></msub><annotation encoding="application/x-tex">\beta_j</annotation></semantics></math>,
+the reported intercept is
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>β</mi><mn>0</mn></msub><mo>=</mo><msubsup><mi>β</mi><mn>0</mn><mo>*</mo></msubsup><mo>−</mo><msub><mo>∑</mo><mi>j</mi></msub><msub><mi>β</mi><mi>j</mi></msub><msub><mover><mi>x</mi><mo accent="true">‾</mo></mover><mi>j</mi></msub></mrow><annotation encoding="application/x-tex">\beta_0 = \beta_0^{\ast} - \sum_j \beta_j\bar{x}_j</annotation></semantics></math>,
+so
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>β</mi><mn>0</mn></msub><annotation encoding="application/x-tex">\beta_0</annotation></semantics></math>
+is still the control mean at covariate
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">= 0</annotation></semantics></math>
+on the original scale. The treatment effect
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>β</mi><mn>1</mn></msub><annotation encoding="application/x-tex">\beta_1</annotation></semantics></math>
+and the covariate effects are unchanged by centering, and the estimates
+are invariant to a location shift of any covariate. Users therefore do
+not need to center covariates themselves.</p>
 </div>
 <div class="section level3">
 <h3 id="estimation-of-the-historical-data-weight">Estimation of the historical data weight<a class="anchor" aria-label="anchor" href="#estimation-of-the-historical-data-weight"></a>
@@ -474,19 +509,19 @@ simulate a dataframe and view the estimates of the model fit.</p>
 <span><span class="co">## </span></span>
 <span><span class="co">## Residuals:</span></span>
 <span><span class="co">##      Min     1Q Median    3Q    Max</span></span>
-<span><span class="co">##  -13.417 -3.018  0.276 4.227 10.088</span></span>
+<span><span class="co">##  -10.891 -0.514  2.818 6.749 12.574</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Coefficients:</span></span>
 <span><span class="co">##             Estimate Std. Error</span></span>
-<span><span class="co">## (Intercept)   9.9342     0.4542</span></span>
-<span><span class="co">## treatment    31.2447     0.9273</span></span>
-<span><span class="co">## x             3.0147     0.1076</span></span>
+<span><span class="co">## (Intercept)   9.8820     0.4585</span></span>
+<span><span class="co">## treatment    31.2838     0.9207</span></span>
+<span><span class="co">## x             3.0118     0.1077</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Discount function value (alpha):</span></span>
 <span><span class="co">##  treatment control</span></span>
 <span><span class="co">##       0.07    0.99</span></span>
 <span><span class="co">## </span></span>
-<span><span class="co">## Residual standard error: 4.754</span></span></code></pre>
+<span><span class="co">## Residual standard error: 4.7541</span></span></code></pre>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## </span></span>
@@ -496,7 +531,7 @@ simulate a dataframe and view the estimates of the model fit.</p>
 <span><span class="co">## </span></span>
 <span><span class="co">## Coefficients:</span></span>
 <span><span class="co">##  (Intercept) treatment     x</span></span>
-<span><span class="co">##        9.934    31.245 3.015</span></span>
+<span><span class="co">##        9.882    31.284 3.012</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Discount function value (alpha):</span></span>

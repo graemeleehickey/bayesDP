@@ -4,6 +4,20 @@
 
 ### Bug fixes
 
+- Fixed
+  [`bdplm()`](https://graemeleehickey.github.io/bayesDP/reference/bdplm.md)
+  and
+  [`bdplogit()`](https://graemeleehickey.github.io/bayesDP/reference/bdplogit.md)
+  producing invalid historical borrowing when covariates were not
+  mean-centered. Because the models use an intercept-free
+  parameterization (separate treatment and control means), uncentered
+  covariates made the arm-mean estimators strongly correlated and
+  inflated their standard errors as extrapolation errors at covariate =
+  0, corrupting the (diagonal) discount prior. Both functions now
+  automatically mean-center covariates on their pooled (current plus
+  historical) mean and back-transform the reported intercept, so
+  estimates are invariant to covariate location shifts
+  ([\#1](https://github.com/graemeleehickey/bayesDP/issues/1))
 - Fixed a bug where the `summary` methods for `bdpnormal` and
   `bdpbinomial` read the one-/two-arm indicator from the wrong list
   element (`args` instead of `args1`), causing two-arm fits to be

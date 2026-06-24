@@ -245,6 +245,25 @@ the following components:</p><dl><dt><code>posterior</code></dt>
   the formula) and both data and data0 must be present.
   The column names of data and data0 must match. See <code>examples</code> below for
   example usage.</p>
+<p>Internally, the model is parameterized without a fixed intercept, using
+  separate treatment and control (log-odds) means rather than an intercept
+  plus a treatment effect. In this parameterization the arm means are the
+  fitted values at covariate = 0, so when covariates are not centered the
+  treatment- and control-mean estimators become strongly correlated and
+  their standard errors are extrapolation errors at covariate = 0. This
+  distorts the discount-prior construction and the historical borrowing. To
+  guard against this, <code>bdplogit</code> automatically mean-centers each
+  covariate on its pooled (current plus historical) mean before fitting, and
+  back-transforms the reported intercept onto the original covariate scale.
+  Specifically, if \(\bar{x}_j\) is the pooled mean of covariate \(j\)
+  and \(\beta_j\) its estimated effect, the reported intercept is
+  \(\beta_0 = \beta_0^{c} - \sum_j \beta_j \bar{x}_j\), where
+  \(\beta_0^{c}\) is the control-arm log-odds estimated on the centered
+  scale. The treatment effect and covariate slopes are unchanged by
+  centering; the reported <code>intercept</code> remains the control-arm log-odds
+  at covariate = 0 on the original scale. As a result, estimates are
+  invariant to a location shift of any covariate, and users do not need to
+  center covariates themselves.</p>
 <p>The underlying model uses the <code>MCMClogit</code> function of the MCMCpack
   package to carryout posterior estimation. Add more.</p>
     </div>
@@ -293,18 +312,18 @@ the following components:</p><dl><dt><code>posterior</code></dt>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Residuals:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     Min    1Q Median    3Q   Max</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  -0.358 0.431  0.834 1.073 1.964</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  -0.116 0.685  1.075 1.332 2.212</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Coefficients:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             Estimate Std. Error</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept)  -1.0762     0.3163</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> treatment     0.8538     0.4161</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept)  -1.0822     0.3901</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> treatment     0.8140     0.4008</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Discount function value (alpha):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  treatment control</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      0.332   0.456</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      0.244   0.422</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Residual standard error: 0.2321</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Residual standard error: 0.2548</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Call:</span>
@@ -314,12 +333,12 @@ the following components:</p><dl><dt><code>posterior</code></dt>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Coefficients:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept) treatment</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       -1.076     0.854</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       -1.082     0.814</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Discount function value (alpha):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  treatment control</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      0.332   0.456</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      0.244   0.422</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 </code></pre></div>
     </div>

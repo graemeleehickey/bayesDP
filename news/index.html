@@ -43,7 +43,8 @@
 <h2 class="pkg-version" data-toc-text="1.3.7.9000" id="bayesdp-1379000">bayesDP 1.3.7.9000<a class="anchor" aria-label="anchor" href="#bayesdp-1379000"></a></h2>
 <div class="section level3">
 <h3 id="bug-fixes-1-3-7-9000">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-3-7-9000"></a></h3>
-<ul><li>Fixed a bug where the <code>summary</code> methods for <code>bdpnormal</code> and <code>bdpbinomial</code> read the one-/two-arm indicator from the wrong list element (<code>args</code> instead of <code>args1</code>), causing two-arm fits to be summarised as one-arm</li>
+<ul><li>Fixed <code><a href="../reference/bdplm.html">bdplm()</a></code> and <code><a href="../reference/bdplogit.html">bdplogit()</a></code> producing invalid historical borrowing when covariates were not mean-centered. Because the models use an intercept-free parameterization (separate treatment and control means), uncentered covariates made the arm-mean estimators strongly correlated and inflated their standard errors as extrapolation errors at covariate = 0, corrupting the (diagonal) discount prior. Both functions now automatically mean-center covariates on their pooled (current plus historical) mean and back-transform the reported intercept, so estimates are invariant to covariate location shifts (<a href="https://github.com/graemeleehickey/bayesDP/issues/1" class="external-link">#1</a>)</li>
+<li>Fixed a bug where the <code>summary</code> methods for <code>bdpnormal</code> and <code>bdpbinomial</code> read the one-/two-arm indicator from the wrong list element (<code>args</code> instead of <code>args1</code>), causing two-arm fits to be summarised as one-arm</li>
 <li>Fixed a bug in the two-arm <code>bdpsurvival</code> summary that errored when current control data were absent</li>
 <li>Fixed an invalid matrix index (<code>Y[, 0]</code>) used when computing the default <code>surv_time</code> in <code>bdpsurvival</code>
 </li>

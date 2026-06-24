@@ -208,6 +208,26 @@ The formula must include an intercept (i.e., do not use `-1` in the
 formula) and both data and data0 must be present. The column names of
 data and data0 must match. See `examples` below for example usage.
 
+Internally, the model is parameterized without a fixed intercept, using
+separate treatment and control means rather than an intercept plus a
+treatment effect. In this parameterization the arm means are the fitted
+values at covariate = 0, so when covariates are not centered the
+treatment- and control-mean estimators become strongly correlated and
+their standard errors are extrapolation errors at covariate = 0. This
+distorts the discount-prior construction and the historical borrowing.
+To guard against this, `bdplm` automatically mean-centers each covariate
+on its pooled (current plus historical) mean before fitting, and
+back-transforms the reported intercept onto the original covariate
+scale. Specifically, if \\\bar{x}\_j\\ is the pooled mean of covariate
+\\j\\ and \\\beta_j\\ its estimated effect, the reported intercept is
+\\\beta_0 = \beta_0^{c} - \sum_j \beta_j \bar{x}\_j\\, where
+\\\beta_0^{c}\\ is the control-arm mean estimated on the centered scale.
+The treatment effect and covariate slopes are unchanged by centering;
+the reported `intercept` remains the control-arm mean at covariate = 0
+on the original scale. As a result, estimates are invariant to a
+location shift of any covariate, and users do not need to center
+covariates themselves.
+
 The underlying model results in a marginal posterior distribution for
 the error variance `sigma2` that does not have a known distribution.
 Thus, we use a grid search to draw samples of `sigma2`. First, the
@@ -263,20 +283,20 @@ summary(fit)
 #> bdplm(formula = Y ~ treatment + x, data = df_, data0 = df0, method = "fixed")
 #> 
 #> Residuals:
-#>     Min    1Q Median    3Q   Max
-#>  -9.543 -2.92 -0.125 5.374 12.42
+#>     Min     1Q Median    3Q    Max
+#>  -7.096 -0.492  2.569 7.794 15.307
 #> 
 #> Coefficients:
 #>             Estimate Std. Error
-#> (Intercept)   9.5950     0.7254
-#> treatment    30.3507     1.0408
-#> x             2.8659     0.1450
+#> (Intercept)   9.7721     0.7334
+#> treatment    30.3256     1.0342
+#> x             2.8382     0.1455
 #> 
 #> Discount function value (alpha):
 #>  treatment control
 #>     0.2776  0.3348
 #> 
-#> Residual standard error: 5.7045
+#> Residual standard error: 5.681
 print(fit)
 #> 
 #> Call:
@@ -285,7 +305,7 @@ print(fit)
 #> 
 #> Coefficients:
 #>  (Intercept) treatment     x
-#>        9.595    30.351 2.866
+#>        9.772    30.326 2.838
 #> 
 #> 
 #> Discount function value (alpha):

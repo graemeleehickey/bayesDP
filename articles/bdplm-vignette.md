@@ -69,13 +69,31 @@ Let
 $`\boldsymbol{x}_i^T\boldsymbol{\beta}_{-(0,1)} = x_{2i}\beta_2 + \cdots+x_{mi}\beta_m`$.
 Then, in order to place prior values on the treatment effect, we
 reparameterize the linear regression model as
-``` math
-y_i = \beta_0^{\ast}I(control_i) + \beta_1^{\ast}I(treatment_i) + \boldsymbol{x}_i^T\beta_{-(0,1)} + \varepsilon_i, \varepsilon_i \sim \mathcal{N}ormal\left(0,\,\sigma^2\right),\,\,\,i=1,\dots,n,
-```
+$`y_i = \beta_0^{\ast}I(control_i) + \beta_1^{\ast}I(treatment_i) + \boldsymbol{x}_i^T\beta_{-(0,1)} + \varepsilon_i, \varepsilon_i \sim \mathcal{N}ormal\left(0,\,\sigma^2\right),\,\,\,i=1,\dots,n,`$
 where now $`I(control_i)`$ indicates whether observation $`i`$ is in the
 control arm, i.e., $`I(control_i) = 1 - I(treatment_i)`$. It is then
 straightforward to show that $`\beta_0 = \beta^{\ast}_0`$ and
 $`\beta_1 = \beta_1^{\ast} - \beta^{\ast}_0`$.
+
+In this reparameterization, $`\beta_0^{\ast}`$ and $`\beta_1^{\ast}`$
+are the control and treatment arm means evaluated at covariate $`= 0`$.
+When the covariates are not centered, these arm-mean parameters become
+strongly correlated and their (historical) standard errors are
+extrapolation errors at covariate $`= 0`$. Because the historical
+information is incorporated through an independent (diagonal) prior on
+each arm mean, this correlation and the inflated standard errors distort
+the borrowing of historical data. To avoid this, `bdplm` automatically
+mean-centers each covariate on its pooled (current plus historical) mean
+before fitting, so that $`\beta_0^{\ast}`$ and $`\beta_1^{\ast}`$ are
+the arm means at the average covariate value. The intercept is then
+back-transformed onto the original covariate scale: with pooled
+covariate means $`\bar{x}_j`$ and estimated covariate effects
+$`\beta_j`$, the reported intercept is
+$`\beta_0 = \beta_0^{\ast} - \sum_j \beta_j\bar{x}_j`$, so $`\beta_0`$
+is still the control mean at covariate $`= 0`$ on the original scale.
+The treatment effect $`\beta_1`$ and the covariate effects are unchanged
+by centering, and the estimates are invariant to a location shift of any
+covariate. Users therefore do not need to center covariates themselves.
 
 ### Estimation of the historical data weight
 
@@ -325,19 +343,19 @@ summary(fit)
     ## 
     ## Residuals:
     ##      Min     1Q Median    3Q    Max
-    ##  -13.417 -3.018  0.276 4.227 10.088
+    ##  -10.891 -0.514  2.818 6.749 12.574
     ## 
     ## Coefficients:
     ##             Estimate Std. Error
-    ## (Intercept)   9.9342     0.4542
-    ## treatment    31.2447     0.9273
-    ## x             3.0147     0.1076
+    ## (Intercept)   9.8820     0.4585
+    ## treatment    31.2838     0.9207
+    ## x             3.0118     0.1077
     ## 
     ## Discount function value (alpha):
     ##  treatment control
     ##       0.07    0.99
     ## 
-    ## Residual standard error: 4.754
+    ## Residual standard error: 4.7541
 
 ``` r
 
@@ -351,7 +369,7 @@ print(fit)
     ## 
     ## Coefficients:
     ##  (Intercept) treatment     x
-    ##        9.934    31.245 3.015
+    ##        9.882    31.284 3.012
     ## 
     ## 
     ## Discount function value (alpha):
