@@ -62,7 +62,13 @@ covariates.}
 covariate effect(s). Default value is 1e4. If a single value is input, the
 the scalar is repeated to the length of the input covariates. Otherwise,
 care must be taken to ensure the length of the input matches the number of
-covariates.}
+covariates. Note that covariate effects are intentionally assigned a
+near-zero historical discount weight, so their priors are effectively flat:
+the value supplied here has negligible influence on the posterior, and the
+effective prior standard deviation is much larger than the nominal value
+(by a factor of roughly 1e6 at the default). In practice the covariate
+coefficients are estimated almost entirely from the current data, and the
+posterior is insensitive to this argument across many orders of magnitude.}
 
 \item{number_mcmc_alpha}{scalar. Number of Monte Carlo
 simulations for estimating the historical data weight. Default is 5000.}
