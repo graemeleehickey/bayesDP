@@ -203,7 +203,10 @@ the defaults of $`a_0=b_0=1`$ (`a0` and `b0` inputs).
 An alternate Monte Carlo-based estimation scheme of $`\hat{\alpha}`$ has
 been implemented, controlled by the function input `method="mc"`. Here,
 instead of treating $`\hat{\alpha}`$ as a fixed quantity,
-$`\hat{\alpha}`$ is treated as random. For a one-arm analysis, let
+$`\hat{\alpha}`$ is treated as random. Because each Monte Carlo
+iteration recomputes the comparison probability from that iteration’s
+posterior draws, the resulting sequence of $`\hat{\alpha}`$ values can
+exhibit noticeable Monte Carlo variability. For a one-arm analysis, let
 $`p_1`$ denote the posterior probability. Then, $`p_1`$ is computed as
 
 ``` math

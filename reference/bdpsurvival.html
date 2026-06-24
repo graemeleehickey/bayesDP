@@ -172,10 +172,13 @@ historical control group.</p></dd>
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
 <dd><p>character. Analysis method with respect to estimation of the
 weight parameter alpha. Default method "<code>mc</code>" estimates alpha for each
-Monte Carlo iteration. Alternate value "<code>fixed</code>" estimates alpha once
-and holds it fixed throughout the analysis.  See the the <code>bdpsurvival</code>
-vignette <br><code><a href="../articles/bdpsurvival-vignette.html">vignette("bdpsurvival-vignette", package="bayesDP")</a></code> for
-more details.</p></dd>
+Monte Carlo iteration. Under "<code>mc</code>", the stochastic comparison
+probability is recomputed at each Monte Carlo draw, so the resulting
+<code>alpha_discount</code> is a random vector and may exhibit substantial
+Monte Carlo variability. Alternate value "<code>fixed</code>" estimates alpha
+once and holds it fixed throughout the analysis. See the
+<code>bdpsurvival</code> vignette <br><code><a href="../articles/bdpsurvival-vignette.html">vignette("bdpsurvival-vignette", package="bayesDP")</a></code> for more
+details.</p></dd>
 
 
 <dt id="arg-compare">compare<a class="anchor" aria-label="anchor" href="#arg-compare"></a></dt>

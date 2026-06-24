@@ -91,7 +91,10 @@ Beta rate parameters can be changed from the defaults of $`a_0=b_0=1`$
 An alternate Monte Carlo-based estimation scheme of $`\hat{\alpha}`$ has
 been implemented, controlled by the function input `method="mc"`. Here,
 instead of treating $`\hat{\alpha}`$ as a fixed quantity,
-$`\hat{\alpha}`$ is treated as random. First, $`p`$, is computed as
+$`\hat{\alpha}`$ is treated as random. Because $`p`$ is recomputed at
+each Monte Carlo draw using a single pair of posterior samples, the
+resulting sequence of $`\hat{\alpha}`$ values can exhibit noticeable
+Monte Carlo variability. First, $`p`$, is computed as
 
 ``` math
  \begin{array}{rcl}

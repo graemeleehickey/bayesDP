@@ -61,6 +61,7 @@
 <li>Expanded test coverage from ~60% to ~76%, adding tests for <code><a href="../reference/alpha_discount.html">alpha_discount()</a></code> and <code><a href="../reference/probability_discount.html">probability_discount()</a></code> (both now fully covered), the <code><a href="../reference/ppexp.html">ppexp()</a></code> vector and matrix paths, the <code>print</code> methods (now fully covered), additional <code>plot</code> branches, input-validation paths, the <code><a href="../reference/bdplogit.html">bdplogit()</a></code> main fit path, factor-covariate handling in <code><a href="../reference/bdplm.html">bdplm()</a></code> and <code><a href="../reference/bdplogit.html">bdplogit()</a></code>, and the <code>mc</code> discounting method for <code>bdpnormal</code> and <code>bdpbinomial</code>
 </li>
 <li>Added regression tests pinning the <code>bdpnormal</code> flat-prior draw of the mean (<code>posterior_flat_mu</code>) and the fixed current-only <code>posterior_mu</code> against their closed-form conjugate (Student-t) variance</li>
+<li>Expanded <code>method="mc"</code> documentation in the binomial, normal, and survival interfaces/vignettes to note that per-iteration recomputation of the stochastic comparison yields a random <code>alpha_discount</code> sequence that can show noticeable Monte Carlo variability (<a href="https://github.com/graemeleehickey/bayesDP/issues/4" class="external-link">#4</a>)</li>
 <li>Guarded the plotting tests with a null graphics device so they no longer write a stray <code>Rplots.pdf</code>
 </li>
 </ul></div>

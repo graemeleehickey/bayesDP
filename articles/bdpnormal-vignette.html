@@ -63,7 +63,7 @@
                         <h4 data-toc-skip class="author">Donnie
 Musgrove</h4>
             
-            <h4 data-toc-skip class="date">2026-06-23</h4>
+            <h4 data-toc-skip class="date">2026-06-24</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/graemeleehickey/bayesDP/blob/master/vignettes/bdpnormal-vignette.Rmd" class="external-link"><code>vignettes/bdpnormal-vignette.Rmd</code></a></small>
       <div class="d-none name"><code>bdpnormal-vignette.Rmd</code></div>
@@ -187,7 +187,12 @@ has been implemented, controlled by the function input
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>α</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\alpha}</annotation></semantics></math>
 as a fixed quantity,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>α</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\alpha}</annotation></semantics></math>
-is treated as random. First,
+is treated as random. Because
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>p</mi><annotation encoding="application/x-tex">p</annotation></semantics></math>
+is recomputed at each Monte Carlo draw using a single pair of posterior
+samples, the resulting sequence of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>α</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\alpha}</annotation></semantics></math>
+values can exhibit noticeable Monte Carlo variability. First,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>p</mi><annotation encoding="application/x-tex">p</annotation></semantics></math>,
 is computed as</p>
 <p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtable><mtr><mtd columnalign="right" style="text-align: right"><mi>Z</mi></mtd><mtd columnalign="center" style="text-align: center"><mo>=</mo></mtd><mtd columnalign="left" style="text-align: left"><mfrac><mrow><mo stretchy="true" form="prefix">|</mo><mover><mi>μ</mi><mo accent="true">̃</mo></mover><mo>−</mo><msub><mi>μ</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">|</mo></mrow><msqrt><mrow><msup><mi>v</mi><mn>2</mn></msup><mo>+</mo><msubsup><mi>v</mi><mn>0</mn><mn>2</mn></msubsup></mrow></msqrt></mfrac><mo>,</mo></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right"></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right"><mi>p</mi></mtd><mtd columnalign="center" style="text-align: center"><mo>=</mo></mtd><mtd columnalign="left" style="text-align: left"><mn>2</mn><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>−</mo><mi mathvariant="normal">Φ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>Z</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo></mtd></mtr></mtable><annotation encoding="application/x-tex"> \begin{array}{rcl}

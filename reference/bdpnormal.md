@@ -130,9 +130,11 @@ bdpnormal(
 
   character. Analysis method with respect to estimation of the weight
   parameter alpha. Default method "`mc`" estimates alpha for each Monte
-  Carlo iteration. Alternate value "`fixed`" estimates alpha once and
-  holds it fixed throughout the analysis. See the the `bdpnormal`
-  vignette  
+  Carlo iteration. Under "`mc`", the stochastic comparison probability
+  is recomputed at each Monte Carlo draw, so the resulting
+  `alpha_discount` is a random vector and may exhibit substantial Monte
+  Carlo variability. Alternate value "`fixed`" estimates alpha once and
+  holds it fixed throughout the analysis. See the `bdpnormal` vignette  
   [`vignette("bdpnormal-vignette", package="bayesDP")`](https://graemeleehickey.github.io/bayesDP/articles/bdpnormal-vignette.md)
   for more details.
 

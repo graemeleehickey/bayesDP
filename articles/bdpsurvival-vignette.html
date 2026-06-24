@@ -63,7 +63,7 @@
                         <h4 data-toc-skip class="author">Donnie
 Musgrove</h4>
             
-            <h4 data-toc-skip class="date">2026-06-23</h4>
+            <h4 data-toc-skip class="date">2026-06-24</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/graemeleehickey/bayesDP/blob/master/vignettes/bdpsurvival-vignette.Rmd" class="external-link"><code>vignettes/bdpsurvival-vignette.Rmd</code></a></small>
       <div class="d-none name"><code>bdpsurvival-vignette.Rmd</code></div>
@@ -356,7 +356,12 @@ has been implemented, controlled by the function input
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>α</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\alpha}</annotation></semantics></math>
 as a fixed quantity,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>α</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\alpha}</annotation></semantics></math>
-is treated as random. For a one-arm analysis, let
+is treated as random. Because each Monte Carlo iteration recomputes the
+comparison probability from that iteration’s posterior draws, the
+resulting sequence of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>α</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\alpha}</annotation></semantics></math>
+values can exhibit noticeable Monte Carlo variability. For a one-arm
+analysis, let
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>p</mi><mn>1</mn></msub><annotation encoding="application/x-tex">p_1</annotation></semantics></math>
 denote the posterior probability. Then,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>p</mi><mn>1</mn></msub><annotation encoding="application/x-tex">p_1</annotation></semantics></math>
