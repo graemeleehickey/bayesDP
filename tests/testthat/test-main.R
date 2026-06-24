@@ -287,3 +287,56 @@ test_that("bdplm recovers the treatment effect and stores discount weights", {
 
   expect_output(summary(fit), "Coefficients:")
 })
+
+test_that("bdplm treatment effect is invariant to covariate location shifts (#1)", {
+  # bdplm uses an intercept-free parameterization (separate treatment/control
+  # means), so it now mean-centers covariates internally. A pure location shift
+  # of a covariate only relabels where covariate = 0 sits and must not change
+  # the treatment effect, its posterior SD, or the covariate slope. The
+  # intercept (control mean at covariate = 0) is expected to change, and is
+  # checked to follow the exact back-transformation.
+  set.seed(3361)
+  n <- 60
+  n0 <- 200
+  trt <- rep(0:1, each = n / 2)
+  trt0 <- rep(0:1, each = n0 / 2)
+  x_base <- rnorm(n, 0, 3)
+  x0_base <- rnorm(n0, 0, 3)
+  Y <- 10 + 5 * trt + 3 * x_base + rnorm(n, 0, 2)
+  Y0 <- 10 + 5 * trt0 + 3 * x0_base + rnorm(n0, 0, 2)
+
+  fit_at_shift <- function(shift) {
+    cur <- data.frame(Y = Y, treatment = trt, x = x_base + shift)
+    hist <- data.frame(Y = Y0, treatment = trt0, x = x0_base + shift)
+    set.seed(2025)
+    bdplm(Y ~ treatment + x, data = cur, data0 = hist, method = "fixed")
+  }
+
+  fit0 <- fit_at_shift(0)
+  fit_shift <- fit_at_shift(100)
+
+  # Treatment effect, its posterior SD, and the slope are invariant.
+  expect_equal(
+    mean(fit_shift$posterior$treatment),
+    mean(fit0$posterior$treatment),
+    tolerance = 1e-8
+  )
+  expect_equal(
+    sd(fit_shift$posterior$treatment),
+    sd(fit0$posterior$treatment),
+    tolerance = 1e-8
+  )
+  expect_equal(
+    mean(fit_shift$posterior$x),
+    mean(fit0$posterior$x),
+    tolerance = 1e-8
+  )
+
+  # The intercept is the control mean at covariate = 0, so shifting x by 100
+  # moves it by exactly -100 * slope.
+  expect_equal(
+    mean(fit_shift$posterior$intercept),
+    mean(fit0$posterior$intercept) - 100 * mean(fit0$posterior$x),
+    tolerance = 1e-6
+  )
+})

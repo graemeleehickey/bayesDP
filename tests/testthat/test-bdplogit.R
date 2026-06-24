@@ -100,3 +100,56 @@ test_that("bdplogit honours user-specified priors", {
   expect_s3_class(fit, "bdplm")
   expect_true(is.finite(fit$estimates$coefficients$treatment))
 })
+
+test_that("bdplogit treatment effect is invariant to covariate location shifts (#1)", {
+  # bdplogit uses an intercept-free parameterization (separate treatment and
+  # control log-odds means), so it now mean-centers covariates internally. A
+  # pure location shift of a covariate only relabels where covariate = 0 sits
+  # and must not change the treatment (log-odds) effect, its posterior SD, or
+  # the covariate slope. The intercept (control log-odds at covariate = 0) is
+  # expected to change and is checked to follow the exact back-transformation.
+  set.seed(6126)
+  n <- 120
+  n0 <- 300
+  trt <- rep(0:1, each = n / 2)
+  trt0 <- rep(0:1, each = n0 / 2)
+  x_base <- rnorm(n, 0, 2)
+  x0_base <- rnorm(n0, 0, 2)
+  Yb <- rbinom(n, 1, plogis(-0.5 + 1.2 * trt + 0.8 * x_base))
+  Yb0 <- rbinom(n0, 1, plogis(-0.5 + 1.2 * trt0 + 0.8 * x0_base))
+
+  fit_at_shift <- function(shift) {
+    cur <- data.frame(Y = Yb, treatment = trt, x = x_base + shift)
+    hist <- data.frame(Y = Yb0, treatment = trt0, x = x0_base + shift)
+    set.seed(4471)
+    bdplogit(Y ~ treatment + x, data = cur, data0 = hist, method = "fixed")
+  }
+
+  fit0 <- fit_at_shift(0)
+  fit_shift <- fit_at_shift(100)
+
+  # Treatment effect, its posterior SD, and the slope are invariant.
+  expect_equal(
+    mean(fit_shift$posterior$treatment),
+    mean(fit0$posterior$treatment),
+    tolerance = 1e-8
+  )
+  expect_equal(
+    sd(fit_shift$posterior$treatment),
+    sd(fit0$posterior$treatment),
+    tolerance = 1e-8
+  )
+  expect_equal(
+    mean(fit_shift$posterior$x),
+    mean(fit0$posterior$x),
+    tolerance = 1e-8
+  )
+
+  # The intercept is the control log-odds at covariate = 0, so shifting x by
+  # 100 moves it by exactly -100 * slope.
+  expect_equal(
+    mean(fit_shift$posterior$intercept),
+    mean(fit0$posterior$intercept) - 100 * mean(fit0$posterior$x),
+    tolerance = 1e-6
+  )
+})

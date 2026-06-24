@@ -94,6 +94,26 @@
 #'   The column names of data and data0 must match. See \code{examples} below for
 #'   example usage.
 #'
+#'   Internally, the model is parameterized without a fixed intercept, using
+#'   separate treatment and control (log-odds) means rather than an intercept
+#'   plus a treatment effect. In this parameterization the arm means are the
+#'   fitted values at covariate = 0, so when covariates are not centered the
+#'   treatment- and control-mean estimators become strongly correlated and
+#'   their standard errors are extrapolation errors at covariate = 0. This
+#'   distorts the discount-prior construction and the historical borrowing. To
+#'   guard against this, \code{bdplogit} automatically mean-centers each
+#'   covariate on its pooled (current plus historical) mean before fitting, and
+#'   back-transforms the reported intercept onto the original covariate scale.
+#'   Specifically, if \eqn{\bar{x}_j} is the pooled mean of covariate \eqn{j}
+#'   and \eqn{\beta_j} its estimated effect, the reported intercept is
+#'   \eqn{\beta_0 = \beta_0^{c} - \sum_j \beta_j \bar{x}_j}, where
+#'   \eqn{\beta_0^{c}} is the control-arm log-odds estimated on the centered
+#'   scale. The treatment effect and covariate slopes are unchanged by
+#'   centering; the reported \code{intercept} remains the control-arm log-odds
+#'   at covariate = 0 on the original scale. As a result, estimates are
+#'   invariant to a location shift of any covariate, and users do not need to
+#'   center covariates themselves.
+#'
 #'   The underlying model uses the \code{MCMClogit} function of the MCMCpack
 #'   package to carryout posterior estimation. Add more.
 #'
@@ -373,17 +393,39 @@ setMethod(
 
     df <- rbind(df, df0)
 
+    ### Count number of covariates
+    names_df <- names(df)
+    covs_df <- names_df[!(names_df %in% c("Y", "intercept", "treatment", "historical"))]
+    n_covs <- length(covs_df)
+
+    ##############################################################################
+    # Mean-center covariates
+    #
+    # The model is parameterized without a fixed intercept, using separate
+    # treatment and control (log-odds) means (i.e., Y ~ -1 + treatment +
+    # control + covs). In this parameterization the arm means are the fitted
+    # values at covariate = 0. When covariates are not centered these arm-mean
+    # estimators become strongly correlated and their standard errors are
+    # extrapolation errors at covariate = 0, which breaks the (diagonal)
+    # discount-prior construction and corrupts the historical borrowing.
+    # Centering each covariate on its pooled (current + historical) mean
+    # restores the intended behavior. The centering is reversed on the
+    # posterior intercept below so that reported quantities remain on the
+    # original covariate scale.
+    ##############################################################################
+
+    covariate_means <- vapply(covs_df, function(nm) mean(df[[nm]]), numeric(1))
+
+    for (nm in covs_df) {
+      df[[nm]] <- df[[nm]] - covariate_means[[nm]]
+    }
+
     ### Split data into separate treatment & control dataframes
     df_t <- subset(df, treatment == 1)
     df_c <- subset(df, treatment == 0)
 
     ### Also create current data dataframe
     df_current <- subset(df, historical == 0, select = -intercept)
-
-    ### Count number of covariates
-    names_df <- names(df)
-    covs_df <- names_df[!(names_df %in% c("Y", "intercept", "treatment", "historical"))]
-    n_covs <- length(covs_df)
 
     ##############################################################################
     # Estimate discount weights for each of the treatment and control arms
@@ -418,14 +460,17 @@ setMethod(
 
     if (is.null(prior_treatment_effect) | is.null(prior_control_effect) |
         is.null(prior_treatment_sd) | is.null(prior_control_sd)) {
-      df0$control <- 1 - df0$treatment
+      ### Use the centered historical data so the prior arm means are estimated
+      ### on the same (centered) covariate scale as the current-data design.
+      df0_centered <- subset(df, historical == 1)
+      df0_centered$control <- 1 - df0_centered$treatment
 
-      cnames0 <- names(df0)
+      cnames0 <- names(df0_centered)
       cnames0 <- cnames0[!(cnames0 %in% c("Y", "intercept", "historical", "treatment", "control"))]
       cnames0 <- c("treatment", "control", cnames0)
       f0 <- paste0("Y~ -1+", paste0(cnames0, collapse = "+"))
 
-      fit_0 <- glm(f0, data = df0, family = binomial)
+      fit_0 <- glm(f0, data = df0_centered, family = binomial)
       summ_0 <- summary(fit_0)
 
       if (is.null(prior_treatment_effect)) prior_treatment_effect <- summ_0$coef[1, 1]
@@ -490,7 +535,17 @@ setMethod(
     }
 
     ### Estimate posterior of intercept and treatment effect
+    ### The control coefficient is the control-arm (log-odds) mean at centered
+    ### covariate = 0, i.e. at the original covariate means. Back-transform to
+    ### the original scale so the reported intercept is the control log-odds at
+    ### covariate = 0. The treatment effect (difference of arm means) and the
+    ### covariate slopes are unaffected by centering.
     beta_samples$intercept <- beta_samples$control
+    if (n_covs > 0) {
+      covariate_shift <- as.matrix(beta_samples[, covs_df, drop = FALSE]) %*%
+        covariate_means[covs_df]
+      beta_samples$intercept <- beta_samples$intercept - as.vector(covariate_shift)
+    }
     beta_samples$treatment <- beta_samples$treatment - beta_samples$control
 
     ### Format posterior table
