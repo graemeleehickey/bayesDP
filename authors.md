@@ -17,7 +17,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/graemeleehickey/bayesDP/blob/master/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/graemeleehickey/bayesDP/blob/v1.3.8/DESCRIPTION)
 
 Balcome S, Musgrove D, Haddad T, Hickey G (2026). *bayesDP:
 Implementation of the Bayesian Discount Prior Approach for Clinical
