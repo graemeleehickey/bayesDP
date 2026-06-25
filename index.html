@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">bayesDP</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.7.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.8</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -61,7 +61,7 @@
 <!-- badges: start -->
 
 <p><code>bayesDP</code> implements the Bayesian discount prior approach for borrowing historical information in one-arm and two-arm clinical trials. The package supports binomial, normal, survival, linear-model, and logistic-regression settings, and provides plotting and summary methods for inspecting posterior estimates and discount weights.</p>
-<p>The method adaptively discounts historical information according to the agreement between current and historical data. See Haddad et al. (2017) (<a href="doi:10.1080/10543406.2017.1300907" class="uri">doi:10.1080/10543406.2017.1300907</a>) for methodological details.</p>
+<p>The method adaptively discounts historical information according to the agreement between current and historical data. See <a href="https://www.tandfonline.com/doi/full/10.1080/10543406.2017.1300907" class="external-link">Haddad et al. (2017)</a> for methodological details.</p>
 <div class="section level2">
 <h2 id="links">Links<a class="anchor" aria-label="anchor" href="#links"></a>
 </h2>
@@ -138,6 +138,8 @@
 </h3>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/graemeleehickey/bayesDP" class="external-link">bayesDP</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; Loading required package: ggplot2</span></span>
+<span><span class="co">#&gt; Loading required package: survival</span></span>
 <span></span>
 <span><span class="va">fit_bin</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/bdpbinomial.html">bdpbinomial</a></span><span class="op">(</span></span>
 <span>  y_t <span class="op">=</span> <span class="fl">10</span>, N_t <span class="op">=</span> <span class="fl">500</span>,</span>
@@ -154,9 +156,9 @@
 <span><span class="co">#&gt; Stochastic comparison (p_hat) - treatment (current vs. historical data): 0</span></span>
 <span><span class="co">#&gt; Discount function value (alpha) - treatment: 0</span></span>
 <span><span class="co">#&gt; 95 percent CI: </span></span>
-<span><span class="co">#&gt;  0.011  0.0366</span></span>
+<span><span class="co">#&gt;  0.011  0.0362</span></span>
 <span><span class="co">#&gt; sample estimates:</span></span>
-<span><span class="co">#&gt;  0.0213</span></span></code></pre></div>
+<span><span class="co">#&gt;  0.0211</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="normal-endpoint">Normal endpoint<a class="anchor" aria-label="anchor" href="#normal-endpoint"></a>
@@ -178,10 +180,10 @@
 <span><span class="co">#&gt; Stochastic comparison (p_hat) - treatment (current vs. historical data): 0</span></span>
 <span><span class="co">#&gt; Discount function value (alpha) - treatment: 0</span></span>
 <span><span class="co">#&gt; 95 percent CI: </span></span>
-<span><span class="co">#&gt;  28.7334  31.2652</span></span>
+<span><span class="co">#&gt;  28.7373  31.2483</span></span>
 <span><span class="co">#&gt; posterior sample estimate:</span></span>
 <span><span class="co">#&gt; mean of treatment group</span></span>
-<span><span class="co">#&gt;  29.9875</span></span></code></pre></div>
+<span><span class="co">#&gt;  29.9928</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="individual-level-linear-model">Individual-level linear model<a class="anchor" aria-label="anchor" href="#individual-level-linear-model"></a>
@@ -211,20 +213,20 @@
 <span><span class="co">#&gt; bdplm(formula = Y ~ treatment + x, data = df, data0 = df0, method = "fixed")</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Residuals:</span></span>
-<span><span class="co">#&gt;      Min     1Q Median    3Q    Max</span></span>
-<span><span class="co">#&gt;  -13.772 -3.582  0.441 4.401 11.814</span></span>
+<span><span class="co">#&gt;      Min     1Q Median    3Q   Max</span></span>
+<span><span class="co">#&gt;  -11.455 -1.249  2.773 6.652 14.12</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Coefficients:</span></span>
 <span><span class="co">#&gt;             Estimate Std. Error</span></span>
-<span><span class="co">#&gt; (Intercept)   9.8316     0.6865</span></span>
-<span><span class="co">#&gt; treatment    32.3608     1.1310</span></span>
-<span><span class="co">#&gt; x             3.1235     0.1288</span></span>
+<span><span class="co">#&gt; (Intercept)   9.8228     0.6956</span></span>
+<span><span class="co">#&gt; treatment    32.3783     1.1265</span></span>
+<span><span class="co">#&gt; x             3.1145     0.1299</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Discount function value (alpha):</span></span>
 <span><span class="co">#&gt;  treatment control</span></span>
 <span><span class="co">#&gt;       0.07  0.3812</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Residual standard error: 5.4521</span></span></code></pre></div>
+<span><span class="co">#&gt; Residual standard error: 5.4394</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">

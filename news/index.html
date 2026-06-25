@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">bayesDP</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.7.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.8</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -40,9 +40,9 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.3.7.9000" id="bayesdp-1379000">bayesDP 1.3.7.9000<a class="anchor" aria-label="anchor" href="#bayesdp-1379000"></a></h2>
+<h2 class="pkg-version" data-toc-text="1.3.8" id="bayesdp-138">bayesDP 1.3.8<a class="anchor" aria-label="anchor" href="#bayesdp-138"></a></h2>
 <div class="section level3">
-<h3 id="bug-fixes-1-3-7-9000">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-3-7-9000"></a></h3>
+<h3 id="bug-fixes-1-3-8">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-3-8"></a></h3>
 <ul><li>Fixed <code><a href="../reference/bdplm.html">bdplm()</a></code> and <code><a href="../reference/bdplogit.html">bdplogit()</a></code> producing invalid historical borrowing when covariates were not mean-centered. Because the models use an intercept-free parameterization (separate treatment and control means), uncentered covariates made the arm-mean estimators strongly correlated and inflated their standard errors as extrapolation errors at covariate = 0, corrupting the (diagonal) discount prior. Both functions now automatically mean-center covariates on their pooled (current plus historical) mean and back-transform the reported intercept, so estimates are invariant to covariate location shifts (<a href="https://github.com/graemeleehickey/bayesDP/issues/1" class="external-link">#1</a>)</li>
 <li>Fixed a bug where the <code>summary</code> methods for <code>bdpnormal</code> and <code>bdpbinomial</code> read the one-/two-arm indicator from the wrong list element (<code>args</code> instead of <code>args1</code>), causing two-arm fits to be summarised as one-arm</li>
 <li>Fixed a bug in the two-arm <code>bdpsurvival</code> summary that errored when current control data were absent</li>
@@ -56,7 +56,7 @@
 <li>Fixed <code><a href="../reference/bdpnormal.html">bdpnormal()</a></code> one-arm normal fits with only one source of data for an arm (current-only or historical-only internally) returning an over-dispersed <code>posterior_mu</code>. These branches now return the conjugate posterior of the mean rather than adding an extra observation-level draw (posterior-predictive-like variance) (<a href="https://github.com/graemeleehickey/bayesDP/issues/15" class="external-link">#15</a>).</li>
 </ul></div>
 <div class="section level3">
-<h3 id="tests-1-3-7-9000">Tests<a class="anchor" aria-label="anchor" href="#tests-1-3-7-9000"></a></h3>
+<h3 id="tests-1-3-8">Tests<a class="anchor" aria-label="anchor" href="#tests-1-3-8"></a></h3>
 <ul><li>Re-enabled the <code>testthat</code> test harness (<code>tests/testthat.R</code>)</li>
 <li>Rewrote the test suite with <code>expect_*()</code> assertions: augmented one-arm binomial and normal posterior means are pinned against their closed-form conjugate values, and the fixed bugs (one-/two-arm dispatch, stored <code>compare</code> flag, default survival time, two-arm survival summary) are now guarded by tests. Plot calls in tests pass an explicit <code>type</code> so they no longer prompt for input.</li>
 <li>Expanded test coverage from ~60% to ~76%, adding tests for <code><a href="../reference/alpha_discount.html">alpha_discount()</a></code> and <code><a href="../reference/probability_discount.html">probability_discount()</a></code> (both now fully covered), the <code><a href="../reference/ppexp.html">ppexp()</a></code> vector and matrix paths, the <code>print</code> methods (now fully covered), additional <code>plot</code> branches, input-validation paths, the <code><a href="../reference/bdplogit.html">bdplogit()</a></code> main fit path, factor-covariate handling in <code><a href="../reference/bdplm.html">bdplm()</a></code> and <code><a href="../reference/bdplogit.html">bdplogit()</a></code>, and the <code>mc</code> discounting method for <code>bdpnormal</code> and <code>bdpbinomial</code>
@@ -67,11 +67,11 @@
 </li>
 </ul></div>
 <div class="section level3">
-<h3 id="documentation-1-3-7-9000">Documentation<a class="anchor" aria-label="anchor" href="#documentation-1-3-7-9000"></a></h3>
+<h3 id="documentation-1-3-8">Documentation<a class="anchor" aria-label="anchor" href="#documentation-1-3-8"></a></h3>
 <ul><li>Clarified the <code>prior_covariate_sd</code> documentation in <code><a href="../reference/bdplm.html">bdplm()</a></code> and <code><a href="../reference/bdplogit.html">bdplogit()</a></code> to note that covariate effects carry an intentional near-zero discount weight, making their priors effectively flat. The supplied value has negligible influence on the posterior, and the effective prior standard deviation is roughly 1e6 larger than the nominal value at the default (<a href="https://github.com/graemeleehickey/bayesDP/issues/2" class="external-link">#2</a>)</li>
 </ul></div>
 <div class="section level3">
-<h3 id="housekeeping-1-3-7-9000">Housekeeping<a class="anchor" aria-label="anchor" href="#housekeeping-1-3-7-9000"></a></h3>
+<h3 id="housekeeping-1-3-8">Housekeeping<a class="anchor" aria-label="anchor" href="#housekeeping-1-3-8"></a></h3>
 <ul><li>Removed AppVeyor continuous integration</li>
 <li>Updated GitHub Actions workflows to the latest <code>r-lib/actions</code> examples (<code>actions/checkout@v6</code>, <code>codecov/codecov-action@v6</code>, <code>actions/upload-artifact@v7</code>)</li>
 <li>Made Codecov upload issues non-fatal in the coverage workflow so tests and coverage generation remain the CI gate while Codecov service/signature failures do not fail the build</li>
