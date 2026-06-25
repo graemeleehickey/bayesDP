@@ -1,4 +1,4 @@
-# bayesDP 1.3.7.9000
+# bayesDP 1.3.8
 
 ## Bug fixes
 

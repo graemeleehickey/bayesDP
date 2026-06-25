@@ -1,14 +1,17 @@
-## Other notes
+## Submission summary
 
-Addresses all NOTES from CRAN Package Check Results.
+This is a bug-fix release. It corrects several issues in the model-fitting
+functions, most notably invalid historical borrowing in `bdplm()` and
+`bdplogit()` when covariates were not mean-centered (these functions now
+mean-center covariates internally and back-transform the reported intercept).
+See NEWS.md for the full list of changes.
 
 ## Test environments
 
-* local macOS (Sonoma 14.6.1) install, R 4.4.2
-* ubuntu (via GitHub actions, release + devel)
-* macOS (via GitHub actions, release)
-* windows (via appveyor CI, release)
-* windows (via GitHub actions, release)
+* local macOS (Tahoe 26.5), R 4.5.3
+* ubuntu (via GitHub Actions, release + devel)
+* macOS (via GitHub Actions, release)
+* windows (via GitHub Actions, release)
 * windows (via win-builder, old + release + devel)
 
 ## R CMD check results
@@ -17,7 +20,8 @@ Addresses all NOTES from CRAN Package Check Results.
 
 ## Reverse dependencies
 
-We checked 1 reverse dependencies, comparing R CMD check results across CRAN and dev versions of this package.
+There are currently no reverse dependencies for this package on CRAN.
+`revdepcheck::revdep_check()` checked 0 reverse dependencies.
 
  * We saw 0 new problems
  * We failed to check 0 packages

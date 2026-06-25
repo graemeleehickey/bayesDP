@@ -21,8 +21,9 @@ logistic-regression settings, and provides plotting and summary methods
 for inspecting posterior estimates and discount weights.
 
 The method adaptively discounts historical information according to the
-agreement between current and historical data. See Haddad et al. (2017)
-(<doi:10.1080/10543406.2017.1300907>) for methodological details.
+agreement between current and historical data. See [Haddad et
+al. (2017)](https://www.tandfonline.com/doi/full/10.1080/10543406.2017.1300907)
+for methodological details.
 
 ## Links
 
@@ -62,6 +63,8 @@ remotes::install_github("graemeleehickey/bayesDP")
 
 ``` r
 library(bayesDP)
+#> Loading required package: ggplot2
+#> Loading required package: survival
 
 fit_bin <- bdpbinomial(
   y_t = 10, N_t = 500,
@@ -78,9 +81,9 @@ summary(fit_bin)
 #> Stochastic comparison (p_hat) - treatment (current vs. historical data): 0
 #> Discount function value (alpha) - treatment: 0
 #> 95 percent CI: 
-#>  0.011  0.0366
+#>  0.011  0.0362
 #> sample estimates:
-#>  0.0213
+#>  0.0211
 ```
 
 ### Normal endpoint
@@ -102,10 +105,10 @@ summary(fit_norm)
 #> Stochastic comparison (p_hat) - treatment (current vs. historical data): 0
 #> Discount function value (alpha) - treatment: 0
 #> 95 percent CI: 
-#>  28.7334  31.2652
+#>  28.7373  31.2483
 #> posterior sample estimate:
 #> mean of treatment group
-#>  29.9875
+#>  29.9928
 ```
 
 ### Individual-level linear model
@@ -135,20 +138,20 @@ summary(fit_lm)
 #> bdplm(formula = Y ~ treatment + x, data = df, data0 = df0, method = "fixed")
 #> 
 #> Residuals:
-#>      Min     1Q Median    3Q    Max
-#>  -13.772 -3.582  0.441 4.401 11.814
+#>      Min     1Q Median    3Q   Max
+#>  -11.455 -1.249  2.773 6.652 14.12
 #> 
 #> Coefficients:
 #>             Estimate Std. Error
-#> (Intercept)   9.8316     0.6865
-#> treatment    32.3608     1.1310
-#> x             3.1235     0.1288
+#> (Intercept)   9.8228     0.6956
+#> treatment    32.3783     1.1265
+#> x             3.1145     0.1299
 #> 
 #> Discount function value (alpha):
 #>  treatment control
 #>       0.07  0.3812
 #> 
-#> Residual standard error: 5.4521
+#> Residual standard error: 5.4394
 ```
 
 ## Citation
