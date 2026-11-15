@@ -19,4 +19,11 @@ Displays a summary of the \code{bdplm} fit. Displayed output is
   coefficient table are displayed. The discount function weight estimates are
   displayed as well. If \code{method = "mc"}, the median estimate of alpha is
   displayed.
+  Residuals use current outcomes minus predictions from posterior mean
+  coefficients, with covariates and intercept on the original scale.
+  The method is also used by \code{bdplogit()}; for those fits, residuals
+  are observed binary outcomes minus fitted probabilities obtained by
+  applying the inverse logit to the posterior mean linear predictor.
+  Saved fits without the covariate centering means must be refitted before
+  calling \code{summary()}.
 }

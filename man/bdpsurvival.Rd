@@ -167,6 +167,11 @@ the following components:
        functions.
      \item \code{arm2}
        logical. Used internally to indicate one-arm or two-arm analysis.
+     \item \code{participants}
+       data frame. One record per participant, with observed \code{time},
+       event \code{status}, \code{treatment}, and \code{historical} source.
+       Used for reported sample sizes and risk sets; \code{data} contains
+       the split interval records used for hazard estimation.
    }
  }
 }

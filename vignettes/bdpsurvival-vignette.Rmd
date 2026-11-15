@@ -27,7 +27,7 @@ knitr::opts_chunk$set(fig.width = 7, fig.height = 4.5, out.width = "100%", fig.a
 
 `bdpsurvival()` uses piecewise constant hazards for right-censored outcomes. In one arm, the estimand is survival probability at a specified time. With two arms, the reported effect is an approximate common log hazard ratio, treatment relative to control.
 
-Three limitations remain under investigation: the default Monte Carlo weight calculation ([issue 16](https://github.com/graemeleehickey/bayesDP/issues/16)), the baseline-prior contribution during historical augmentation ([issue 17](https://github.com/graemeleehickey/bayesDP/issues/17)), and participant counts/risk sets in `summary()` ([issue 18](https://github.com/graemeleehickey/bayesDP/issues/18)). These examples use `method = "fixed"`, describe the implemented prior update, and calculate tables directly from posterior draws. They illustrate current behaviour; they do not validate the unresolved procedures for trial design.
+Two limitations remain under investigation: the default Monte Carlo weight calculation ([issue 16](https://github.com/graemeleehickey/bayesDP/issues/16)) and the baseline-prior contribution during historical augmentation ([issue 17](https://github.com/graemeleehickey/bayesDP/issues/17)). These examples use `method = "fixed"`, describe the implemented prior update, and calculate tables directly from posterior draws. They illustrate current behaviour; they do not validate the unresolved procedures for trial design.
 
 See the [borrowing overview](borrowing.html) for weighting choices and interpretation. The function default is `method = "mc"`, so the explicit method argument matters.
 
@@ -86,6 +86,12 @@ knitr::kable(comparison, digits = 4,
 
 The estimated historical weight is `r round(discounted$posterior_treatment$alpha_discount, 4)`. The augmented posterior median six-month survival is `r round(median(discounted$posterior_treatment$posterior_survival), 4)`. These summarize survival probability at six months, not median survival time. The full-borrowing result includes the extra baseline-prior contribution described below and should not be called an ordinary pooled analysis.
 
+`print()` gives a compact summary at the requested horizon. Its sample size and event count refer to current participants. The longer `summary()` table reports risk sets immediately before each observed event or censoring time, alongside posterior median survival, posterior SDs, and 95% equal-tailed credible intervals. Splitting follow-up into hazard intervals does not create additional participants or observation times. These risk sets describe the observed current cohort; historical borrowing changes the survival estimates, not the numbers at risk.
+
+```{r one-arm-summary}
+print(discounted)
+```
+
 ```{r survival-curves, fig.cap="Posterior median survival curves for the estimated-borrowing fit. These are model-based curves, not Kaplan–Meier estimates; uncertainty is summarized in the six-month table.", fig.alt="Posterior median survival curves for the estimated-borrowing fit. These are model-based curves, not Kaplan–Meier estimates; uncertainty is summarized in the six-month table."}
 plot(discounted, type = "survival", print = FALSE) +
   labs(x = "Follow-up (months)")
@@ -105,6 +111,7 @@ set.seed(42)
 fit_two <- bdpsurvival(Surv(time, status) ~ treatment,
   data = current_two, data0 = historical_two, breaks = c(3, 6, 12),
   a0 = 0.1, b0 = 0.1, method = "fixed", fix_alpha = FALSE, alpha_max = 1)
+summary(fit_two)
 log_hr <- as.numeric(fit_two$final$posterior_loghazard)
 knitr::kable(rbind(
   "Log hazard ratio" = quantile(log_hr, c(0.025, 0.5, 0.975)),
@@ -112,7 +119,7 @@ knitr::kable(rbind(
 ), digits = 4)
 ```
 
-The treatment and control historical weights are `r round(fit_two$posterior_treatment$alpha_discount, 4)` and `r round(fit_two$posterior_control$alpha_discount, 4)`, respectively. The median hazard ratio is `r round(median(exp(log_hr)), 4)`. For an adverse event, a hazard ratio below 1 favours treatment; the corresponding no-effect value on the log scale is zero. The two rows transform both the estimates and credible limits consistently.
+The summary counts `r nrow(current)` current treatment participants and `r nrow(control)` current control participants, regardless of how many intervals their follow-up spans. The treatment and control historical weights are `r round(fit_two$posterior_treatment$alpha_discount, 4)` and `r round(fit_two$posterior_control$alpha_discount, 4)`, respectively. The median hazard ratio is `r round(median(exp(log_hr)), 4)`. For an adverse event, a hazard ratio below 1 favours treatment; the corresponding no-effect value on the log scale is zero. The two rows transform both the estimates and credible limits consistently.
 
 ```{r hazard-ratio, fig.cap="Posterior hazard ratio from the approximate common-effect calculation. The dashed line marks a hazard ratio of 1.", fig.alt="Posterior hazard ratio from the approximate common-effect calculation. The dashed line marks a hazard ratio of 1."}
 ggplot(data.frame(hazard_ratio = exp(log_hr)), aes(hazard_ratio)) +

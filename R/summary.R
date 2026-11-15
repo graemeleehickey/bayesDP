@@ -284,17 +284,23 @@ setMethod("summary", signature(object = "bdpbinomial"), function(object) {
 #'   current and historical data and the resulting historical data weight
 #'   (alpha) are displayed, followed by a survival table containing augmented
 #'   posterior estimates of the survival probability at each time point for the
-#'   current data.
+#'   current data. Times are observed event or censoring times. Risk sets and
+#'   event counts describe current participants, not the split hazard intervals.
+#'   The survival estimates are posterior medians, with posterior SDs and 95%
+#'   equal-tailed credible intervals; they are not Kaplan--Meier estimates.
+#'   Saved fits without participant-level records must be refitted before
+#'   calling \code{summary()}.
 #'
-#'   When a control arm is present, a two-arm analysis is carried out. A two-arm
-#'   survival analysis is similar to a cox proportional hazards analysis, and
-#'   the displayed summary reflects this. First, the stochastic comparison
+#'   When a control arm is present, the summary describes the approximate
+#'   common log hazard ratio from the piecewise hazard draws. The comparison
 #'   between current and historical data and the resulting historical data
 #'   weight (alpha) are displayed, when historical data is present for the
-#'   respective arm. The displayed \code{coef} value is the log-hazard between
-#'   the augmented treatment and control arms (log(treatment) - log(control)).
-#'   The lower and upper 95 percent interval limits correspond to the
-#'   \code{coef} value.
+#'   respective arm. The displayed \code{coef} is the posterior mean log hazard
+#'   ratio, treatment relative to control; \code{exp(coef)} exponentiates this
+#'   mean, and \code{se(coef)} is its posterior SD. The 95 percent equal-tailed
+#'   credible limits are on the log hazard ratio scale. Sample sizes and event
+#'   counts describe the current arms, or historical controls when current
+#'   controls are absent.
 #'
 #' @export
 setMethod("summary", signature(object = "bdpsurvival"), function(object) {
@@ -303,7 +309,10 @@ setMethod("summary", signature(object = "bdpsurvival"), function(object) {
   surv_time <- object$args1$surv_time
   
   args1 <- object$args1
-  data <- args1$data
+  data <- args1$participants
+  if (is.null(data)) {
+    stop("This fit lacks participant-level records. Refit with the current version of bayesDP before calling summary().", call. = FALSE)
+  }
   breaks <- args1$breaks
   arm2 <- args1$arm2
   method <- args1$method
@@ -318,9 +327,8 @@ setMethod("summary", signature(object = "bdpsurvival"), function(object) {
   if (!arm2) {
     ### Organize current treatment posterior data
     data_t <- subset(data, historical == 0 & treatment == 1)
-    s_t <- with(data_t, Surv(time, status)) # , type="mstate"))
-    n <- nrow(data_t)
-    s_t <- survival::survfitKM(factor(rep(1, n)), s_t)
+    s_t <- survival::survfit(Surv(time, status) ~ 1, data = data_t,
+                            timefix = FALSE)
     
     survival_times_posterior <- ppexp_times(s_t$time,
                                        posterior_treatment$posterior_hazard,
@@ -337,13 +345,14 @@ setMethod("summary", signature(object = "bdpsurvival"), function(object) {
       s_t$lower, s_t$upper
     ), 4)
     cnames <- c(
-      "time", "n.risk", "n.event", "survival", "std.err",
-      "lower 95% CI", "upper 95% CI"
+      "time", "n.risk", "n.event", "median", "SD",
+      "lower 95% CrI", "upper 95% CrI"
     )
     dimnames(m_t) <- list(rep("", nrow(m_t)), cnames)
     
     cat("\n")
     cat("    One-armed bdp survival\n\n")
+    cat("Posterior median survival, SD, and 95% equal-tailed credible interval\n")
     if (is.null(args1$S0_t)) {
       cat("  Current treatment summary:")
       cat("\n")
@@ -369,14 +378,13 @@ setMethod("summary", signature(object = "bdpsurvival"), function(object) {
   }
   
   ##############################################################################
-  ### Significance of cox proportional hazard for treatment vs control
+  ### Approximate common log hazard ratio for treatment vs control
   ### - Only print if arm2
   ##############################################################################
   if (arm2) {
     ### Compute treatment effect of treatment vs control via the same
     ### inverse-variance-weighted piecewise log-hazard-ratio estimator used in
-    ### bdpsurvival(); see the bdpsurvival vignette, 'Piecewise Exponential
-    ### Model Background', lines 72-93.
+    ### bdpsurvival(); see the survival vignette, 'Approximate two-arm effect'.
     R0 <- log(posterior_treatment$posterior_hazard) - log(posterior_control$posterior_hazard)
     V0 <- 1 / apply(R0, 2, var)
     logHR0 <- R0 %*% V0 / sum(V0)
@@ -467,19 +475,36 @@ setMethod("summary", signature(object = "bdpsurvival"), function(object) {
 #'   coefficient table are displayed. The discount function weight estimates are
 #'   displayed as well. If \code{method = "mc"}, the median estimate of alpha is
 #'   displayed.
+#'   Residuals use current outcomes minus predictions from posterior mean
+#'   coefficients, with covariates and intercept on the original scale.
+#'   The method is also used by \code{bdplogit()}; for those fits, residuals
+#'   are observed binary outcomes minus fitted probabilities obtained by
+#'   applying the inverse logit to the posterior mean linear predictor.
+#'   Saved fits without the covariate centering means must be refitted before
+#'   calling \code{summary()}.
 #'
 #' @export
 setMethod("summary", signature(object = "bdplm"), function(object) {
   
   # Format residuals
+  covariate_means <- object$args1$covariate_means
+  if (is.null(covariate_means)) {
+    stop("This fit lacks covariate centering means. Refit with the current version of bayesDP before calling summary().", call. = FALSE)
+  }
   data <- object$args1$data
   data <- data[data$historical == 0, ]
-  m <- ncol(data)
-  X <- as.matrix(data[, -c(1, m)])
+  for (nm in names(covariate_means)) {
+    data[[nm]] <- data[[nm]] + covariate_means[[nm]]
+  }
+  coefficient_names <- setdiff(names(object$estimates$coefficients), "sigma")
+  X <- as.matrix(data[, coefficient_names, drop = FALSE])
   y <- data$Y
-  beta <- object$estimates$coefficients[1:(m - 2)]
-  beta <- unlist(beta)
-  resid <- y - X %*% beta
+  beta <- unlist(object$estimates$coefficients[coefficient_names])
+  fitted <- drop(X %*% beta)
+  if (identical(object$args1$family, "binomial")) {
+    fitted <- stats::plogis(fitted)
+  }
+  resid <- y - fitted
   resid_sum <- data.frame(
     Min = min(resid),
     Q1 = quantile(resid, 0.25),
@@ -499,18 +524,13 @@ setMethod("summary", signature(object = "bdplm"), function(object) {
   cnames[1] <- "(Intercept)"
   coefs <- t(do.call(rbind, coefs))
   dimnames(coefs) <- list(cnames, c("Estimate", "Std. Error"))
-  p <- nrow(coefs)
-  coefs <- coefs[-p, ]
+  coefs <- coefs[cnames != "sigma", , drop = FALSE]
   coefs <- round(coefs, 4)
   
   # Format alpha
   alpha_mat <- apply(object$alpha_discount, 2, median)
   alpha_mat <- matrix(alpha_mat, nrow = 1)
   dimnames(alpha_mat) <- list("", names(object$alpha_discount))
-  
-  # Format residual standard error
-  s <- object$estimates$coefficients[p]
-  s <- round(s, 4)
   
   # Print output
   cat("\n")
@@ -526,6 +546,9 @@ setMethod("summary", signature(object = "bdplm"), function(object) {
   cat("Discount function value (alpha):\n")
   print(alpha_mat)
   cat("\n")
-  cat(paste0("Residual standard error: ", s))
-  cat("\n")
+  if ("sigma" %in% names(object$estimates$coefficients)) {
+    s <- round(object$estimates$coefficients$sigma, 4)
+    cat(paste0("Residual standard error: ", s))
+    cat("\n")
+  }
 })

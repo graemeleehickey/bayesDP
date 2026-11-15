@@ -129,7 +129,10 @@ details.}
   draw under \code{"mc"}. These are weights, not probabilities of equality.}
   \item{\code{estimates}}{ list. The \code{coefficients} component contains
   posterior means, and \code{se} contains posterior standard deviations, for
-  the intercept, treatment effect, covariate effects, and residual SD.} }
+  the intercept, treatment effect, covariate effects, and residual SD.}
+  \item{\code{args1}}{ list. The original call, the centered analysis data,
+  and the named \code{covariate_means} used to restore the original covariate
+  scale when calculating residual summaries.} }
 }
 \description{
 \code{bdplm} is used to estimate the treatment effect in the

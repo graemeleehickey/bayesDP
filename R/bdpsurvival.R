@@ -174,6 +174,11 @@
 #'        functions.
 #'      \item \code{arm2}
 #'        logical. Used internally to indicate one-arm or two-arm analysis.
+#'      \item \code{participants}
+#'        data frame. One record per participant, with observed \code{time},
+#'        event \code{status}, \code{treatment}, and \code{historical} source.
+#'        Used for reported sample sizes and risk sets; \code{data} contains
+#'        the split interval records used for hazard estimation.
 #'    }
 #'  }
 #' }
@@ -423,13 +428,17 @@ setMethod(
     ### Update formula
     formula <- update(formula, ~ . + historical)
 
-    ### Split the data on the breaks
+    ### Mark artificial interval endpoints so reports retain each participant once.
+    split_marker <- utils::tail(make.unique(c(names(dataALL), ".bayesDP_added")), 1)
     dataSplit <- survSplit(formula,
                            cut = breaks,
                            start = "start",
                            episode = "interval",
+                           added = split_marker,
                            data = dataALL
     )
+    original_record <- !dataSplit[[split_marker]]
+    dataSplit[[split_marker]] <- NULL
 
     ### Change time and status column names
     vars <- as.character(attr(mt, "variables"))[2]
@@ -447,6 +456,10 @@ setMethod(
     if (!any(names(dataSplit) == "treatment")) {
       dataSplit$treatment <- 1
     }
+
+    participants <- dataSplit[original_record,
+                              c("time", "status", "treatment", "historical")]
+    rownames(participants) <- NULL
 
     ### Compute exposure time within each interval
     dataSplit$exposure <- dataSplit$time - dataSplit$start
@@ -550,6 +563,7 @@ setMethod(
       arm2 = arm2,
       breaks = breaks,
       data = dataSplit,
+      participants = participants,
       data_current = data
     )
 

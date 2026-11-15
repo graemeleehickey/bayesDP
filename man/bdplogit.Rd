@@ -112,9 +112,13 @@ holds it fixed throughout the analysis.  See the the \code{bdplm} vignette \cr
 \code{vignette("bdplm-vignette", package = "bayesDP")} for more details.}
 }
 \value{
-\code{bdplogit} returns an object of class "bdplogit".
+\code{bdplogit} returns an object of class "bdplm", reusing its
+  print and summary methods. Residual summaries use observed binary outcomes
+  minus fitted probabilities from the posterior mean coefficients. The
+  centering means are saved in \code{args1$covariate_means}; older saved fits
+  without these means must be refitted before summarising residuals.
 
-An object of class "\code{bdplogit}" is a list containing at least
+The returned object is a list containing at least
 the following components:
 \describe{
   \item{\code{posterior}}{

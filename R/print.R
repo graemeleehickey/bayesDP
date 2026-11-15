@@ -50,7 +50,9 @@ setMethod("print", signature(x = "bdpbinomial"), function(x) {
 #'   In the case of a one-arm analysis, a brief summary is displayed,
 #'   including the current data sample size, number of events,
 #'   user input survival time, the augmented median survival probability,
-#'   and corresponding lower and upper 95 percent interval limits.
+#'   and corresponding lower and upper 95 percent equal-tailed credible limits.
+#'   Counts use participant-level records. Saved fits without these records
+#'   must be refitted before printing.
 #'
 #'   When a control arm is present, the output is the same as a call to
 #'   \code{\link[=summary,bdpsurvival-method]{summary}}.
@@ -62,8 +64,10 @@ setMethod("print", signature(x = "bdpsurvival"), function(x) {
   surv_time <- x$args1$surv_time
   
   args1 <- x$args1
-  data <- args1$data
-  data_current <- args1$data_current
+  data <- args1$participants
+  if (is.null(data)) {
+    stop("This fit lacks participant-level records. Refit with the current version of bayesDP before printing.", call. = FALSE)
+  }
   breaks <- args1$breaks
   arm2 <- args1$arm2
   
@@ -82,20 +86,17 @@ setMethod("print", signature(x = "bdpsurvival"), function(x) {
     )
     
     data_t <- subset(data, historical == 0 & treatment == 1)
-    n <- nrow(data_t)
-    s_t <- with(data_t, Surv(time, status)) # , type="mstate"))
-    s_t <- survival::survfitKM(factor(rep(1, n)), s_t)
     
     print_1arm <- matrix(c(
-      nrow(data_current),
-      sum(s_t$n.event),
+      nrow(data_t),
+      sum(data_t$status),
       surv_time,
       1 - median(survival_time_posterior_flat),
       1 - quantile(survival_time_posterior_flat, 0.975),
       1 - quantile(survival_time_posterior_flat, 0.025)
     ), nrow = 1)
     print_1arm <- round(print_1arm, 4)
-    cnames <- c("n", "events", "surv_time", "median", "lower 95% CI", "upper 95% CI")
+    cnames <- c("n", "events", "surv_time", "median", "lower 95% CrI", "upper 95% CrI")
     dimnames(print_1arm) <- list(rep("", nrow(print_1arm)), cnames)
     cat("\n")
     cat("    One-armed bdp survival\n\n")
@@ -127,8 +128,7 @@ setMethod("print", signature(x = "bdplm"), function(x) {
   
   # Format coefficients
   coefs <- x$estimates$coefficients
-  p <- ncol(coefs)
-  coefs <- coefs[, -p]
+  coefs <- coefs[, names(coefs) != "sigma", drop = FALSE]
   names(coefs)[1] <- "(Intercept)"
   coefs[1, ] <- round(coefs[1, ], 3)
   dimnames(coefs) <- list("", names(coefs))

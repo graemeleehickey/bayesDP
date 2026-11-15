@@ -139,7 +139,10 @@
 #'   draw under \code{"mc"}. These are weights, not probabilities of equality.}
 #'   \item{\code{estimates}}{ list. The \code{coefficients} component contains
 #'   posterior means, and \code{se} contains posterior standard deviations, for
-#'   the intercept, treatment effect, covariate effects, and residual SD.} }
+#'   the intercept, treatment effect, covariate effects, and residual SD.}
+#'   \item{\code{args1}}{ list. The original call, the centered analysis data,
+#'   and the named \code{covariate_means} used to restore the original covariate
+#'   scale when calculating residual summaries.} }
 #'
 #' @examples
 #' # Set sample sizes
@@ -689,7 +692,8 @@ setMethod(
     ### Format input arguments
     args1 <- list(
       call = call,
-      data = df
+      data = df,
+      covariate_means = covariate_means
     )
 
     ### Format output

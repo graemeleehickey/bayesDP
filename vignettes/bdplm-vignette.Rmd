@@ -89,15 +89,17 @@ knitr::kable(coefficient_summary, digits = 4,
 
 The adjusted treatment-effect posterior mean is `r round(mean(discounted$posterior$treatment), 4)` outcome units, and the covariate-slope posterior mean is `r round(mean(discounted$posterior$x), 4)`. The reported intercept refers to control participants at the original covariate value zero. The printed regression coefficient estimates use means and posterior SDs; the sensitivity table above deliberately uses medians and credible intervals.
 
-The residual section of `summary()` currently mixes centered covariates with a back-transformed intercept ([issue 18](https://github.com/graemeleehickey/bayesDP/issues/18)). The coefficient summaries above are calculated directly from the posterior draws. For residual checks, use predictions on the original data scale:
+`summary()` reports residuals for current participants, calculated from posterior mean coefficients with the covariates and intercept on the original scale. The following calculation makes that definition explicit; the summary also reports the coefficients and historical weights:
 
 ```{r regression-residuals}
 X <- model.matrix(~ treatment + x, current)
 beta_mean <- colMeans(coefficient_draws)
 fitted_mean <- drop(X %*% beta_mean)
 residuals_current <- current$Y - fitted_mean
-summary(residuals_current)
+summary(discounted)
 ```
+
+The median current-participant residual is `r round(median(residuals_current), 3)`, matching the residual summary. Centering the covariates internally does not change these fitted values after the intercept is transformed back.
 
 ```{r regression-effect, fig.cap="Posterior adjusted treatment effect, with zero marked as a reference. These data simulate a large positive effect.", fig.alt="Posterior adjusted treatment effect, with zero marked as a reference. These data simulate a large positive effect."}
 ggplot(discounted$posterior, aes(treatment)) +
