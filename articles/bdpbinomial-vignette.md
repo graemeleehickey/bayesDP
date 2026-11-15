@@ -1,404 +1,116 @@
-# Binomial Count Estimation with bayesDP
+# Binomial outcomes with bayesDP
 
-## Introduction
+## Purpose and inputs
 
-The purpose of this vignette is to introduce the `bdpbinomial` function.
-`bdpbinomial` is used for estimating posterior samples from a Binomial
-event rate outcome for clinical trials where an informative prior is
-used.
+[`bdpbinomial()`](https://graemeleehickey.github.io/bayesDP/reference/bdpbinomial.md)
+estimates an event probability from independent binary outcomes. With
+two arms, the treatment effect is the risk difference, treatment minus
+control. Define whether an event is desirable or undesirable before
+interpreting its sign.
 
-In the parlance of clinical trials, the informative prior is derived
-from historical data. The weight given to the historical data is
-determined using what we refer to as a discount function. There are
-three steps in carrying out estimation:
+Supply an event count `y` and sample size `N` for each available source.
+The suffixes `_t`, `_c`, `0_t`, and `0_c` identify current treatment,
+current control, historical treatment, and historical control. Current
+treatment is required; control data may be current, historical, or both.
+A historical-only control requires a justification for comparing
+populations across studies.
 
-1.  Estimation of the historical data weight, denoted \hat{\alpha}, via
-    the discount function
+The [borrowing
+overview](https://graemeleehickey.github.io/bayesDP/articles/borrowing.md)
+explains the weighting choices, discount functions, and interpretation.
+The examples below explicitly use `method = "fixed"`; the function
+default is `"mc"`.
 
-2.  Estimation of the posterior distribution of the current data,
-    conditional on the historical data weighted by \hat{\alpha}
+## One-arm example
 
-3.  If a two-arm clinical trial, estimation of the posterior treatment
-    effect, i.e., treatment versus control
-
-Throughout this vignette, we use the terms `current`, `historical`,
-`treatment`, and `control`. These terms are used because the model was
-envisioned in the context of clinical trials where historical data may
-be present. Because of this terminology, there are 4 potential sources
-of data:
-
-1.  Current treatment data: treatment data from a current study
-
-2.  Current control data: control (or other treatment) data from a
-    current study
-
-3.  Historical treatment data: treatment data from a previous study
-
-4.  Historical control data: control (or other treatment) data from a
-    previous study
-
-If only treatment data is input, the function considers the analysis a
-one-arm trial. If treatment data + control data is input, then it is
-considered a two-arm trial.
-
-### Estimation of the historical data weight
-
-In the first estimation step, the historical data weight \hat{\alpha} is
-estimated. In the case of a two-arm trial, where both treatment and
-control data are available, an \hat{\alpha} value is estimated
-separately for each of the treatment and control arms. Of course,
-historical treatment or historical control data must be present,
-otherwise \hat{\alpha} is not estimated for the corresponding arm.
-
-When historical data are available, estimation of \hat{\alpha} is
-carried out as follows. Let y and N denote the number of events and
-sample size of the current data, respectively. Similarly, let y_0 and
-N_0 denote the number of events and sample size of the historical data,
-respectively. Let a_0 and b_0 denote the rate parameters of a Beta
-distribution. Then, the posterior distributions of the event rates for
-current and historical data, under vague (flat) priors are
-
-\tilde{\theta}\mid y,N \sim \operatorname{Beta}\left(y+a_0,\\N-y+b_0
-\right)
-
-and
-
-\theta_0\mid y_0,N_0 \sim \operatorname{Beta}\left(y_0+a_0,\\N_0-y_0+b_0
-\right),
-
-respectively. We next compute the posterior probability p =
-\Pr\left(\tilde{\theta} \< \theta_0\mid y, N, y_0, N_0\right). Finally,
-for a discount function, denoted W, \hat{\alpha} is computed as
-
-\hat{\alpha} = \alpha\_{\max}\cdot W\left(p, \\w\right),\\0\le p\le1,
-
-where w may be one or more parameters associated with the discount
-function and \alpha\_{\max} scales the weight \hat{\alpha} by a
-user-input maximum value. More details on the discount functions are
-given in the discount function section below.
-
-There are several model inputs at this first stage. First, the user can
-select the discount function type via the `discount_function` input (see
-below). Next, choosing `fix_alpha = TRUE` forces a fixed value of
-\hat{\alpha} (at the `alpha_max` input), as opposed to estimation via
-the discount function.
-
-In the next modeling stage, a Monte Carlo estimation approach is used,
-requiring several samples from the posterior distributions. Thus, the
-user can input a sample size greater than or less than the default value
-of `number_mcmc = 10000`. Finally, the Beta rate parameters can be
-changed from the defaults of a_0=b_0=1 (`a0` and `b0` inputs).
-
-An alternate Monte Carlo-based estimation scheme of \hat{\alpha} has
-been implemented, controlled by the function input `method = "mc"`.
-Here, instead of treating \hat{\alpha} as a fixed quantity, \hat{\alpha}
-is treated as random. Because p is recomputed at each Monte Carlo draw
-using a single pair of posterior samples, the resulting sequence of
-\hat{\alpha} values can exhibit noticeable Monte Carlo variability.
-
-First, p, is computed as
-
-\begin{aligned} v^2 &= {\tilde{\theta}\left(1-\tilde{\theta}\right)/N}
-,\\ v^2_0 &= {\theta_0\left(1-\theta_0\right)/N_0} ,\\ Z &=
-{\frac{\left\|\tilde{\theta}-\theta_0\right\|}{\sqrt{v^2 + v^2_0}}} ,\\
-p &= 2\left(1-\Phi\left(Z\right)\right), \end{aligned}
-
-where \Phi\left(x\right) is the xth quantile of a standard normal (i.e,
-the `pnorm` R function). Here, v^2 and v^2_0 are estimates of the
-variances of \tilde{\theta} and \theta_0, respectively.
-
-Next, p is used to construct \hat{\alpha} via the discount function.
-Since the values Z and p are computed at each iteration of the Monte
-Carlo estimation scheme, \hat{\alpha} is computed at each iteration of
-the Monte Carlo estimation scheme, resulting in a distribution of
-\hat{\alpha} values.
-
-#### Discount function
-
-There are currently three discount functions implemented throughout the
-`bayesDP` package. The discount function is specified using the
-`discount_function` input with the following choices available:
-
-1.  `identity` (default): Identity.
-
-2.  `weibull`: Weibull cumulative distribution function (CDF);
-
-3.  `scaledweibull`: Scaled Weibull CDF;
-
-First, the identity discount function (default) sets the discount weight
-\hat{\alpha}=p.
-
-Second, the Weibull CDF has two user-specified parameters associated
-with it, the shape and scale. The default shape is 3 and the default
-scale is 0.135, each of which are controlled by the function inputs
-`weibull_shape` and `weibull_scale`, respectively. The form of the
-Weibull CDF is
-
-W(x) = 1 - \exp\left\\-
-(x/w\_{\mathrm{scale}})^{w\_{\mathrm{shape}}}\right\\.
-
-The third discount function option is the Scaled Weibull CDF. The Scaled
-Weibull CDF is the Weibull CDF divided by the value of the Weibull CDF
-evaluated at 1, i.e.,
-
-W^{\ast}(x) = W(x)/W(1).
-
-Similar to the Weibull CDF, the Scaled Weibull CDF has two
-user-specified parameters associated with it, the shape and scale, again
-controlled by the function inputs `weibull_shape` and `weibull_scale`,
-respectively.
-
-Using the default shape and scale inputs, each of the discount functions
-are shown below.
-![](bdpbinomial-vignette_files/figure-html/unnamed-chunk-1-1.png)
-
-![](bdpbinomial-vignette_files/figure-html/unnamed-chunk-2-1.png)
-
-In each of the above plots, the x-axis is the stochastic comparison
-between current and historical data, which we’ve denoted p. The y-axis
-is the discount value \hat{\alpha} that corresponds to a given value of
-p.
-
-An advanced input for the plot function is `print`. The default value is
-`print = TRUE`, which simply returns the graphics. Alternately, users
-can specify `print = FALSE`, which returns a `ggplot2` object. Below is
-an example using the discount function plot:
-
-``` r
-
-p1 <- plot(fit02, type = "discount", print = FALSE)
-p1 + ggtitle("Discount Function Plot :-)")
-```
-
-![](bdpbinomial-vignette_files/figure-html/unnamed-chunk-3-1.png)
-
-### Estimation of the posterior distribution of the current data, conditional on the historical data
-
-With \hat{\alpha} in hand, we can now estimate the posterior
-distribution of the current data event rate. Using the notation of the
-previous section, the posterior distribution is
-
-\theta \sim \operatorname{Beta}\left(y+y_0\hat{\alpha}+a_0,\\
-N-y+\hat{\alpha}(N_0-y_0)+b_0 \right).
-
-At this model stage, we have in hand `number_mcmc` simulations from the
-augmented event rate distribution. If there are no control data, i.e., a
-one-arm trial, then the modeling stops and we generate summaries of the
-posterior distribution of \theta. Otherwise, if there are control data,
-we proceed to a third step and compute a comparison between treatment
-and control data.
-
-### Estimation of the posterior treatment effect: treatment versus control
-
-This step of the model is carried out on-the-fly using the `summary` or
-`print` methods. Let \theta_T and \theta_C denote posterior event rate
-estimates of the treatment and control arms, respectively. Currently,
-the implemented comparison between treatment and control is the
-difference, i.e., summary statistics related to the posterior
-difference: \theta_T - \theta_C. In a future release, we may consider
-implementing additional comparison types.
-
-### Inputting Data
-
-The data inputs for `bdpbinomial` are `y_t`, `N_t`, `y0_t`, `N0_t`,
-`y_c`, `N_c`, `y0_c`, and `N0_c`. The data must be input as (`y`, `N`)
-pairs. For example, `y_t`, the number of events in the current treatment
-group, must be accompanied by `N_t`, the sample size of the current
-treatment group. Historical data inputs are not necessary, but using
-this function would not be necessary either.
-
-**At the minimum, `y_t` and `N_t` must be input**. In the case that only
-`y_t` and `N_t` are input, the analysis is analogous to using
-`prop.test`. Each of the following input combinations are allowed:
-
-- (`y_t`, `N_t`) - one-arm trial
-- (`y_t`, `N_t`) + (`y0_t`, `N0_t`) - one-arm trial
-- (`y_t`, `N_t`) + (`y_c`, `N_c`) - two-arm trial
-- (`y_t`, `N_t`) + (`y0_c`, `N0_c`) - two-arm trial
-- (`y_t`, `N_t`) + (`y0_t`, `N0_t`) + (`y_c`, `N_c`) - two-arm trial
-- (`y_t`, `N_t`) + (`y0_t`, `N0_t`) + (`y0_c`, `N0_c`) - two-arm trial
-- (`y_t`, `N_t`) + (`y0_t`, `N0_t`) + (`y_c`, `N_c`) + (`y0_c`,
-  `N0_c`) - two-arm trial
-
-## Examples
-
-### One-arm trial
-
-Suppose we have historical data with `y0_t = 25` events out of a sample
-size of `N0_t = 250` patients. This gives a historical event rate of
-0.1. Now, suppose we have current data with `y_t = 15` events out of a
-sample size of `N_t = 200` patients, giving an event rate of 0.075. To
-illustrate the approach, let’s first give full weight to the historical
-data. This is accomplished by setting `alpha_max = 1` and
-`fix_alpha = TRUE` as follows:
+Suppose 15 of 200 current participants and 25 of 250 historical
+participants experience the event. These are event probabilities over
+the same follow-up period, not incidence rates per unit of person-time.
 
 ``` r
 
 set.seed(42)
-fit1 <- bdpbinomial(
-  y_t = 15,
-  N_t = 200,
-  y0_t = 25,
-  N0_t = 250,
-  alpha_max = 1,
-  fix_alpha = TRUE,
-  method = "fixed"
+current_only <- bdpbinomial(
+  y_t = 15, N_t = 200, y0_t = 25, N0_t = 250,
+  method = "fixed", fix_alpha = TRUE, alpha_max = 0
 )
-summary(fit1)
+set.seed(42)
+discounted <- bdpbinomial(
+  y_t = 15, N_t = 200, y0_t = 25, N0_t = 250,
+  method = "fixed", fix_alpha = FALSE, alpha_max = 1
+)
+set.seed(42)
+full_borrowing <- bdpbinomial(
+  y_t = 15, N_t = 200, y0_t = 25, N0_t = 250,
+  method = "fixed", fix_alpha = TRUE, alpha_max = 1
+)
 ```
 
-    ## 
-    ##     One-armed bdp binomial
-    ## 
-    ## Current treatment data: 15 and 200
-    ## Historical treatment data: 25 and 250
-    ## Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.3664
-    ## Discount function value (alpha) - treatment: 1
-    ## 95 percent CI: 
-    ##  0.0663  0.1194
-    ## sample estimates:
-    ##  0.0902
+The table compares sensitivity analyses using the same baseline
+Beta(1, 1) prior. Limits are the 2.5th and 97.5th percentiles of the
+posterior draws.
 
-Based on the `summary` output of `fit1`, we can see that the value of
-`alpha` was held fixed at 1. The resulting (augmented) event rate was
-estimated at 0.0902 which is approximately the event rate if we combined
-the historical and current data together, i.e.,
-`(15 + 25) / (200 + 250) = 0.089`. Note that the `print` and `summary`
-methods result in the same output.
+``` r
 
-Now, let’s relax the constraint on fixing `alpha` at 1. We’ll also take
-this opportunity to describe the output of the plot method.
+fits <- list("Current only" = current_only, "Discounted" = discounted,
+  "Full borrowing" = full_borrowing)
+comparison <- do.call(rbind, lapply(fits, function(fit) {
+  arm <- fit$posterior_treatment
+  c(alpha = arm$alpha_discount,
+    weighted_N0 = 250 * arm$alpha_discount,
+    median = median(arm$posterior),
+    lower = unname(quantile(arm$posterior, 0.025)),
+    upper = unname(quantile(arm$posterior, 0.975)))
+}))
+knitr::kable(comparison, digits = 4,
+  col.names = c("Historical weight", "Weighted historical N", "Median", "Lower 95% CrI", "Upper 95% CrI"))
+```
+
+|  | Historical weight | Weighted historical N | Median | Lower 95% CrI | Upper 95% CrI |
+|:---|---:|---:|---:|---:|---:|
+| Current only | 0.0000 | 0.0 | 0.0781 | 0.0464 | 0.1207 |
+| Discounted | 0.3664 | 91.6 | 0.0850 | 0.0566 | 0.1211 |
+| Full borrowing | 1.0000 | 250.0 | 0.0902 | 0.0663 | 0.1194 |
+
+The estimated weight is 0.3664, corresponding to 91.6 weighted
+historical observations. This is moderate borrowing. The augmented
+posterior median is 0.085, compared with an observed current proportion
+of 0.075 and a current-only posterior median of 0.0781.
+
+With full borrowing the posterior is Beta(41, 411), so the posterior
+mean is 0.0907. This differs slightly from the pooled observed
+proportion, 0.0889, because the baseline prior is retained. The table
+reports medians rather than means.
+
+``` r
+
+plot(discounted, type = "posteriors")
+```
+
+![The augmented posterior borrows moderately from the historical
+observations. All curves describe uncertainty about the event
+probability, not the distribution of individual binary
+outcomes.](bdpbinomial-vignette_files/figure-html/one-arm-posteriors-1.png)
+
+The augmented posterior borrows moderately from the historical
+observations. All curves describe uncertainty about the event
+probability, not the distribution of individual binary outcomes.
+
+## Two-arm example
+
+Now add 20 events among 250 current control participants and 20 among
+250 historical control participants. Borrowing is assessed separately
+for treatment and control.
 
 ``` r
 
 set.seed(42)
-fit1a <- bdpbinomial(
-  y_t = 15,
-  N_t = 200,
-  y0_t = 25,
-  N0_t = 250,
-  alpha_max = 1,
-  fix_alpha = FALSE,
-  method = "fixed"
+fit_two <- bdpbinomial(
+  y_t = 15, N_t = 200, y0_t = 25, N0_t = 250,
+  y_c = 20, N_c = 250, y0_c = 20, N0_c = 250,
+  method = "fixed", fix_alpha = FALSE, alpha_max = 1
 )
-summary(fit1a)
-```
-
-    ## 
-    ##     One-armed bdp binomial
-    ## 
-    ## Current treatment data: 15 and 200
-    ## Historical treatment data: 25 and 250
-    ## Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.3664
-    ## Discount function value (alpha) - treatment: 0.3664
-    ## 95 percent CI: 
-    ##  0.0566  0.1211
-    ## sample estimates:
-    ##  0.085
-
-When `alpha` is not constrained to one, it is estimated based on a
-comparison between the current and historical data. We see that the
-stochastic comparison, `p_hat`, between historical and control is
-0.3664. Here, `p_hat` is the posterior probability of the comparison
-between current and historical data.
-
-With the present example, `p_hat = 0.3664` implies that the current and
-historical event rates are moderately different. The result is that the
-weight given to the historical data is shrunk towards zero. Thus, the
-estimate of `alpha` from the discount function is 0.3664, and the
-augmented posterior estimate of the event rate moves up from 0.075
-observed in the current data to a value closer to 0.089.
-
-Many of the the values presented in the `summary` method are accessible
-from the fit object. For instance, `alpha` is found in
-`fit1a$posterior_treatment$alpha_discount` and `p_hat` is located at
-`fit1a$posterior_treatment$p_hat`. The `sample estimates` and CI are
-computed at run-time. The results can be replicated as:
-
-``` r
-
-mean_augmented <- round(median(fit1a$posterior_treatment$posterior), 4)
-mean_augmented
-```
-
-    ## [1] 0.085
-
-``` r
-
-CI95_augmented <- round(
-  quantile(fit1a$posterior_treatment$posterior, prob = c(0.025, 0.975)),
-  4
-)
-CI95_augmented
-```
-
-    ##   2.5%  97.5% 
-    ## 0.0566 0.1211
-
-Finally, we’ll explore the `plot` method.
-
-``` r
-
-plot(fit1a, type = "posteriors")
-```
-
-![](bdpbinomial-vignette_files/figure-html/unnamed-chunk-7-1.png)
-
-``` r
-
-plot(fit1a, type = "density")
-```
-
-![](bdpbinomial-vignette_files/figure-html/unnamed-chunk-7-2.png)
-
-``` r
-
-plot(fit1a, type = "discount")
-```
-
-![](bdpbinomial-vignette_files/figure-html/unnamed-chunk-7-3.png)
-
-The top plot displays three density curves. The blue curve is the
-density of the historical event rate, the green curve is the density of
-the current event rate, and the red curve is the density of the current
-event rate augmented by historical data. Since little weight was given
-to the historical data, the current and posterior event rates
-essentially overlap.
-
-The middle plot simply re-displays the posterior event rate.
-
-The bottom plot displays the discount function (solid curve) as well as
-`alpha` (horizontal dashed line) and `p_hat` (vertical dashed line). In
-the present example, the discount function is the identity.
-
-### Two-arm trial
-
-On to two-arm trials. In this package, we define a two-arm trial as an
-analysis where a current and/or historical control arm is present.
-Suppose we have the same treatment data as in the one-arm example, but
-now we introduce control data: `y_c = 15`, `N_c = 200`, `y0_c = 20`, and
-`N0_c = 250`. This control data gives a current and historical event
-rate of `20 / 250 = 0.08`.
-
-Before proceeding, it is worth pointing out that the discount function
-is applied separately to the treatment and control data. Now, let’s
-carry out the two-arm analysis using default inputs:
-
-``` r
-
-set.seed(42)
-fit2 <- bdpbinomial(
-  y_t = 15,
-  N_t = 200,
-  y0_t = 25,
-  N0_t = 250,
-  y_c = 20,
-  N_c = 250,
-  y0_c = 20,
-  N0_c = 250,
-  method = "fixed"
-)
-summary(fit2)
+summary(fit_two)
 ```
 
     ## 
@@ -412,51 +124,120 @@ summary(fit2)
     ## Discount function value (alpha) - treatment: 0.3664
     ## Stochastic comparison (p_hat) - control (current vs. historical data): 0.9914
     ## Discount function value (alpha) - control: 0.9914
-    ## alternative hypothesis: two.sided
-    ## 95 percent CI:
+    ## Treatment effect: treatment - control
+    ## 95 percent equal-tailed credible interval:
     ##   -0.0347 0.0453
-    ## sample estimates:
-    ## prop 1 prop2
-    ##   0.08  0.08
-
-The `summary` method of a two-arm analysis is slightly different than a
-one-arm analysis. First, we see `p_hat` and `alpha` reported for the
-control data. In the present analysis, the current and historical
-control data have event rates that are very close, thus the historical
-control data is given full weight. This implies that the (augmented)
-posterior control event rate is approximately
-`(20 + 20) / (250 + 250) = 0.08`.
-
-Again, moderate weight is given to the historical treatment data, so we
-have an (augmented) posterior treatment event rate of 0.08.
-
-The CI is computed at run time and is the interval estimate of the
-difference between the posterior treatment and control event rates. With
-a 95% CI of `(-0.0347, 0.0453)`, we would conclude that the treatment
-and control arms are not significantly different.
-
-The `plot` method of a two-arm analysis is slightly different than a
-one-arm analysis as well:
+    ## Posterior medians:
+    ## treatment  control
+    ##   0.0850  0.0813
 
 ``` r
 
-plot(fit2, type = "posteriors")
+risk_difference <- fit_two$posterior_treatment$posterior -
+  fit_two$posterior_control$posterior
+risk_interval <- quantile(risk_difference, c(0.025, 0.975))
 ```
 
-![](bdpbinomial-vignette_files/figure-html/unnamed-chunk-9-1.png)
+The control weight is 0.9914, giving nearly full borrowing, while the
+treatment weight remains 0.3664. The posterior median risk difference is
+0.0035, with a 95% credible interval from -0.0347 to 0.0453. This
+interval includes both negative and positive differences; it does not
+establish equivalence. If the event is adverse, a negative difference
+favours treatment.
 
 ``` r
 
-plot(fit2, type = "density")
+plot(fit_two, type = "effect")
 ```
 
-![](bdpbinomial-vignette_files/figure-html/unnamed-chunk-9-2.png)
+![Posterior risk difference. The dashed line marks no difference;
+clinical equivalence would require a separately specified
+margin.](bdpbinomial-vignette_files/figure-html/risk-difference-1.png)
+
+Posterior risk difference. The dashed line marks no difference; clinical
+equivalence would require a separately specified margin.
+
+## Sensitivity to the weighting method
+
+The draw-specific method produces a distribution of weights rather than
+one estimated weight. Compare both its weights and outcome summaries
+with the fixed analysis.
 
 ``` r
 
-plot(fit2, type = "discount")
+set.seed(42)
+fit_mc <- bdpbinomial(
+  y_t = 15, N_t = 200, y0_t = 25, N0_t = 250,
+  method = "mc", fix_alpha = FALSE, alpha_max = 1
+)
+knitr::kable(rbind(
+  "Historical weight" = quantile(fit_mc$posterior_treatment$alpha_discount, c(0.025, 0.5, 0.975)),
+  "Event probability" = quantile(fit_mc$posterior_treatment$posterior, c(0.025, 0.5, 0.975))
+), digits = 4)
 ```
 
-![](bdpbinomial-vignette_files/figure-html/unnamed-chunk-9-3.png) Each
-of the three plots are analogous to the one-arm analysis, but each plot
-now presents additional data related to the control arm.
+|                   |  2.5% |    50% |  97.5% |
+|:------------------|------:|-------:|-------:|
+| Historical weight | 0.004 | 0.3237 | 0.9612 |
+| Event probability | 0.054 | 0.0846 | 0.1205 |
+
+The interval for the weight describes variation induced by the
+draw-specific procedure, not numerical error in one fixed weight.
+Increasing `number_mcmc` improves the precision of these summaries.
+
+## Model and computation
+
+Let y,N and y_0,N_0 be current and historical counts and sample sizes.
+The baseline prior is \operatorname{Beta}(a_0,b_0), where both
+parameters are shapes. The defaults a_0=b_0=1 give a uniform prior;
+other choices need not be flat.
+
+The separate posterior distributions used for comparison are
+
+\begin{aligned} \tilde\theta\mid y,N &\sim
+\operatorname{Beta}(a_0+y,b_0+N-y),\\ \theta_0\mid y_0,N_0 &\sim
+\operatorname{Beta}(a_0+y_0,b_0+N_0-y_0). \end{aligned}
+
+For `method = "fixed"`, compute
+q=\Pr(\tilde\theta\<\theta_0\mid\text{data}), then p=2\min(q,1-q) and
+\alpha=\alpha\_{\max}W(p). For `method = "mc"`, draw s instead uses
+
+\begin{aligned} v_s &= \tilde\theta^{(s)}(1-\tilde\theta^{(s)})/N,\\
+v\_{0s} &= \theta_0^{(s)}(1-\theta_0^{(s)})/N_0,\\ Z_s &=
+\frac{\|\tilde\theta^{(s)}-\theta_0^{(s)}\|}{\sqrt{v_s+v\_{0s}}},\\ p_s
+&= 2\\1-\Phi(Z_s)\\,\qquad \alpha_s=\alpha\_{\max}W(p_s). \end{aligned}
+
+The quantities v_s,v\_{0s} are plug-in binomial variance approximations
+used in the comparison, not the exact variances of the Beta posteriors.
+\Phi is the standard normal CDF.
+
+Conditional on a weight, the augmented posterior is
+
+\theta\mid\text{data},\alpha\sim\operatorname{Beta} \left(a_0+y+\alpha
+y_0,\\ b_0+N-y+\alpha(N_0-y_0)\right).
+
+The fixed method draws from this Beta distribution. The draw-specific
+method uses a different \alpha_s for each draw, giving a mixture over
+the generated weights. Two-arm contrasts are calculated by subtracting
+paired treatment and control draws, not by subtracting two posterior
+summary estimates. The power-prior construction is described by Haddad
+et al. (2017).
+
+## Assumptions and checks
+
+Use a consistent event definition, follow-up period, and analysis
+population in current and historical data. The model assumes independent
+Bernoulli outcomes within each source; clustering, repeated events, and
+varying exposure times require another likelihood. Check sensitivity to
+the baseline prior, maximum weight, and discount function, especially
+with sparse events or very large historical cohorts. Similar observed
+probabilities do not establish comparability of populations.
+
+## References
+
+Haddad, Tarek, Adam Himes, Laura Thompson, Telba Irony, Rajesh Nair, and
+MDIC Computer Modeling and Simulation Working Group Participants. 2017.
+“Incorporation of Stochastic Engineering Models as Prior Information in
+Bayesian Medical Device Trials.” *Journal of Biopharmaceutical
+Statistics* 27 (6): 1089–103.
+<https://doi.org/10.1080/10543406.2017.1300907>.

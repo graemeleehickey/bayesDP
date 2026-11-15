@@ -21,9 +21,8 @@ alpha_discount(
 
 - p_hat:
 
-  scalar. The posterior probability of a stochastic comparison. This
-  value can be the output of `posterior_probability` or a value between
-  0 and 1.
+  scalar. A current-historical comparison in \[0, 1\]. This value can be
+  the output of `probability_discount` or a value between 0 and 1.
 
 - discount_function:
 
@@ -52,13 +51,8 @@ alpha_discount(
 
 ## Value
 
-`alpha_discount` returns an object of class "alpha_discount".
-
-An object of class `alpha_discount` contains the following:
-
-- `alpha_hat`:
-
-  scalar. The historical data weight.
+A numeric historical weight (or vector of weights when `p_hat` is a
+vector), scaled by `alpha_max`.
 
 ## Details
 

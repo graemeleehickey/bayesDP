@@ -17,7 +17,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">bayesDP</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.10</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -28,10 +28,11 @@
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/bdpbinomial-vignette.html">Binomial Count Estimation with bayesDP</a></li>
-    <li><a class="dropdown-item" href="../articles/bdplm-vignette.html">Linear Regression Estimation with bayesDP</a></li>
-    <li><a class="dropdown-item" href="../articles/bdpnormal-vignette.html">Normal Mean Estimation with bayesDP</a></li>
-    <li><a class="dropdown-item" href="../articles/bdpsurvival-vignette.html">Survival Outcome Estimation with bayesDP</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/borrowing.html">Borrowing historical information with bayesDP</a></li>
+    <li><a class="dropdown-item" href="../articles/bdpbinomial-vignette.html">Binomial outcomes with bayesDP</a></li>
+    <li><a class="dropdown-item" href="../articles/bdpnormal-vignette.html">Normal outcomes with bayesDP</a></li>
+    <li><a class="dropdown-item" href="../articles/bdplm-vignette.html">Linear regression with bayesDP</a></li>
+    <li><a class="dropdown-item" href="../articles/bdpsurvival-vignette.html">Survival outcomes with bayesDP</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -145,13 +146,11 @@ covariates.</p></dd>
 covariate effect(s). Default value is 1e4. If a single value is input, the
 the scalar is repeated to the length of the input covariates. Otherwise,
 care must be taken to ensure the length of the input matches the number of
-covariates. Note that covariate effects are intentionally assigned a
-near-zero historical discount weight, so their priors are effectively flat:
-the value supplied here has negligible influence on the posterior, and the
-effective prior standard deviation is much larger than the nominal value
-(by a factor of roughly 1e6 at the default). In practice the covariate
-coefficients are estimated almost entirely from the current data, and the
-posterior is insensitive to this argument across many orders of magnitude.</p></dd>
+covariates. Under <code>method = "fixed"</code>, the effective prior SD is the
+supplied SD multiplied by 1e6 because covariate prior precision is
+multiplied by 1e-12. Under <code>method = "mc"</code>, covariate prior precision
+is zero, so neither the supplied mean nor SD influences the fit. These
+arguments do not specify ordinary informative covariate priors.</p></dd>
 
 
 <dt id="arg-number-mcmc-alpha">number_mcmc_alpha<a class="anchor" aria-label="anchor" href="#arg-number-mcmc-alpha"></a></dt>
@@ -215,7 +214,8 @@ group. Not used when <code>discount_function</code> = "identity".</p></dd>
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
 <dd><p>character. Analysis method with respect to estimation of the
 weight paramter alpha. Default method "<code>mc</code>" estimates alpha for each
-Monte Carlo iteration. Alternate value "<code>fixed</code>" estimates alpha once
+Monte Carlo iteration, giving a distribution of generated weights rather
+than numerical error around a fixed weight. Alternate value "<code>fixed</code>" estimates alpha once
 and holds it fixed throughout the analysis.  See the the <code>bdplm</code>
 vignette <br><code><a href="../articles/bdplm-vignette.html">vignette("bdplm-vignette", package = "bayesDP")</a></code> for more
 details.</p></dd>
@@ -227,17 +227,18 @@ details.</p></dd>
 <p>An object of class "<code>bdplm</code>" is a list containing at least the
   following components:</p><dl><dt><code>posterior</code></dt>
 <dd><p>data frame. The
-  posterior draws of the covariates, the intercept, and the treatment effect.
-  The grid of sigma values are included.</p></dd>
- <dt><code>alpha_discount</code></dt>
-<dd><p>vector. The posterior probability of the stochastic comparison between the
-  current and historical data for each of the treatment and control arms. If
-  <code>method = "mc"</code>, the result is a matrix of estimates, otherwise for
-  <code>method = "fixed"</code>, the result is a vector of estimates.</p></dd>
+  posterior draws of the intercept, treatment effect, covariate effects,
+  and residual standard deviation <code>sigma</code>.</p></dd>
+
+  <dt><code>alpha_discount</code></dt>
+<dd><p>data frame. Historical weights for treatment
+  and control, with one row under <code>"fixed"</code> or one row per comparison
+  draw under <code>"mc"</code>. These are weights, not probabilities of equality.</p></dd>
 
   <dt><code>estimates</code></dt>
-<dd><p>list. The posterior means and standard errors of
-  the intercept, treatment effect, covariate effect(s) and error variance.</p></dd>
+<dd><p>list. The <code>coefficients</code> component contains
+  posterior means, and <code>se</code> contains posterior standard deviations, for
+  the intercept, treatment effect, covariate effects, and residual SD.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -264,9 +265,9 @@ details.</p></dd>
   separate treatment and control means rather than an intercept plus a
   treatment effect. In this parameterization the arm means are the fitted
   values at covariate = 0, so when covariates are not centered the
-  treatment- and control-mean estimators become strongly correlated and
-  their standard errors are extrapolation errors at covariate = 0. This
-  distorts the discount-prior construction and the historical borrowing. To
+  treatment- and control-mean estimators can become strongly correlated and
+  their standard errors can reflect extrapolation to covariate = 0. This
+  can affect the discount-prior construction and historical borrowing. To
   guard against this, <code>bdplm</code> automatically mean-centers each covariate
   on its pooled (current plus historical) mean before fitting, and
   back-transforms the reported intercept onto the original covariate scale.
@@ -276,20 +277,21 @@ details.</p></dd>
   \(\beta_0^{c}\) is the control-arm mean estimated on the centered scale.
   The treatment effect and covariate slopes are unchanged by centering; the
   reported <code>intercept</code> remains the control-arm mean at covariate = 0 on
-  the original scale. As a result, estimates are invariant to a location
-  shift of any covariate, and users do not need to center covariates
-  themselves.</p>
-<p>The underlying model results in a marginal posterior distribution for the
-  error variance <code>sigma2</code> that does not have a known distribution. Thus,
-  we use a grid search to draw samples of <code>sigma2</code>. First, the marginal
-  posterior is evaluated at a grid of <code>number_mcmc_sigmagrid</code>
-  <code>sigma2</code> values. The bounds of the grid are taken as approximately six
-  standard deviations from an estimate of <code>sigma2</code> using the <code>lm</code>
-  function. Next, <code>number_mcmc_sigma</code> posterior draws of <code>sigma2</code>
-  are made by sampling with replacement from the grid with each value having
-  the corresponding marginal posterior probability of being selected. With
-  posterior draws of <code>sigma2</code> in hand, we can make posterior draws of
-  the regression coefficients.</p>
+  the original scale. The treatment effect and covariate slopes are invariant
+  to a location shift of a covariate; the reported intercept changes with
+  the covariate origin. Centering does not generally make the arm-mean
+  estimators independent, and their covariance is not retained in the
+  diagonal historical prior.</p>
+<p>The marginal posterior of the residual variance is evaluated numerically.
+  Candidate variance values are equally spaced under <code>"fixed"</code> and
+  uniformly sampled under <code>"mc"</code>. Their bounds use extreme quantiles
+  of an inverse-gamma approximation from a weighted regression on the
+  augmented data. The <code>number_mcmc_sigma</code> variance draws are sampled
+  with replacement using marginal density weights, followed by conditional
+  coefficient draws. Under <code>"mc"</code>, each candidate variance is paired
+  with a generated historical-weight vector. Increase the grid and draw
+  counts to assess numerical stability; the Monte Carlo method requires
+  <code>number_mcmc_sigmagrid &lt;= number_mcmc_alpha</code>.</p>
     </div>
 
     <div class="section level2">

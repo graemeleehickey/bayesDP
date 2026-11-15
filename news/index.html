@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">bayesDP</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.10</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -18,10 +18,11 @@
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/bdpbinomial-vignette.html">Binomial Count Estimation with bayesDP</a></li>
-    <li><a class="dropdown-item" href="../articles/bdplm-vignette.html">Linear Regression Estimation with bayesDP</a></li>
-    <li><a class="dropdown-item" href="../articles/bdpnormal-vignette.html">Normal Mean Estimation with bayesDP</a></li>
-    <li><a class="dropdown-item" href="../articles/bdpsurvival-vignette.html">Survival Outcome Estimation with bayesDP</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/borrowing.html">Borrowing historical information with bayesDP</a></li>
+    <li><a class="dropdown-item" href="../articles/bdpbinomial-vignette.html">Binomial outcomes with bayesDP</a></li>
+    <li><a class="dropdown-item" href="../articles/bdpnormal-vignette.html">Normal outcomes with bayesDP</a></li>
+    <li><a class="dropdown-item" href="../articles/bdplm-vignette.html">Linear regression with bayesDP</a></li>
+    <li><a class="dropdown-item" href="../articles/bdpsurvival-vignette.html">Survival outcomes with bayesDP</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -45,6 +46,29 @@
       <small>Source: <a href="https://github.com/graemeleehickey/bayesDP/blob/master/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.3.10" id="bayesdp-1310">bayesDP 1.3.10<a class="anchor" aria-label="anchor" href="#bayesdp-1310"></a></h2>
+<div class="section level3">
+<h3 id="bug-fixes-1-3-10">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-3-10"></a></h3>
+<ul><li>Corrected the normal-data <code><a href="../reference/probability_discount.html">probability_discount()</a></code> helper to standardize Monte Carlo mean differences by their conditional standard error, matching <code><a href="../reference/bdpnormal.html">bdpnormal()</a></code> and preserving the comparison when outcome units change.</li>
+<li>Corrected discount plots to include <code>alpha_max</code> for each arm and to show a constant weight when <code>fix_alpha = TRUE</code>.</li>
+<li>Corrected the fixed-weight probability definitions and the normal vignette’s treatment-effect conclusion (<a href="https://github.com/graemeleehickey/bayesDP/issues/19" class="external-link">#19</a>, <a href="https://github.com/graemeleehickey/bayesDP/issues/20" class="external-link">#20</a>).</li>
+</ul></div>
+<div class="section level3">
+<h3 id="presentation-and-documentation-1-3-10">Presentation and documentation<a class="anchor" aria-label="anchor" href="#presentation-and-documentation-1-3-10"></a></h3>
+<ul><li>Reorganised the four model vignettes around worked examples, interpretation, assumptions, and model details, with a shared historical-borrowing overview and formal references.</li>
+<li>Added comparisons of current-only, estimated, and full borrowing; generated numerical interpretations from fitted draws; and included a survival example with right censoring.</li>
+<li>Clarified the distinction between estimated fixed and draw-specific weights, conditional and marginal distributions, baseline priors, regression covariate-prior precision, and posterior medians versus means.</li>
+<li>Added <code>type = "effect"</code> plots for binomial and normal treatment-minus-control contrasts. Posterior plots now use explicit parameter labels and consistent information-source colours and line types.</li>
+<li>Labelled binomial and normal summary intervals as equal-tailed credible intervals and retained four decimal places for arm estimates.</li>
+<li>Documented the unresolved survival Monte Carlo calculation, Gamma-prior augmentation, and summary-output problems (<a href="https://github.com/graemeleehickey/bayesDP/issues/16" class="external-link">#16</a>–#18). These calculations are not changed in this release; affected examples identify the limitations and avoid the incorrect summary output.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="tests-1-3-10">Tests<a class="anchor" aria-label="anchor" href="#tests-1-3-10"></a></h3>
+<ul><li>Added checks against numerical integration, outcome-unit changes, the model’s comparison draws, discount-plot limits, treatment-effect plots, numerical summary labels, and the documented regression covariate-prior behaviour.</li>
+<li>Included the test suite in source packages so <code>R CMD check</code> runs it, and declared the existing <code>withr</code> test dependency.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.3.9" id="bayesdp-139">bayesDP 1.3.9<a class="anchor" aria-label="anchor" href="#bayesdp-139"></a></h2>
 <div class="section level3">

@@ -1,414 +1,106 @@
-# Normal Mean Estimation with bayesDP
+# Normal outcomes with bayesDP
 
-## Introduction
+## Purpose and inputs
 
-The purpose of this vignette is to introduce the `bdpnormal` function.
-`bdpnormal` is used for estimating posterior samples from a Gaussian
-mean outcome for clinical trials where an informative prior is used.
+[`bdpnormal()`](https://graemeleehickey.github.io/bayesDP/reference/bdpnormal.md)
+estimates a population mean from a sample mean, sample standard
+deviation, and sample size. With two arms, the effect is the treatment
+mean minus the control mean. Specify the outcome units and which
+direction represents benefit.
 
-In the parlance of clinical trials, the informative prior is derived
-from historical data. The weight given to the historical data is
-determined using what we refer to as a discount function. There are
-three steps in carrying out estimation:
+Supply each source as a `(mu, sigma, N)` triplet: `sigma` is the sample
+SD, not a standard error. The suffixes `_t`, `_c`, `0_t`, and `0_c`
+identify the four current/historical and treatment/control sources.
+Current treatment is required; controls may be current, historical, or
+both. Means and variances must be estimated from at least two
+observations with positive SDs.
 
-1.  Estimation of the historical data weight, denoted \hat{\alpha}, via
-    the discount function
+See the [borrowing
+overview](https://graemeleehickey.github.io/bayesDP/articles/borrowing.md)
+for the shared methodology. The examples select `method = "fixed"`
+explicitly; `"mc"` is the default.
 
-2.  Estimation of the posterior distribution of the current data,
-    conditional on the historical data weighted by \hat{\alpha}
+## One-arm example
 
-3.  If a two-arm clinical trial, estimation of the posterior treatment
-    effect, i.e., treatment versus control
-
-Throughout this vignette, we use the terms `current`, `historical`,
-`treatment`, and `control`. These terms are used because the model was
-envisioned in the context of clinical trials where historical data may
-be present. Because of this terminology, there are 4 potential sources
-of data:
-
-1.  Current treatment data: treatment data from a current study
-
-2.  Current control data: control (or other treatment) data from a
-    current study
-
-3.  Historical treatment data: treatment data from a previous study
-
-4.  Historical control data: control (or other treatment) data from a
-    previous study
-
-If only treatment data is input, the function considers the analysis a
-one-arm trial. If treatment data + control data is input, then it is
-considered a two-arm trial.
-
-### Estimation of the historical data weight
-
-In the first estimation step, the historical data weight \hat{\alpha} is
-estimated. In the case of a two-arm trial, where both treatment and
-control data are available, an \hat{\alpha} value is estimated
-separately for each of the treatment and control arms. Of course,
-historical treatment or historical control data must be present,
-otherwise \hat{\alpha} is not estimated for the corresponding arm.
-
-When historical data are available, estimation of \hat{\alpha} is
-carried out as follows. Let \bar{y}, s, and N denote the sample mean,
-sample standard deviation, and sample size of the current data,
-respectively. Similarly, let \bar{y}\_0, s_0, and N_0 denote the sample
-mean, sample standard deviation, and sample size of the historical data,
-respectively. Then, the posterior distribution of the mean for current
-data, under vague (flat) priors is
-
-\begin{aligned} \tilde{\sigma}^2\mid\bar{y},s,N &\sim
-\operatorname{InverseGamma}\left(\frac{N-1}{2},\\\frac{N-1}{2}s^2
-\right),\\ \tilde{\mu}\mid\bar{y},N,\tilde{\sigma}^2 &\sim
-\mathcal{N}\left(\bar{y},\\ \frac{1}{N}\tilde{\sigma}^2 \right).
-\end{aligned}
-
-Similarly, the posterior distribution of the mean for historical data,
-under vague (flat) priors is
-
-\begin{aligned} \sigma^2_0 &\sim
-\operatorname{InverseGamma}\left(\frac{N_0-1}{2},\\\frac{N_0-1}{2}s_0^2
-\right),\\ \mu_0 \mid \bar{y}\_0, N_0, \sigma^2_0 &\sim
-\mathcal{N}\left(\bar{y}\_0,\\ \frac{1}{N_0}\sigma^2_0 \right).
-\end{aligned}
-
-We next compute the posterior probability p = \Pr\left(\tilde{\mu} \<
-\mu_0\mid\bar{y},s,N,\bar{y}\_0,s_0,N_0\right). Finally, for a discount
-function, denoted W, \hat{\alpha} is computed as
-
-\hat{\alpha} = \alpha\_{\max}\cdot W\left(p, \\w\right),\\0\le p\le1,
-
-where w may be one or more parameters associated with the discount
-function and \alpha\_{\max} scales the weight \hat{\alpha} by a
-user-input maximum value. More details on the discount functions are
-given in the discount function section below.
-
-There are several model inputs at this first stage. First, the user can
-select the discount function type via the `discount_function` input (see
-below). Next, choosing `fix_alpha = TRUE` forces a fixed value of
-\hat{\alpha} (at the `alpha_max` input), as opposed to estimation via
-the discount function.
-
-In the next modeling stage, a Monte Carlo estimation approach is used,
-requiring several samples from the posterior distributions. Thus, the
-user can input a sample size greater than or less than the default value
-of `number_mcmc = 10000`.
-
-An alternate Monte Carlo-based estimation scheme of \hat{\alpha} has
-been implemented, controlled by the function input `method = "mc"`.
-Here, instead of treating \hat{\alpha} as a fixed quantity, \hat{\alpha}
-is treated as random. Because p is recomputed at each Monte Carlo draw
-using a single pair of posterior samples, the resulting sequence of
-\hat{\alpha} values can exhibit noticeable Monte Carlo variability.
-
-First, p, is computed as
-
-\begin{aligned} Z &=
-{\frac{\left\|\tilde{\mu}-\mu_0\right\|}{\sqrt{v^2 + v^2_0}}} ,\\ p &=
-2\left(1-\Phi\left(Z\right)\right), \end{aligned}
-
-where \Phi\left(x\right) is the xth quantile of a standard normal (i.e.,
-the `pnorm` R function). Here, v^2 and v^2_0 are the variances of
-\tilde{\mu} and \mu_0, respectively.
-
-Next, p is used to construct \hat{\alpha} via the discount function.
-Since the values Z and p are computed at each iteration of the Monte
-Carlo estimation scheme, \hat{\alpha} is computed at each iteration of
-the Monte Carlo estimation scheme, resulting in a distribution of
-\hat{\alpha} values.
-
-#### Discount function
-
-There are currently three discount functions implemented throughout the
-`bayesDP` package. The discount function is specified using the
-`discount_function` input with the following choices available:
-
-1.  `identity` (default): Identity.
-
-2.  `weibull`: Weibull cumulative distribution function (CDF);
-
-3.  `scaledweibull`: Scaled Weibull CDF;
-
-First, the identity discount function (default) sets the discount weight
-\hat{\alpha}=p.
-
-Second, the Weibull CDF has two user-specified parameters associated
-with it, the shape and scale. The default shape is 3 and the default
-scale is 0.135, each of which are controlled by the function inputs
-`weibull_shape` and `weibull_scale`, respectively. The form of the
-Weibull CDF is
-
-W(x) = 1 - \exp\left\\-
-(x/w\_{\mathrm{scale}})^{w\_{\mathrm{shape}}}\right\\.
-
-The third discount function option is the Scaled Weibull CDF. The Scaled
-Weibull CDF is the Weibull CDF divided by the value of the Weibull CDF
-evaluated at 1, i.e.,
-
-W^{\ast}(x) = W(x)/W(1).
-
-Similar to the Weibull CDF, the Scaled Weibull CDF has two
-user-specified parameters associated with it, the shape and scale, again
-controlled by the function inputs `weibull_shape` and `weibull_scale`,
-respectively.
-
-Using the default shape and scale inputs, each of the discount functions
-are shown below.
-![](bdpnormal-vignette_files/figure-html/unnamed-chunk-1-1.png)
-
-![](bdpnormal-vignette_files/figure-html/unnamed-chunk-2-1.png)
-
-In each of the above plots, the x-axis is the stochastic comparison
-between current and historical data, which we’ve denoted p. The y-axis
-is the discount value \hat{\alpha} that corresponds to a given value of
-p.
-
-An advanced input for the plot function is `print`. The default value is
-`print = TRUE`, which simply returns the graphics. Alternately, users
-can specify `print = FALSE`, which returns a `ggplot2` object. Below is
-an example using the discount function plot:
-
-``` r
-
-p1 <- plot(fit02, type = "discount", print = FALSE)
-p1 + ggtitle("Discount Function Plot :-)")
-```
-
-![](bdpnormal-vignette_files/figure-html/unnamed-chunk-3-1.png)
-
-### Estimation of the posterior distribution of the current data, conditional on the historical data
-
-With \hat{\alpha} in hand, we can now estimate the posterior
-distribution of the mean of the current data. Using the notation of the
-previous section, the posterior distribution is
-
-\mu \sim \mathcal{N}\left( \frac{\sigma^2_0N\bar{y} +
-\tilde{\sigma}^2N_0\bar{y}\_0\hat{\alpha}}{N\sigma^2_0 +
-\tilde{\sigma}^2N_0\hat{\alpha}},\\\frac{\tilde{\sigma}^2\sigma^2_0}{N\sigma^2_0 +
-\tilde{\sigma}^2N_0\hat{\alpha}} \right).
-
-At this model stage, we have in hand `number_mcmc` simulations from the
-augmented mean distribution. If there are no control data, i.e., a
-one-arm trial, then the modeling stops and we generate summaries of the
-posterior distribution of \mu. Otherwise, if there are control data, we
-proceed to a third step and compute a comparison between treatment and
-control data.
-
-### Estimation of the posterior treatment effect: treatment versus control
-
-This step of the model is carried out on-the-fly using the `summary` or
-`print` methods. Let \mu_T and \mu_C denote posterior mean estimates of
-the treatment and control arms, respectively. Currently, the implemented
-comparison between treatment and control is the difference, i.e.,
-summary statistics related to the posterior difference: \mu_T - \mu_C.
-In a future release, we may consider implementing additional comparison
-types.
-
-### Inputting Data
-
-The data inputs for `bdpnormal` are `mu_t`, `sigma_t`, `N_t`, `mu0_t`,
-`sigma0_t`, `N0_t`, `mu_c`, `sigma_c`, `N_c`, `mu0_c`, `sigma0_c`, and
-`N0_c`. The data must be input as (`mu`, `sigma`, `N`) triplets. For
-example, `mu_t`, the sample mean of the current treatment group, must be
-accompanied by `sigma_t` and `N_t`, the sample standard deviation and
-sample size, respectively. Historical data inputs are not necessary, but
-using this function would not be necessary either.
-
-**At the minimum, `mu_t`, `sigma_t`, and `N_t` must be input**. In the
-case that only `mu_t`, `sigma_t`, and `N_t` are input, the analysis is
-analogous to a one-sample t-test. Each of the following input
-combinations are allowed:
-
-- (`mu_t`, `sigma_t`, `N_t`) - one-arm trial
-- (`mu_t`, `sigma_t`, `N_t`) + (`mu0_t`, `sigma0_t`, `N0_t`) - one-arm
-  trial
-- (`mu_t`, `sigma_t`, `N_t`) + (`mu_c`, `sigma_c`, `N_c`) - two-arm
-  trial
-- (`mu_t`, `sigma_t`, `N_t`) + (`mu0_c`, `sigma0_c`, `N0_c`) - two-arm
-  trial
-- (`mu_t`, `sigma_t`, `N_t`) + (`mu0_t`, `sigma0_t`, `N0_t`) + (`mu_c`,
-  `sigma_c`, `N_c`) - two-arm trial
-- (`mu_t`, `sigma_t`, `N_t`) + (`mu0_t`, `sigma0_t`, `N0_t`) + (`mu0_c`,
-  `sigma0_c`, `N0_c`) - two-arm trial
-- (`mu_t`, `sigma_t`, `N_t`) + (`mu0_t`, `sigma0_t`, `N0_t`) + (`mu_c`,
-  `sigma_c`, `N_c`) + (`mu0_c`, `sigma0_c`, `N0_c`) - two-arm trial
-
-## Examples
-
-### One-arm trial
-
-Suppose we have historical data with a mean of `mu0_t = 50`, standard
-deviation of `sigma0_t = 10`, and sample size of `N0_t = 50` patients.
-Also suppose that we have current data with a mean of `mu_t = 45`,
-standard deviation of `sigma_t = 10`, and sample size of `N_t = 50`. To
-illustrate the approach, let’s first give full weight to the historical
-data. This is accomplished by setting `alpha_max = 1` and
-`fix_alpha = TRUE` as follows:
+The current study has mean 45, SD 10, and 50 participants. The
+historical study has mean 50, SD 10, and 50 participants. For this
+illustration, regard the outcome as a continuous score in the same units
+in both studies.
 
 ``` r
 
 set.seed(42)
-fit1 <- bdpnormal(
-  mu_t = 45,
-  sigma_t = 10,
-  N_t = 50,
-  mu0_t = 50,
-  sigma0_t = 10,
-  N0_t = 50,
-  alpha_max = 1,
-  fix_alpha = TRUE,
-  method = "fixed"
-)
-summary(fit1)
-```
-
-    ## 
-    ##     One-armed bdp normal
-    ## 
-    ## data:
-    ##   Current treatment: mu_t = 45, sigma_t = 10, N_t = 50
-    ##   Historical treatment: mu0_t = 50, sigma0_t = 10, N0_t = 50
-    ## Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.0134
-    ## Discount function value (alpha) - treatment: 1
-    ## 95 percent CI: 
-    ##  45.4329  49.6303
-    ## posterior sample estimate:
-    ## mean of treatment group
-    ##  47.5208
-
-Based on the `summary` output of `fit1`, we can see that the value of
-`alpha` was held fixed at 1. Note that the `print` and `summary` methods
-result in the same output. The resulting treatment group mean is
-approximately 47.5, which is the average of 45 and 50, as expected.
-
-Now, let’s relax the constraint on fixing `alpha` at 1 and let the
-function estimate `alpha`. We’ll also take this opportunity to describe
-the output of the plot method.
-
-``` r
-
-set.seed(42)
-fit1a <- bdpnormal(
+current_only <- bdpnormal(
   mu_t = 45, sigma_t = 10, N_t = 50,
   mu0_t = 50, sigma0_t = 10, N0_t = 50,
-  fix_alpha = FALSE,
-  method = "fixed"
+  method = "fixed", fix_alpha = TRUE, alpha_max = 0
 )
-summary(fit1a)
-```
-
-    ## 
-    ##     One-armed bdp normal
-    ## 
-    ## data:
-    ##   Current treatment: mu_t = 45, sigma_t = 10, N_t = 50
-    ##   Historical treatment: mu0_t = 50, sigma0_t = 10, N0_t = 50
-    ## Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.0134
-    ## Discount function value (alpha) - treatment: 0.0134
-    ## 95 percent CI: 
-    ##  42.2972  47.9262
-    ## posterior sample estimate:
-    ## mean of treatment group
-    ##  45.0795
-
-When `alpha` is not constrained to one, it is estimated based on a
-comparison between the current and historical data. We see that the
-stochastic comparison, `p_hat`, between current historical and control
-is 0.0134. Here, `p_hat` is the posterior probability of the comparison
-between the current and historical data.
-
-With the present example, the low value of `p_hat` implies that the
-current and historical sample means are different. The result is that
-the weight given to the historical data is shrunk towards zero. Thus,
-the estimate of `alpha` from the discount function is 0.0134 and the
-augmented posterior estimate of the mean is approximately the mean of
-the current data.
-
-Many of the the values presented in the `summary` method are accessible
-from the fit object. For instance, `alpha` is found in
-`fit1a$posterior_treatment$alpha_discount` and `p_hat` is located at
-`fit1a$posterior_treatment$p_hat`. The augmented mean and CI are
-computed at run-time. The results can be replicated as:
-
-``` r
-
-mean_augmented <- round(median(fit1a$posterior_treatment$posterior_mu), 4)
-mean_augmented
-```
-
-    ## [1] 45.0795
-
-``` r
-
-CI95_augmented <- round(
-  quantile(fit1a$posterior_treatment$posterior_mu, prob = c(0.025, 0.975)),
-  4
+set.seed(42)
+discounted <- bdpnormal(
+  mu_t = 45, sigma_t = 10, N_t = 50,
+  mu0_t = 50, sigma0_t = 10, N0_t = 50,
+  method = "fixed", fix_alpha = FALSE, alpha_max = 1
 )
-CI95_augmented
+set.seed(42)
+full_borrowing <- bdpnormal(
+  mu_t = 45, sigma_t = 10, N_t = 50,
+  mu0_t = 50, sigma0_t = 10, N0_t = 50,
+  method = "fixed", fix_alpha = TRUE, alpha_max = 1
+)
+fits <- list("Current only" = current_only, "Discounted" = discounted,
+  "Full borrowing" = full_borrowing)
+comparison <- do.call(rbind, lapply(fits, function(fit) {
+  arm <- fit$posterior_treatment
+  c(alpha = arm$alpha_discount, median = median(arm$posterior_mu),
+    lower = unname(quantile(arm$posterior_mu, 0.025)),
+    upper = unname(quantile(arm$posterior_mu, 0.975)))
+}))
+knitr::kable(comparison, digits = 4,
+  col.names = c("Historical weight", "Median mean", "Lower 95% CrI", "Upper 95% CrI"))
 ```
 
-    ##    2.5%   97.5% 
-    ## 42.2972 47.9262
+|                | Historical weight | Median mean | Lower 95% CrI | Upper 95% CrI |
+|:---------------|------------------:|------------:|--------------:|--------------:|
+| Current only   |            0.0000 |     45.0154 |       42.2132 |       47.8762 |
+| Discounted     |            0.0134 |     45.0795 |       42.2972 |       47.9262 |
+| Full borrowing |            1.0000 |     47.5208 |       45.4329 |       49.6303 |
 
-Finally, we’ll explore the `plot` method.
+The estimated historical weight is 0.0134, so the posterior median mean,
+45.0795, remains close to the current sample mean. With full borrowing
+the median is 47.5208, approximately halfway between 45 and 50 in this
+equal-size, equal-SD example. With unequal variances, the sources have
+different precisions, so full borrowing need not give the
+sample-size-weighted mean.
 
 ``` r
 
-plot(fit1a, type = "posteriors")
+plot(discounted, type = "posteriors")
 ```
 
-![](bdpnormal-vignette_files/figure-html/unnamed-chunk-7-1.png)
+![Posterior distributions of the population mean. Estimated borrowing is
+small because the current and historical means differ relative to their
+precision.](bdpnormal-vignette_files/figure-html/mean-posteriors-1.png)
 
-``` r
+Posterior distributions of the population mean. Estimated borrowing is
+small because the current and historical means differ relative to their
+precision.
 
-plot(fit1a, type = "density")
-```
+## Two-arm example
 
-![](bdpnormal-vignette_files/figure-html/unnamed-chunk-7-2.png)
-
-``` r
-
-plot(fit1a, type = "discount")
-```
-
-![](bdpnormal-vignette_files/figure-html/unnamed-chunk-7-3.png)
-
-The top plot displays three density curves. The blue curve is the
-density of the historical mean, the green curve is the density of the
-current mean, and the red curve is the density of the current mean
-augmented by historical data. Since little weight was given to the
-historical data, the current and posterior means essentially overlap.
-
-The middle plot simply re-displays the posterior mean.
-
-The bottom plot displays the discount function (solid curve) as well as
-`alpha` (horizontal dashed line) and `p_hat` (vertical dashed line). In
-the present example, the discount function is the identity.
-
-### Two-arm trial
-
-On to two-arm trials. In this package, we define a two-arm trial as an
-analysis where a current and/or historical control arm is present.
-Suppose we have the same treatment data as in the one-arm example, but
-now we introduce control data: `mu_c = 40`, `sigma_c = 10`, `N_c = 50`,
-`mu0_c = 40`, `sigma0_c = 10`, and `N0_c = 50`.
-
-Before proceeding, it is worth pointing out that the discount function
-is applied separately to the treatment and control data. Now, let’s
-carry out the two-arm analysis using default inputs:
+Add current and historical control groups with mean 40, SD 10, and 50
+participants each.
 
 ``` r
 
 set.seed(42)
-fit2 <- bdpnormal(
+fit_two <- bdpnormal(
   mu_t = 45, sigma_t = 10, N_t = 50,
   mu0_t = 50, sigma0_t = 10, N0_t = 50,
   mu_c = 40, sigma_c = 10, N_c = 50,
   mu0_c = 40, sigma0_c = 10, N0_c = 50,
-  fix_alpha = FALSE,
-  method = "fixed"
+  method = "fixed", fix_alpha = FALSE, alpha_max = 1
 )
-summary(fit2)
+summary(fit_two)
 ```
 
     ## 
@@ -423,48 +115,136 @@ summary(fit2)
     ## Stochastic comparison (p_hat) - control (current vs. historical data): 0.9922
     ## Discount function value (alpha) - treatment: 0.0134
     ## Discount function value (alpha) - control: 0.9922
-    ## alternative hypothesis: two.sided
-    ## 95 percent CI: 
+    ## Treatment effect: treatment - control
+    ## 95 percent equal-tailed credible interval: 
     ##  1.7412  8.5362
-    ## posterior sample estimates:
+    ## Posterior medians:
     ## treatment group  control group
-    ##           45.08          40.01
-
-The `summary` method of a two-arm analysis is slightly different than a
-one-arm analysis. First, we see `p_hat` and `alpha` reported for the
-control data. In the present analysis, the current and historical
-control data have sample means that are very close, thus the historical
-control data is given nearly full weight. Again, little weight is given
-to the historical treatment data.
-
-The CI is computed at run time and is the interval estimate of the
-difference between the posterior means of the treatment and control
-groups. With a 95% CI of `(1.7412, 8.5362)`, we would conclude that the
-treatment and control arms are not significantly different since zero is
-outside of the CI.
-
-The `plot` method of a two-arm analysis is slightly different than a
-one-arm analysis as well:
+    ##           45.0795          40.0076
 
 ``` r
 
-plot(fit2, type = "posteriors")
+mean_difference <- fit_two$posterior_treatment$posterior_mu -
+  fit_two$posterior_control$posterior_mu
+mean_interval <- quantile(mean_difference, c(0.025, 0.975))
 ```
 
-![](bdpnormal-vignette_files/figure-html/unnamed-chunk-9-1.png)
+The historical control weight is 0.9922, compared with 0.0134 for
+treatment. The posterior median treatment-minus-control difference is
+5.0725 score units, with a 95% credible interval from 1.7412 to 8.5362.
+The interval lies above zero, supporting a positive effect under this
+analysis. Whether that effect is beneficial or clinically important
+depends on the score definition and a prespecified meaningful
+difference.
 
 ``` r
 
-plot(fit2, type = "density")
+plot(fit_two, type = "effect")
 ```
 
-![](bdpnormal-vignette_files/figure-html/unnamed-chunk-9-2.png)
+![Posterior treatment-minus-control mean difference, with zero marked by
+the dashed
+line.](bdpnormal-vignette_files/figure-html/mean-difference-1.png)
+
+Posterior treatment-minus-control mean difference, with zero marked by
+the dashed line.
+
+## Sensitivity to the weighting method
 
 ``` r
 
-plot(fit2, type = "discount")
+set.seed(42)
+fit_mc <- bdpnormal(
+  mu_t = 45, sigma_t = 10, N_t = 50,
+  mu0_t = 50, sigma0_t = 10, N0_t = 50,
+  method = "mc", fix_alpha = FALSE, alpha_max = 1
+)
+knitr::kable(rbind(
+  "Historical weight" = quantile(fit_mc$posterior_treatment$alpha_discount, c(0.025, 0.5, 0.975)),
+  "Population mean" = quantile(fit_mc$posterior_treatment$posterior_mu, c(0.025, 0.5, 0.975))
+), digits = 4)
 ```
 
-![](bdpnormal-vignette_files/figure-html/unnamed-chunk-9-3.png) Each of
-the three plots are analogous to the one-arm analysis, but each plot now
-presents additional data related to the control arm.
+|                   |    2.5% |     50% |   97.5% |
+|:------------------|--------:|--------:|--------:|
+| Historical weight |  0.0000 |  0.0138 |  0.6276 |
+| Population mean   | 42.4388 | 45.2970 | 48.3085 |
+
+The draw-specific calculation mixes over generated weights. It is not
+merely a less precise estimate of the fixed-weight result. Compare the
+outcome summaries as well as the weight distribution, and increase
+`number_mcmc` to assess numerical stability.
+
+## Model and computation
+
+For each source, assume independent normal observations and the baseline
+prior p(\mu,\sigma^2)\propto1/\sigma^2. Let \bar y,s,N be the current
+sample mean, SD, and size. The separate current-data posterior is
+
+\begin{aligned}
+\tilde\sigma^2\mid\text{data}&\sim\operatorname{InverseGamma}\left(\frac{N-1}{2},\frac{(N-1)s^2}{2}\right),\\
+\tilde\mu\mid\tilde\sigma^2,\text{data}&\sim\mathcal N(\bar
+y,\tilde\sigma^2/N). \end{aligned}
+
+The inverse-gamma convention has density proportional to
+x^{-a-1}\exp(-b/x) for shape a and scale b. Replace the statistics by
+\bar y_0,s_0,N_0 for the historical posterior, with draws
+\mu_0,\sigma_0^2. These are posterior distributions of population
+parameters, not predictive distributions for a new observation (Gelman
+et al. 2013).
+
+For a fixed estimated weight, use q=\Pr(\tilde\mu\<\mu_0\mid\text{data})
+and p=2\min(q,1-q). The draw-specific method instead uses
+
+Z_s=\frac{\|\tilde\mu^{(s)}-\mu_0^{(s)}\|}
+{\sqrt{\tilde\sigma^{2(s)}/N+\sigma_0^{2(s)}/N_0}}, \qquad
+p_s=2\\1-\Phi(Z_s)\\.
+
+Here \Phi is the standard normal CDF, and the variance terms are
+conditional variances of the mean draws. Apply the chosen discount
+function to obtain \alpha or \alpha_s.
+
+For given variance draws and weight, define
+
+\begin{aligned} V_s &= \left(\frac{N}{\tilde\sigma^{2(s)}}+
+\frac{\alpha_s N_0}{\sigma_0^{2(s)}}\right)^{-1},\\ M_s &=
+V_s\left(\frac{N\bar y}{\tilde\sigma^{2(s)}}+ \frac{\alpha_s N_0\bar
+y_0}{\sigma_0^{2(s)}}\right). \end{aligned}
+
+The implementation draws \mu^{(s)}\sim\mathcal N(M_s,V_s), setting
+\alpha_s=\alpha for the fixed method. The reported distribution averages
+over the sampled variances and, under `"mc"`, weights. It is therefore a
+mixture of conditional normals, not a single marginal normal
+distribution. This precision-weighted calculation follows the normal
+borrowing construction described by Haddad et al. (2017); it does not
+fit one pooled common-variance model.
+
+Without historical data, the marginal posterior of the mean is Student-t
+with N-1 degrees of freedom, location \bar y, and scale s/\sqrt N. Its
+equal-tailed credible limits coincide with the usual one-sample t
+interval under these assumptions; the function does not conduct a
+one-sample hypothesis test.
+
+## Assumptions and checks
+
+Check the normal approximation, independence, common outcome units, and
+comparable analysis populations. Summary inputs cannot reveal outliers,
+clustering, or changes in the distributional shape. Use [linear
+regression](https://graemeleehickey.github.io/bayesDP/articles/bdplm-vignette.md)
+when covariate adjustment is needed. Assess sensitivity to historical
+weights and variance differences; a small weight should not be
+interpreted as a posterior probability that the studies are
+incompatible.
+
+## References
+
+Gelman, Andrew, John B. Carlin, Hal S. Stern, David B. Dunson, Aki
+Vehtari, and Donald B. Rubin. 2013. *Bayesian Data Analysis*. 3rd ed.
+Chapman; Hall/CRC. <https://doi.org/10.1201/b16018>.
+
+Haddad, Tarek, Adam Himes, Laura Thompson, Telba Irony, Rajesh Nair, and
+MDIC Computer Modeling and Simulation Working Group Participants. 2017.
+“Incorporation of Stochastic Engineering Models as Prior Information in
+Bayesian Medical Device Trials.” *Journal of Biopharmaceutical
+Statistics* 27 (6): 1089–103.
+<https://doi.org/10.1080/10543406.2017.1300907>.

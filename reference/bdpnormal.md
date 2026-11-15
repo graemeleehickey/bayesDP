@@ -87,8 +87,8 @@ bdpnormal(
   character. Specify the discount function to use. Currently supports
   `weibull`, `scaledweibull`, and `identity`. The discount function
   `scaledweibull` scales the output of the Weibull CDF to have a max
-  value of 1. The `identity` discount function uses the posterior
-  probability directly as the discount weight. Default value is
+  value of 1. The `identity` discount function uses the transformed
+  comparison directly as the discount weight. Default value is
   "`identity`".
 
 - alpha_max:
@@ -130,20 +130,21 @@ bdpnormal(
 
   character. Analysis method with respect to estimation of the weight
   parameter alpha. Default method "`mc`" estimates alpha for each Monte
-  Carlo iteration. Under "`mc`", the stochastic comparison probability
-  is recomputed at each Monte Carlo draw, so the resulting
-  `alpha_discount` is a random vector and may exhibit substantial Monte
-  Carlo variability. Alternate value "`fixed`" estimates alpha once and
-  holds it fixed throughout the analysis. See the `bdpnormal` vignette  
+  Carlo iteration, giving a distribution of generated weights.
+  Increasing the number of draws improves numerical precision but does
+  not remove the spread of that distribution. These weights are not
+  draws from a separately specified prior/posterior model for alpha.
+  Alternate value "`fixed`" estimates alpha once and holds it fixed
+  throughout the analysis. See the `bdpnormal` vignette  
   [`vignette("bdpnormal-vignette", package = "bayesDP")`](https://graemeleehickey.github.io/bayesDP/articles/bdpnormal-vignette.md)
   for more details.
 
 - compare:
 
   logical. Should a comparison object be included in the fit? For a
-  one-arm analysis, the comparison object is simply the posterior chain
+  one-arm analysis, the comparison object is simply the posterior draws
   of the treatment group parameter. For a two-arm analysis, the
-  comparison object is the posterior chain of the treatment effect that
+  comparison object is the posterior draws of the treatment effect that
   compares treatment and control. If `compare = TRUE`, the comparison
   object is accessible in the `final` slot, else the `final` slot is
   `NULL`. Default is `TRUE`.
@@ -169,18 +170,18 @@ following components:
   - `alpha_discount` numeric. Alpha value, the weighting parameter of
     the historical data.
 
-  - `p_hat` numeric. The posterior probability of the stochastic
-    comparison between the current and historical data.
+  - `p_hat` numeric. The current-historical comparison between the
+    current and historical data.
 
   - `posterior_mu` vector. A vector of length `number_mcmc` containing
-    the posterior mean of the treatment group. If historical treatment
-    data is present, the posterior incorporates the weighted historical
-    data.
+    the posterior draws of the population mean of the treatment group.
+    If historical treatment data is present, the posterior incorporates
+    the weighted historical data.
 
-  - `posterior_sigma2` vector. A vector of length `number_mcmc`
-    containing the posterior variance of the treatment group. If
-    historical treatment data is present, the posterior incorporates the
-    weighted historical data.
+  - `posterior_sigma2` vector. Conditional variances used to draw the
+    augmented population mean, one per simulation. These are not
+    residual-variance draws or the marginal posterior variance of the
+    mean.
 
   - `posterior_flat_mu` vector. A vector of length `number_mcmc`
     containing Monte Carlo samples of the mean of the current treatment
@@ -188,7 +189,7 @@ following components:
     the historical data.
 
   - `posterior_flat_sigma2` vector. A vector of length `number_mcmc`
-    containing Monte Carlo samples of the standard deviation of the
+    containing Monte Carlo samples of the residual variance of the
     current treatment group under a flat/non-informative prior, i.e., no
     incorporation of the historical data.
 
@@ -199,7 +200,7 @@ following components:
 
   - `prior_sigma2` vector. If historical treatment data is present, a
     vector of length `number_mcmc` containing Monte Carlo samples of the
-    standard deviation of the historical treatment group under a
+    residual variance of the historical treatment group under a
     flat/non-informative prior.
 
 - `posterior_control`:
@@ -230,20 +231,17 @@ following components:
 
 ## Details
 
-`bdpnormal` uses a two-stage approach for determining the strength of
-historical data in estimation of a mean outcome. In the first stage, a
-*discount function* is used that that defines the maximum strength of
-the historical data and discounts based on disagreement with the current
-data. Disagreement between current and historical data is determined by
-stochastically comparing the respective posterior distributions under
-noninformative priors. With Gaussian data, the comparison is the
-proability (`p`) that the current mean is less than the historical mean.
-The comparison metric `p` is then input into the discount function and
-the final strength of the historical data is returned (alpha).
+Historical borrowing is assessed separately within each arm by comparing
+population means. With `method = "fixed"`, estimate the probability q
+that the current mean is below the historical one. The discount input is
+`p = 2 * min(q, 1 - q)` and the weight is `alpha_max * W(p)` for the
+selected discount function W. This comparison is not a posterior
+probability of equality or equivalence. Choosing `fix_alpha = TRUE`
+prespecifies the weight instead.
 
 In the second stage, posterior estimation is performed where the
-discount function parameter, `alpha`, is used incorporated in all
-posterior estimation procedures.
+discount function parameter, `alpha`, is incorporated in all posterior
+estimation procedures.
 
 To carry out a single arm (OPC) analysis, data for the current treatment
 (`mu_t`, `sigma_t`, and `N_t`) and historical treatment (`mu0_t`,
@@ -293,10 +291,10 @@ summary(fit)
 #>   Historical treatment: mu0_t = 32, sigma0_t = 10, N0_t = 50
 #> Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.326
 #> Discount function value (alpha) - treatment: 0.326
-#> 95 percent CI: 
+#> 95 percent equal-tailed credible interval: 
 #>  27.9583  33.0088
-#> posterior sample estimate:
-#> mean of treatment group
+#> Posterior median:
+#> population mean of treatment group
 #>  30.4735
 if (FALSE) { # \dontrun{
 plot(fit)
@@ -323,12 +321,12 @@ summary(fit2)
 #> Stochastic comparison (p_hat) - control (current vs. historical data): 0.993
 #> Discount function value (alpha) - treatment: 0.33
 #> Discount function value (alpha) - control: 0.993
-#> alternative hypothesis: two.sided
-#> 95 percent CI: 
+#> Treatment effect: treatment - control
+#> 95 percent equal-tailed credible interval: 
 #>  2.3734  8.6811
-#> posterior sample estimates:
+#> Posterior medians:
 #> treatment group  control group
-#>           30.50          25.00
+#>           30.5022          25.0027
 if (FALSE) { # \dontrun{
 plot(fit2)
 } # }

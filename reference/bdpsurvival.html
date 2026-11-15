@@ -19,7 +19,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">bayesDP</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.10</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -30,10 +30,11 @@
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/bdpbinomial-vignette.html">Binomial Count Estimation with bayesDP</a></li>
-    <li><a class="dropdown-item" href="../articles/bdplm-vignette.html">Linear Regression Estimation with bayesDP</a></li>
-    <li><a class="dropdown-item" href="../articles/bdpnormal-vignette.html">Normal Mean Estimation with bayesDP</a></li>
-    <li><a class="dropdown-item" href="../articles/bdpsurvival-vignette.html">Survival Outcome Estimation with bayesDP</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/borrowing.html">Borrowing historical information with bayesDP</a></li>
+    <li><a class="dropdown-item" href="../articles/bdpbinomial-vignette.html">Binomial outcomes with bayesDP</a></li>
+    <li><a class="dropdown-item" href="../articles/bdpnormal-vignette.html">Normal outcomes with bayesDP</a></li>
+    <li><a class="dropdown-item" href="../articles/bdplm-vignette.html">Linear regression with bayesDP</a></li>
+    <li><a class="dropdown-item" href="../articles/bdpsurvival-vignette.html">Survival outcomes with bayesDP</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -137,7 +138,7 @@ i.e., current+historical, median survival time.</p></dd>
 Currently supports <code>weibull</code>, <code>scaledweibull</code>, and
 <code>identity</code>. The discount function <code>scaledweibull</code> scales the
 output of the Weibull CDF to have a max value of 1. The <code>identity</code>
-discount function uses the posterior probability directly as the discount
+discount function uses the transformed comparison directly as the discount
 weight. Default value is "<code>identity</code>".</p></dd>
 
 
@@ -178,10 +179,11 @@ historical control group.</p></dd>
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
 <dd><p>character. Analysis method with respect to estimation of the
 weight parameter alpha. Default method "<code>mc</code>" estimates alpha for each
-Monte Carlo iteration. Under "<code>mc</code>", the stochastic comparison
-probability is recomputed at each Monte Carlo draw, so the resulting
-<code>alpha_discount</code> is a random vector and may exhibit substantial
-Monte Carlo variability. Alternate value "<code>fixed</code>" estimates alpha
+Monte Carlo iteration, giving a distribution of generated weights.
+Increasing the number of draws improves numerical precision but does not
+remove the spread of that distribution. These weights are not draws from
+a separately specified prior/posterior model for alpha.
+Alternate value "<code>fixed</code>" estimates alpha
 once and holds it fixed throughout the analysis. See the
 <code>bdpsurvival</code> vignette <br><code><a href="../articles/bdpsurvival-vignette.html">vignette("bdpsurvival-vignette", package = "bayesDP")</a></code> for more
 details.</p></dd>
@@ -189,9 +191,9 @@ details.</p></dd>
 
 <dt id="arg-compare">compare<a class="anchor" aria-label="anchor" href="#arg-compare"></a></dt>
 <dd><p>logical. Should a comparison object be included in the fit?
-For a one-arm analysis, the comparison object is simply the posterior chain
+For a one-arm analysis, the comparison object is simply the posterior draws
 of the treatment group parameter. For a two-arm analysis, the comparison
-object is the posterior chain of the treatment effect that compares
+object is the posterior draws of the treatment effect that compares
 treatment and control. If <code>compare = TRUE</code>, the comparison object is
 accessible in the <code>final</code> slot, else the <code>final</code> slot is
 <code>NULL</code>. Default is <code>TRUE</code>.</p></dd>
@@ -210,7 +212,7 @@ the following components:</p><dl><dt><code>posterior_treatment</code></dt>
 <dd><p>list. Entries contain values related to the treatment group:</p><ul><li><p><code>alpha_discount</code>
        numeric. Alpha value, the weighting parameter of the historical data.</p></li>
 <li><p><code>p_hat</code>
-       numeric. The posterior probability of the stochastic comparison
+       numeric. The current-historical comparison
        between the current and historical data.</p></li>
 <li><p><code>posterior_survival</code>
        vector. If one-arm trial, a vector of length <code>number_mcmc</code>
@@ -262,21 +264,22 @@ the following components:</p><dl><dt><code>posterior_treatment</code></dt>
 </dl></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p><code>bdpsurvival</code> uses a two-stage approach for determining the
-  strength of historical data in estimation of a survival probability
-  outcome. In the first stage, a <em>discount function</em> is used that that
-  defines the maximum strength of the historical data and discounts based on
-  disagreement with the current data. Disagreement between current and
-  historical data is determined by stochastically comparing the respective
-  posterior distributions under noninformative priors. With a single arm
-  survival data analysis, the comparison is the probability (<code>p</code>) that
-  the current survival is less than the historical survival. For a two-arm
-  survival data, analysis the comparison is the probability that the hazard
-  ratio comparing treatment and control is different from zero. The
-  comparison metric <code>p</code> is then input into the discount function and the
-  final strength of the historical data is returned (alpha).</p>
+    <p>Historical borrowing is assessed separately within each arm by
+  comparing survival outcomes. With <code>method = "fixed"</code>, estimate
+  a directional probability q comparing current and historical outcomes within an arm.
+  The discount input is <code>p = 2 * min(q, 1 - q)</code> and the weight is
+  <code>alpha_max * W(p)</code> for the selected discount function W. This
+  comparison is not a posterior probability of equality or equivalence.
+  Choosing <code>fix_alpha = TRUE</code> prespecifies the weight instead.</p>
+<p>For one arm, q compares survival at <code>surv_time</code>; for two arms it
+  compares current and historical hazards separately within treatment and
+  control. The default Monte Carlo calculation and historical Gamma update
+  have unresolved limitations documented in the survival vignette. The
+  vignette uses the fixed method and describes the implemented prior update.
+  With one arm and <code>fix_alpha = TRUE</code>, the returned <code>p_hat</code>
+  is the directional q rather than the transformed p.</p>
 <p>In the second stage, posterior estimation is performed where the discount
-  function parameter, <code>alpha</code>, is used incorporated in all posterior
+  function parameter, <code>alpha</code>, is incorporated in all posterior
   estimation procedures.</p>
 <p>To carry out a single arm (OPC) analysis, data for the current and
   historical treatments are specified in separate data frames, data and

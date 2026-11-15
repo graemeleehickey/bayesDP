@@ -1,638 +1,290 @@
-# Survival Outcome Estimation with bayesDP
-
-## Introduction
-
-The purpose of this vignette is to introduce the `bdpsurvival` function.
-`bdpsurvival` is used for estimating posterior samples in the context of
-right-censored data for clinical trials where an informative prior is
-used. The underlying model is a piecewise exponential model that assumes
-a constant hazard rate for each of several sub-intervals of the time to
-follow-up.
-
-In the parlance of clinical trials, the informative prior is derived
-from historical data. The weight given to the historical data is
-determined using what we refer to as a discount function. There are
-three steps in carrying out estimation:
-
-1.  Estimation of the historical data weight, denoted \hat{\alpha}, via
-    the discount function
-
-2.  Estimation of the posterior distribution of the current data,
-    conditional on the historical data weighted by \hat{\alpha}
-
-3.  If a two-arm clinical trial, estimation of the posterior treatment
-    effect, i.e., treatment versus control
-
-Throughout this vignette, we use the terms `current`, `historical`,
-`treatment`, and `control`. These terms are used because the model was
-envisioned in the context of clinical trials where historical data may
-be present. Because of this terminology, there are 4 potential sources
-of data:
-
-1.  Current treatment data: treatment data from a current study
-
-2.  Current control data: control (or other treatment) data from a
-    current study
-
-3.  Historical treatment data: treatment data from a previous study
-
-4.  Historical control data: control (or other treatment) data from a
-    previous study
-
-If only treatment data is input, the function considers the analysis a
-one-arm trial. If treatment data + control data is input, then it is
-considered a two-arm trial.
-
-### Piecewise Exponential Model Background
-
-Before we get into our estimation scheme, we will briefly describe the
-piecewise exponential model. First, we partition the time duration into
-J intervals with cutpoints (or breaks)
-0=\tau_0\<\tau_1\<\dots\<\tau_J=\infty. The jth interval is defined as
-\[\tau\_{j-1},\\\tau_j). Then, we let \lambda_j denote the hazard rate
-of the jth interval. That is, we assume that the hazard rate is
-piecewise constant.
-
-Now, let d\_{ij} be an event indicator for the ith subject in the jth
-interval. That is, d\_{ij}=1 if the endpoint occurred in the jth
-interval, otherwise d\_{ij}=0. Let t\_{ij} denote the exposure time of
-the ith subject in the jth interval.
-
-Let D_j=\sum_id\_{ij} be the number of episodes that occurred in
-interval j, and let T_j=\sum_it\_{ij} be the total exposure time within
-interval j. Then, the jth hazard rate is estimated as
-
-\lambda_j\mid D_j, \sim
-\operatorname{Gamma}\left(a_0+D_j,\\b_0+T_j\right),
-
-where a_0 and b_0 are the prior shape and rate parameters of a gamma
-distribution. The survival probability can be estimated as
-
-p_S =
-1-F_p\left(q,\\\lambda_1,\dots,\\\lambda_J,\\\tau_0,\\\dots\\\\\tau_J\right),
-
-where F_p is the piecewise exponential cumulative distribution function.
-
-In the case where a covariate effect is present, a slightly different
-approach is used. In the `bdpsurvival` function, a covariate effect
-arises in the context of a two-arm trial where the covariate of interest
-is the treatment indicator, i.e., treatment vs. control. In that case,
-we assume a Poisson glm model of the form
-
-\begin{aligned} \log\mathbb{E}\left(d\_{ij}\mid\lambda_j,\\\beta\right)
-&= \log t\_{ij} + \log\lambda_j + \beta I(\mathrm{treatment}\_i),\\
-&\qquad i=1,\dots,N,\quad j=1,\dots,J, \end{aligned}
-
-where I(\mathrm{treatment}\_i) is a treatment indicator for the ith
-subject. In this context, \beta is the \log hazard rate between the
-treatment and control arms.
-
-With the Poisson glm, we use an approximation to estimate \beta
-conditional on each \lambda_j. Suppose we estimate hazard rates for the
-treatment and controls arms independently, denoted \lambda\_{jT} and
-\lambda\_{jC}, respectively. That is
-
-\lambda\_{jT} \sim
-\operatorname{Gamma}\left(a_0+D\_{jT},\\b_0+T\_{jT}\right)
-
-and
-
-\lambda\_{jC} \sim
-\operatorname{Gamma}\left(a_0+D\_{jC},\\b_0+T\_{jC}\right),
-
-where D\_{jT} and D\_{jC} denote the number of events occurring in
-interval j for the treatment and control arms, respectively, and T\_{jT}
-and T\_{jC} denote the total exposures times in interval j for the
-treatment and control arms, respectively.
-
-Then, an approximation of the log-hazard rate \beta is carried out as
-follows:
-
-\begin{aligned} R_j &=
-\log\lambda\_{jT}-\log\lambda\_{jC},\\\\\\j=1,\dots,\\J,\\ V_j &=
-\operatorname{Var}(R_j),\\\\\\j=1,\dots,\\J,\\ \beta &=
-{\frac{\sum_jR_j/V_j}{\sum_j1/V_j}}. \end{aligned}
-
-This estimate of \beta is a normal approximation to the estimate under a
-Poisson glm. Currently, the variance term V_j is estimated empirically
-by calculating the variance of the posterior draws. The empirical
-variance approximates the theoretical variance under a normal
-approximation of
-
-\begin{aligned} \tilde{V}\_j &= V\_{jT} + V\_{jC},\\ V\_{jT} &=
-1/D\_{jT},\\ V\_{jC} &= 1/D\_{jC}. \end{aligned}
-
-### Estimation of the historical data weight
-
-In the first estimation step, the historical data weight \hat{\alpha} is
-estimated. In the case of a two-arm trial, where both treatment and
-control data are available, an \hat{\alpha} value is estimated
-separately for each of the treatment and control arms. Of course,
-historical treatment or historical control data must be present,
-otherwise \hat{\alpha} is not estimated for the corresponding arm.
-
-When historical data are available, estimation of \hat{\alpha} is
-carried out as follows. Let d\_{ij} and t\_{ij} denote the the event
-indicator and event time or censoring time for the ith subject in the
-jth interval of the current data, respectively. Similarly, let d\_{0ij}
-and t\_{0ij} denote the the event indicator and event time or censoring
-time for the ith subject in the jth interval of the historical data,
-respectively.
-
-Let a_0 and b_0 denote the shape and rate parameters of a gamma
-distribution, respectively. Then, the posterior distributions of the jth
-piecewise hazard rates for current and historical data, under vague
-(flat) priors are
-
-\lambda\_{j} \sim \operatorname{Gamma}\left(a_0+D_j,\\b_0+T_j\right),
-
-\lambda\_{0j} \sim
-\operatorname{Gamma}\left(a_0+D\_{0j},\\b_0+T\_{0j}\right)
-
-respectively, where D_j=\sum_id\_{ij}, T_j=\sum_it\_{ij},
-D\_{0j}=\sum_id\_{0ij}, and T\_{j0}=\sum_it\_{0ij}. The next steps are
-dependent on whether a one-arm or two-arm analysis is requested.
-
-#### Estimation under a one-arm analysis
-
-Under a one-arm analysis, the comparison of interest is the survival
-probability at user-specified time t^\ast. Let
-
-\tilde{\theta} =
-1-F_p\left(t^\ast,\\\lambda_1,\dots,\\\lambda_J,\\\tau_0,\\\dots\\\\\tau_J\right),
-
-and
-
-\theta_0 =
-1-F_p\left(t^\ast,\\\lambda\_{01},\dots,\\\lambda\_{0J},\\\tau_0,\\\dots\\\\\tau_J\right),
-
-be the posterior survival probabilities for the current and historical
-data, respectively. Then, we compute the posterior probability that the
-current survival is greater than the historical survival p =
-\Pr\left(\tilde{\theta} \ne \theta_0 \mid D, T, D_0,T_0 \right), where D
-and T collect D_1,\dots,D_J and T_1,\dots,T_J, respectively.
-
-#### Estimation under a two-arm analysis
-
-Under a two-arm analysis, the comparison of interest is the hazard ratio
-of current vs. historical data. We estimate the log hazard ratio \beta
-as described previously and compute the posterior probability that \beta
-\ne 0 as p = \Pr\left(\beta \ne 0\mid D, T, D_0, T_0\right).
-
-------------------------------------------------------------------------
-
-Finally, for a discount function, denoted W, \hat{\alpha} is computed as
-
-\hat{\alpha} = \alpha\_{\max}\cdot W\left(p, \\w\right),\\0\le p\le1,
-
-where w may be one or more parameters associated with the discount
-function and \alpha\_{\max} scales the weight \hat{\alpha} by a
-user-input maximum value. More details on the discount functions are
-given in the discount function section below.
-
-There are several model inputs at this first stage. First, the user can
-select `fix_alpha = TRUE` and force a fixed value of \hat{\alpha} (at
-the `alpha_max` input), as opposed to estimation via the discount
-function.
-
-Next, a Monte Carlo estimation approach is used, requiring several
-samples from the posterior distributions. Thus, the user can input a
-sample size greater than or less than the default value of
-`number_mcmc = 10000`. Next, the Beta rate parameters can be changed
-from the defaults of a_0=b_0=1 (`a0` and `b0` inputs).
-
-An alternate Monte Carlo-based estimation scheme of \hat{\alpha} has
-been implemented, controlled by the function input `method = "mc"`.
-Here, instead of treating \hat{\alpha} as a fixed quantity, \hat{\alpha}
-is treated as random. Because each Monte Carlo iteration recomputes the
-comparison probability from that iteration’s posterior draws, the
-resulting sequence of \hat{\alpha} values can exhibit noticeable Monte
-Carlo variability.
-
-For a one-arm analysis, let p_1 denote the posterior probability. Then,
-p_1 is computed as
-
-\begin{aligned} v^2_1 &=
-{t^{\ast2}\sum\_{j=1}^{J\left(t^\ast\right)}\frac{\lambda\_{j}^{2}}{D\_{j}}}
-,\\ v^2\_{01} &=
-{t^{\ast2}\sum\_{j=1}^{J\left(t^\ast\right)}\frac{\lambda\_{0j}^{2}}{D\_{0j}}}
-,\\ Z_1 &= {\frac{\left\|\tilde{\theta}-\theta_0\right\|}{\sqrt{v^2_1 +
-v^2\_{01}}}} ,\\ p_1 &= 2\left(1-\Phi\left(Z_1\right)\right),
-\end{aligned}
-
-where \Phi\left(x\right) is the xth quantile of a standard normal (i.e.,
-the `pnorm` R function). Here, v_1^2 and v^2\_{01} are estimates of the
-variances of \tilde{\theta} and \theta_0, respectively.
-
-Next, p_1 is used to construct \hat{\alpha} via the discount function.
-Since the values Z_1 and p_1 are computed at each iteration of the Monte
-Carlo estimation scheme, \hat{\alpha} is computed at each iteration of
-the Monte Carlo estimation scheme, resulting in a distribution of
-\hat{\alpha} values.
-
-For a two-arm analysis, let p_2 denote the posterior probability. Then,
-p_2 is computed as
-
-\begin{aligned} v^2\_{2j} &= \left(a_0 + D_j\right)^{-1},\\
-j=1,\dots,J,\\ v^2\_{02j} &= \left(a_0 + D\_{0j}\right)^{-1},\\
-j=1,\dots,J,\\ \tilde{R} &= {
-\left(\sum\_{j=1}^J\frac{\log\lambda_j-\log\lambda\_{0j} }{1/v^2\_{2j} +
-1/v^2\_{02j}}\right) \left(\sum\_{j=1}^J\frac{1}{1/v^2\_{2j} +
-1/v^2\_{02j}}\right)^{-1} } ,\\ Z_2 &=
-{\left\|\tilde{R}\right\|\left(\sum\_{j=1}^J\frac{1}{1/v^2\_{2j} +
-1/v^2\_{02j}}\right)^{-1/2} } ,\\ p_2 &=
-2\left(1-\Phi\left(Z_2\right)\right), \end{aligned}
-
-where \Phi\left(x\right) is the xth quantile of a standard normal. Here,
-v^2\_{2j} and v^2\_{02j} are estimates of the variances of \log\lambda_j
-and \log\lambda\_{0j}, respectively.
-
-Next, p_2 is used to construct \hat{\alpha} via the discount function.
-Since the values Z_2 and p_2 are computed at each iteration of the Monte
-Carlo estimation scheme, \hat{\alpha} is computed at each iteration of
-the Monte Carlo estimation scheme, resulting in a distribution of
-\hat{\alpha} values.
-
-#### Discount function
-
-There are currently three discount functions implemented throughout the
-`bayesDP` package. The discount function is specified using the
-`discount_function` input with the following choices available:
-
-1.  `identity` (default): Identity.
-
-2.  `weibull`: Weibull cumulative distribution function (CDF);
-
-3.  `scaledweibull`: Scaled Weibull CDF;
-
-First, the identity discount function (default) sets the discount weight
-\hat{\alpha}=p.
-
-Second, the Weibull CDF has two user-specified parameters associated
-with it, the shape and scale. The default shape is 3 and the default
-scale is 0.135, each of which are controlled by the function inputs
-`weibull_shape` and `weibull_scale`, respectively. The form of the
-Weibull CDF is
-
-W(x) = 1 - \exp\left\\-
-(x/w\_{\mathrm{scale}})^{w\_{\mathrm{shape}}}\right\\.
-
-The third discount function option is the Scaled Weibull CDF. The Scaled
-Weibull CDF is the Weibull CDF divided by the value of the Weibull CDF
-evaluated at 1, i.e.,
-
-W^{\ast}(x) = W(x)/W(1).
-
-Similar to the Weibull CDF, the Scaled Weibull CDF has two
-user-specified parameters associated with it, the shape and scale, again
-controlled by the function inputs `weibull_shape` and `weibull_scale`,
-respectively.
-
-Using the default shape and scale inputs, each of the discount functions
-are shown below.
-![](bdpsurvival-vignette_files/figure-html/unnamed-chunk-1-1.png)
-
-![](bdpsurvival-vignette_files/figure-html/unnamed-chunk-2-1.png)
-
-In each of the above plots, the x-axis is the stochastic comparison
-between current and historical data, which we’ve denoted p. The y-axis
-is the discount value \hat{\alpha} that corresponds to a given value of
-p.
-
-An advanced input for the plot function is `print`. The default value is
-`print = TRUE`, which simply returns the graphics. Alternately, users
-can specify `print = FALSE`, which returns a `ggplot2` object. Below is
-an example using the discount function plot:
+# Survival outcomes with bayesDP
+
+## Purpose and current limitations
+
+[`bdpsurvival()`](https://graemeleehickey.github.io/bayesDP/reference/bdpsurvival.md)
+uses piecewise constant hazards for right-censored outcomes. In one arm,
+the estimand is survival probability at a specified time. With two arms,
+the reported effect is an approximate common log hazard ratio, treatment
+relative to control.
+
+Three limitations remain under investigation: the default Monte Carlo
+weight calculation ([issue
+16](https://github.com/graemeleehickey/bayesDP/issues/16)), the
+baseline-prior contribution during historical augmentation ([issue
+17](https://github.com/graemeleehickey/bayesDP/issues/17)), and
+participant counts/risk sets in
+[`summary()`](https://rdrr.io/r/base/summary.html) ([issue
+18](https://github.com/graemeleehickey/bayesDP/issues/18)). These
+examples use `method = "fixed"`, describe the implemented prior update,
+and calculate tables directly from posterior draws. They illustrate
+current behaviour; they do not validate the unresolved procedures for
+trial design.
+
+See the [borrowing
+overview](https://graemeleehickey.github.io/bayesDP/articles/borrowing.md)
+for weighting choices and interpretation. The function default is
+`method = "mc"`, so the explicit method argument matters.
+
+## Data and follow-up
+
+Supply current and historical data frames with compatible columns. Use
+`Surv(time, status) ~ 1` for a one-arm analysis, or
+`Surv(time, status) ~ treatment` for two arms. Code `status = 1` for an
+event and `status = 0` for right censoring; `time` is the observed event
+or censoring time. For two arms, code `treatment = 1` and control as 0,
+and provide both arms in both studies for the examples below. Additional
+covariate adjustment is not implemented.
+
+Choose a time unit, clinically relevant survival horizon, and interval
+boundaries. `breaks` contains positive internal cutpoints, without zero
+or infinity. The final interval extends beyond the last cutpoint. By
+default the cutpoints are the pooled observed-time 20th, 40th, 60th, and
+80th percentiles; these are quantiles of event-or-censoring times, not
+estimated survival quantiles. The examples prespecify cutpoints and the
+horizon.
+
+## One-arm example with censoring
+
+We simulate event times with mean 10 months for 60 current participants
+and mean 11 months for 100 historical participants. Independent
+censoring times have mean 18 months, with additional administrative
+censoring at 18 months. The observed time is the minimum of event and
+censoring times.
 
 ``` r
 
-p1 <- plot(fit02, type = "discount", print = FALSE)
-p1 + ggtitle("Discount Function Plot :-)")
+simulate_followup <- function(n, mean_event, mean_censor, horizon) {
+  event_time <- rexp(n, rate = 1 / mean_event)
+  censor_time <- pmin(rexp(n, rate = 1 / mean_censor), horizon)
+  data.frame(time = pmin(event_time, censor_time),
+    status = as.integer(event_time <= censor_time))
+}
+set.seed(42)
+current <- simulate_followup(60, mean_event = 10, mean_censor = 18, horizon = 18)
+historical <- simulate_followup(100, mean_event = 11, mean_censor = 18, horizon = 18)
+knitr::kable(data.frame(
+  source = c("Current", "Historical"),
+  participants = c(nrow(current), nrow(historical)),
+  events = c(sum(current$status), sum(historical$status)),
+  censored = c(sum(current$status == 0), sum(historical$status == 0))
+))
 ```
 
-![](bdpsurvival-vignette_files/figure-html/unnamed-chunk-3-1.png)
-
-### Estimation of the posterior distribution of the current data, conditional on the historical data
-
-The posterior distribution is dependent on the analysis type: one-arm or
-two-arm analysis.
-
-#### Estimation under a one-arm analysis
-
-With \hat{\alpha} in hand, we can now estimate the posterior
-distributions of the hazards so that we can estimate the survival
-probability as described previously. Using the notation of the previous
-sections, the posterior distribution is
-
-\begin{aligned} p_S &=
-1-F_p\left(t^\ast,\\\lambda_1,\dots,\\\lambda_J,\\\tau_0,\\\dots\\\\\tau_J\right),\\
-\lambda_j &\sim \operatorname{Gamma}\left(a_0+\sum_id\_{ij} +
-\hat{\alpha}\sum_id\_{0ij},\\b_0+\sum_it\_{ij} +
-\hat{\alpha}\sum_it\_{0ij}\right),\\j=1,\dots,J \end{aligned}
-
-At this model stage, we have in hand `number_mcmc` simulations from the
-augmented posterior distribution and we then generate posterior
-summaries.
-
-#### Estimation under a two-arm analysis
-
-Again, under a two-arm analysis, and with \hat{\alpha} in hand, we can
-now estimate the posterior distribution of the log hazard rate comparing
-treatment and control. Let \lambda\_{jT} and \lambda\_{jC} denote the
-hazard associated with the treatment and control data for the jth
-interval, respectively. Then we augment each of the treatment and
-control data by the weighted historical data as
-
-\begin{aligned} \lambda\_{jT} &\sim
-\operatorname{Gamma}\left(a_0+\sum_id\_{ijT} +
-\hat{\alpha}\_T\sum_id\_{0ijT},\\b_0+\sum_it\_{ijT} +
-\hat{\alpha}\_T\sum_it\_{0ijT}\right),\\j=1,\dots,J \end{aligned}
-
-and
-
-\begin{aligned} \lambda\_{jC} &\sim
-\operatorname{Gamma}\left(a_0+\sum_id\_{ijC} +
-\hat{\alpha}\_C\sum_id\_{0ijC},\\b_0+\sum_it\_{ijC} +
-\hat{\alpha}\_C\sum_it\_{0ijC}\right),\\j=1,\dots,J \end{aligned}
-
-respectively. We then construct the log hazard ratio \beta using the
-estimates of \lambda\_{jT} and \lambda\_{jC}, j=1,\dots,\\J as described
-previously. At this model stage, we have in hand `number_mcmc`
-simulations from the augmented posterior distribution and we then
-generate posterior summaries.
-
-### Inputting Data
-
-Data for `bdpsurvival` is input via data frame(s) that must have certain
-columns. Though `bdpsurvival` supports analyses with no historical data,
-other packages/functions should be used.
-
-To carry out an analysis using historical data, two data frames need to
-be constructed: (1) current data, input via `data`; and (2) historical
-data, input via `data0`. The analysis type, i.e., one-arm vs. two-arm,
-is controlled via the right-hand-side (RHS) of the formula input.
-
-Suppose we have data frames with matching column names. The survival
-times are stored in the `time` column while the event indicator is
-stored in the `status` column. Then, the formula input
-`Surv(time, status) ~ 1` specifies a one-arm treatment. As long as the
-term `treatment` does not appear on the RHS of the formula, the analysis
-will be one-arm.
-
-Now, suppose we desire a two-arm analysis. Then, the current and
-historical data frames must contain a column named exactly `treatment`.
-The treatment column should be binary and indicates treatment and
-control observations. Now, the formula input
-`Surv(time, status) ~ treatment` specifies a two-arm treatment.
-
-## Examples
-
-### One-arm trial
-
-To demonstrate a one-arm trial, we will simulate a small survival
-dataset from an exponential distribution. For ease of exposition, we
-will assume that there are no censored observations.
+| source     | participants | events | censored |
+|:-----------|-------------:|-------:|---------:|
+| Current    |           60 |     36 |       24 |
+| Historical |          100 |     54 |       46 |
 
 ``` r
 
 set.seed(42)
-# Simulate survival times for current and historical data
-surv_1arm <- data.frame(
-  status = 1,
-  time = rexp(10, rate = 1 / 10)
-)
-
-# Simulate survival times for historical data
-surv_1arm0 <- data.frame(
-  status = 1,
-  time = rexp(50, rate = 1 / 11)
-)
-```
-
-In this example, we’ve simulated current survival times from an
-exponential distribution with rate `1 / 10` and historical survival
-times from an exponential distribution with rate `1 / 11`; `status = 1`
-for all observations, implying no times are censored. With our data
-frame constructed, we can now fit the `bdpsurvival` model. Since this is
-a one-arm trial, we will request the survival probability at
-`surv_time = 5`. Thus, estimation using the default model inputs is
-carried out:
-
-``` r
-
+current_only <- bdpsurvival(Surv(time, status) ~ 1,
+  data = current, data0 = historical, breaks = c(3, 6, 12), surv_time = 6,
+  a0 = 0.1, b0 = 0.1, method = "fixed", fix_alpha = TRUE, alpha_max = 0)
 set.seed(42)
-fit1 <- bdpsurvival(Surv(time, status) ~ 1,
-  data = surv_1arm,
-  data0 = surv_1arm0,
-  surv_time = 5,
-  method = "fixed"
-)
-print(fit1)
-```
-
-    ## 
-    ##     One-armed bdp survival
-    ## 
-    ## 
-    ##   n events surv_time median lower 95% CI upper 95% CI
-    ##  10     10         5 0.5259       0.3179       0.7355
-
-The `print` method displays the median survival probability of `0.5259`
-and the 95% lower and upper interval limits of `0.3179` and `0.7355`,
-respectively. The `summary` method is implemented as well. For a one-arm
-trial, the summary outputs a survival table for the current data as
-follows:
-
-``` r
-
-summary(fit1)
-```
-
-    ## 
-    ##     One-armed bdp survival
-    ## 
-    ## Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.188
-    ## Discount function value (alpha) - treatment: 0.188
-    ## 
-    ## Current treatment - augmented posterior summary:
-    ##     time n.risk n.event survival std.err lower 95% CI upper 95% CI
-    ##   0.3819     23       1   0.9688  0.0149       0.9323       0.9894
-    ##   1.9834     22       1   0.8483  0.0656       0.6948       0.9464
-    ##   2.8349     21       1   0.7905  0.0860       0.5942       0.9243
-    ##   3.1278     20       0   0.7715  0.0921       0.5631       0.9168
-    ##   3.1398     13       1   0.7699  0.0919       0.5619       0.9143
-    ##   4.1013     12       1   0.6294  0.0938       0.4360       0.8006
-    ##   4.7318     11       1   0.5551  0.1037       0.3502       0.7543
-    ##   5.0666     10       0   0.5189  0.1088       0.3096       0.7311
-    ##   6.6090      6       1   0.4294  0.0992       0.2425       0.6301
-    ##   7.1486      5       1   0.4016  0.0990       0.2194       0.6074
-    ##   9.1584      4       0   0.3165  0.1016       0.1424       0.5365
-    ##  11.9160      2       1   0.2230  0.0823       0.0933       0.4091
-    ##  14.6363      1       1   0.1599  0.0759       0.0513       0.3425
-
-In the above output, in addition to a survival table, we can see the
-stochastic comparison between the current and historical data of `0.188`
-as well as the weight, alpha, of `0.188` applied to the historical data.
-Here, the weight applied to the historical data is low since the
-stochastic comparison suggests that the current and historical data are
-not similar.
-
-Suppose that we would like to apply full weight to the historical data.
-This can be accomplished by setting `alpha_max = 1` and
-`fix_alpha = TRUE` as follows:
-
-``` r
-
+discounted <- bdpsurvival(Surv(time, status) ~ 1,
+  data = current, data0 = historical, breaks = c(3, 6, 12), surv_time = 6,
+  a0 = 0.1, b0 = 0.1, method = "fixed", fix_alpha = FALSE, alpha_max = 1)
 set.seed(42)
-fit1a <- bdpsurvival(Surv(time, status) ~ 1,
-  data = surv_1arm,
-  data0 = surv_1arm0,
-  surv_time = 5,
-  alpha_max = 1,
-  fix_alpha = TRUE,
-  method = "fixed"
-)
-
-print(fit1a)
+full_borrowing <- bdpsurvival(Surv(time, status) ~ 1,
+  data = current, data0 = historical, breaks = c(3, 6, 12), surv_time = 6,
+  a0 = 0.1, b0 = 0.1, method = "fixed", fix_alpha = TRUE, alpha_max = 1)
+fits <- list("Current only" = current_only, "Discounted" = discounted,
+  "Full borrowing" = full_borrowing)
+comparison <- do.call(rbind, lapply(fits, function(fit) {
+  arm <- fit$posterior_treatment
+  c(alpha = arm$alpha_discount, median = median(arm$posterior_survival),
+    lower = unname(quantile(arm$posterior_survival, 0.025)),
+    upper = unname(quantile(arm$posterior_survival, 0.975)))
+}))
+knitr::kable(comparison, digits = 4,
+  col.names = c("Historical weight", "Median S(6)", "Lower 95% CrI", "Upper 95% CrI"))
 ```
 
-    ## 
-    ##     One-armed bdp survival
-    ## 
-    ## 
-    ##   n events surv_time median lower 95% CI upper 95% CI
-    ##  10     10         5 0.6041       0.4762         0.72
+|                | Historical weight | Median S(6) | Lower 95% CrI | Upper 95% CrI |
+|:---------------|------------------:|------------:|--------------:|--------------:|
+| Current only   |            0.0000 |      0.4945 |        0.3571 |        0.6294 |
+| Discounted     |            0.0236 |      0.5016 |        0.3676 |        0.6336 |
+| Full borrowing |            1.0000 |      0.6171 |        0.5331 |        0.6955 |
 
-Now, the median survival probability shifts upwards towards the
-historical data.
-
-Many of the the values presented in the `summary` and `print` methods
-are accessible from the fit object. For instance, `alpha` is found in
-`fit1a$posterior_treatment$alpha_discount` and `p_hat` is located at
-`fit1a$posterior_treatment$p_hat`. The augmented survival probability
-and CI are computed at run-time. The results can be replicated as:
+The estimated historical weight is 0.0236. The augmented posterior
+median six-month survival is 0.5016. These summarize survival
+probability at six months, not median survival time. The full-borrowing
+result includes the extra baseline-prior contribution described below
+and should not be called an ordinary pooled analysis.
 
 ``` r
 
-survival_time_posterior <- ppexp(5,
-  fit1a$posterior_treatment$posterior_hazard,
-  cuts = c(0, fit1a$args1$breaks)
-)
-surv_augmented <- 1 - median(survival_time_posterior)
-CI95_augmented <- 1 - quantile(survival_time_posterior, prob = c(0.975, 0.025))
+plot(discounted, type = "survival", print = FALSE) +
+  labs(x = "Follow-up (months)")
 ```
 
-Here, we first compute the piecewise exponential cumulative distribution
-function using the `ppexp` function. The `ppexp` function requires the
-survival time, `5` here, the posterior draws of the piecewise hazards,
-and the cuts points of the corresponding intervals.
+![Posterior median survival curves for the estimated-borrowing fit.
+These are model-based curves, not Kaplan–Meier estimates; uncertainty is
+summarized in the six-month
+table.](bdpsurvival-vignette_files/figure-html/survival-curves-1.png)
 
-Finally, we’ll explore the `plot` method.
+Posterior median survival curves for the estimated-borrowing fit. These
+are model-based curves, not Kaplan–Meier estimates; uncertainty is
+summarized in the six-month table.
+
+## Two-arm example
+
+Add independent current and historical controls with mean event time 12
+months, using the same censoring mechanism. All four sources are
+present.
 
 ``` r
 
-plot(fit1, type = "survival")
-```
-
-![](bdpsurvival-vignette_files/figure-html/unnamed-chunk-10-1.png)
-
-``` r
-
-plot(fit1, type = "discount")
-```
-
-![](bdpsurvival-vignette_files/figure-html/unnamed-chunk-10-2.png) The
-top plot displays three survival curves. The green curve is the survival
-of the historical data, the red curve is the survival of the current
-event rate, and the blue curve is the survival of the current data
-augmented by historical data. Since we gave full weight to the
-historical data, the augmented curve is “in-between” the current and
-historical curves.
-
-The bottom plot displays the discount function (solid curve) as well as
-`alpha` (horizontal dashed line) and `p_hat` (vertical dashed line). In
-the present example, the discount function is the identity.
-
-### Two-arm trial
-
-On to two-arm trials. In this package, we define a two-arm trial as an
-analysis where a current and/or historical control arm is present.
-Suppose we have the same treatment data as in the one-arm example, but
-now we introduce control data. Again, we will assume that there is no
-censoring present in the control data:
-
-``` r
-
+set.seed(101)
+control <- simulate_followup(60, mean_event = 12, mean_censor = 18, horizon = 18)
+control0 <- simulate_followup(100, mean_event = 12, mean_censor = 18, horizon = 18)
+current_two <- rbind(transform(current, treatment = 1), transform(control, treatment = 0))
+historical_two <- rbind(transform(historical, treatment = 1), transform(control0, treatment = 0))
 set.seed(42)
-# Simulate survival times for treatment data
-time_current_trt <- rexp(10, rate = 1 / 10)
-time_historical_trt <- rexp(50, rate = 1 / 11)
-
-# Simulate survival times for control data
-time_current_cntrl <- rexp(10, rate = 1 / 12)
-time_historical_cntrl <- rexp(50, rate = 1 / 12)
-
-
-# Combine simulated data into data frames
-surv_2arm <- data.frame(
-  treatment = c(rep(1, 10), rep(0, 10)),
-  time = c(time_current_trt, time_current_cntrl),
-  status = 1
-)
-
-surv_2arm0 <- data.frame(
-  treatment = c(rep(1, 50), rep(0, 50)),
-  time = c(time_historical_trt, time_historical_cntrl),
-  status = 1
-)
+fit_two <- bdpsurvival(Surv(time, status) ~ treatment,
+  data = current_two, data0 = historical_two, breaks = c(3, 6, 12),
+  a0 = 0.1, b0 = 0.1, method = "fixed", fix_alpha = FALSE, alpha_max = 1)
+log_hr <- as.numeric(fit_two$final$posterior_loghazard)
+knitr::kable(rbind(
+  "Log hazard ratio" = quantile(log_hr, c(0.025, 0.5, 0.975)),
+  "Hazard ratio" = quantile(exp(log_hr), c(0.025, 0.5, 0.975))
+), digits = 4)
 ```
 
-In this example, we’ve simulated current and historical control survival
-times from exponential distributions with rate `1 / 12`. Note how the
-data frames have been constructed; we’ve taken care to ensure that the
-current/historical and treatment/control indicators line up properly.
-With our data frame constructed, we can now fit the `bdpsurvival` model.
-Before proceeding, it is worth pointing out that the discount function
-is applied separately to the treatment and control data. Now, let’s
-carry out the two-arm analysis using default inputs:
+|                  |    2.5% |    50% |  97.5% |
+|:-----------------|--------:|-------:|-------:|
+| Log hazard ratio | -0.3260 | 0.0633 | 0.4441 |
+| Hazard ratio     |  0.7218 | 1.0653 | 1.5591 |
+
+The treatment and control historical weights are 0.1034 and 0.8144,
+respectively. The median hazard ratio is 1.0653. For an adverse event, a
+hazard ratio below 1 favours treatment; the corresponding no-effect
+value on the log scale is zero. The two rows transform both the
+estimates and credible limits consistently.
 
 ``` r
 
-set.seed(42)
-fit2 <- bdpsurvival(Surv(time, status) ~ treatment,
-  data = surv_2arm,
-  data0 = surv_2arm0,
-  method = "fixed"
-)
-print(fit2)
+ggplot(data.frame(hazard_ratio = exp(log_hr)), aes(hazard_ratio)) +
+  geom_density(colour = "#0072B2", linewidth = 0.9) +
+  geom_vline(xintercept = 1, linetype = 2, colour = "#666666") +
+  theme_bw() + labs(x = "Hazard ratio (treatment / control)", y = "Density")
 ```
 
-    ## 
-    ##     Two-armed bdp survival
-    ## 
-    ## data:
-    ##   Current treatment: n = 23, number of events = 10
-    ##   Current control: n = 24, number of events = 10
-    ## Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.1264
-    ## Stochastic comparison (p_hat) - control (current vs. historical data): 0.0618
-    ## Discount function value (alpha) - treatment: 0.1264
-    ## Discount function value (alpha) - control: 0.0618
-    ## 
-    ##             coef exp(coef) se(coef) lower 95% CI upper 95% CI
-    ## treatment -0.151    0.8599   0.4122      -0.9542       0.6606
+![Posterior hazard ratio from the approximate common-effect calculation.
+The dashed line marks a hazard ratio of
+1.](bdpsurvival-vignette_files/figure-html/hazard-ratio-1.png)
 
-The `print` method of a two-arm analysis is largely different than a
-one-arm analysis (with a two-arm analysis, the `summary` method is
-identical to `print`). First, we see the stochastic comparisons reported
-for both the treatment and control arms. As seen previously, the
-stochastic comparison between the current and historical data for the
-treatment data is relatively small at `0.1264`, giving a low historical
-data weight of `0.1264`.
+Posterior hazard ratio from the approximate common-effect calculation.
+The dashed line marks a hazard ratio of 1.
 
-Similarly, the stochastic comparison between the current and historical
-data for the control data is relatively low at `0.0618`, giving a low
-historical data weight of `0.0618`.
+## Piecewise exponential model
 
-Finally, the presented `coef` value (and associated interval limits) is
-the log hazard ratio between the augmented treatment data and the
-augmented control data computed as `log(treatment) - log(control)`.
+Partition follow-up at 0=\tau_0\<\tau_1\<\cdots\<\tau_J=\infty. For the
+event-counting convention used when splitting records, interval j is
+(\tau\_{j-1},\tau_j\]. Let d\_{ij} indicate an event in that interval
+and t\_{ij} be exposure *within* the interval, not total follow-up.
+Define D_j=\sum_i d\_{ij} and T_j=\sum_i t\_{ij}.
+
+The hazard is constant at \lambda_j in interval j. Independent Gamma
+priors with shape a_0 and rate b_0 give
+
+\lambda_j\mid D_j,T_j\sim\operatorname{Gamma}(a_0+D_j,b_0+T_j).
+
+The defaults are a_0=b_0=0.1. This prior is not flat. The rate parameter
+has exposure-time units, so a change from months to days requires a
+corresponding change in b_0 to preserve the same prior information.
+
+Let \ell_j(t)=\max\\0,\min(t,\tau_j)-\tau\_{j-1}\\ be the length of
+interval j before t. Then
+
+S(t)=\exp\left\\-\sum_j\lambda_j\ell_j(t)\right\\.
+
+`ppexp(t, hazards, cuts = c(0, breaks))` returns 1-S(t) for each row of
+hazard draws. Survival probabilities are obtained as one minus that
+result.
+
+### Fixed borrowing comparison
+
+For one arm, compute q=\Pr\\S(t^\*)\>S_0(t^\*)\mid\text{data}\\ from the
+separate current and historical hazard draws, then p=2\min(q,1-q) and
+\alpha=\alpha\_{\max}W(p). The horizon t^\* can therefore change the
+weight, even though that weight is applied to all intervals. With
+`fix_alpha = TRUE`, the current one-arm implementation reports the
+untransformed directional q in `p_hat`; the prescribed weight itself is
+unaffected. This inconsistency is part of issue 16.
+
+For two arms, compare current and historical hazards separately within
+treatment and within control. For each such comparison, form interval
+log hazard ratios, estimate their variances across draws, and combine
+them using inverse-variance weights. The directional probability of a
+positive combined log hazard ratio is then transformed to
+p=2\min(q,1-q). This is not the probability that two continuous
+parameters are unequal.
+
+The draw-specific survival formulas are not presented as a valid
+alternative here because the current implementation’s standardization,
+repeated transformation, and interval weighting remain unresolved in
+issue 16.
+
+### Implemented historical augmentation
+
+For a fixed weight, the current implementation generates augmented
+hazards as
+
+\lambda_j\mid\text{data},\alpha\sim\operatorname{Gamma}\left(
+(1+\alpha)a_0+D_j+\alpha D\_{0j}, (1+\alpha)b_0+T_j+\alpha
+T\_{0j}\right).
+
+It discounts the historical posterior parameters, including their
+baseline-prior terms. A historical-likelihood power update would instead
+include a_0,b_0 only once (Haddad et al. 2017). The intended
+construction is under review in issue 17. This distinction matters most
+when event counts or exposure are small, or the prior is influential. In
+two arms, the implementation uses separate treatment and control weights
+in this same update.
+
+### Approximate two-arm effect
+
+From the augmented arm hazards, calculate for each draw
+
+R_j^{(s)}=\log\lambda\_{jT}^{(s)}-\log\lambda\_{jC}^{(s)}, \qquad
+V_j=\operatorname{Var}\_s(R_j^{(s)}),
+
+and combine intervals as
+
+\beta^{(s)}=\frac{\sum_j R_j^{(s)}/V_j}{\sum_j1/V_j}.
+
+This is the implemented inverse-variance approximation to a common log
+hazard ratio. It is not an exact joint posterior fit of a
+proportional-hazards Poisson regression. A common treatment effect
+across intervals is needed for a common-hazard-ratio interpretation;
+with time-varying effects it is a precision-weighted summary.
+Large-event approximations such as 1/D\_{jT}+1/D\_{jC} do not describe
+the implemented empirical variances exactly and are unsuitable when an
+interval has no events.
+
+## Assumptions and sensitivity
+
+Assume independent participants and censoring independent of the event
+process within each modeled group. Use the same event definition, time
+origin, and time units across studies. Inspect follow-up support at the
+chosen horizon; extrapolation beyond observed follow-up depends on the
+piecewise hazard assumptions.
+
+Check sensitivity to interval boundaries, survival horizon, Gamma
+priors, discount function, and maximum weight. Sparse or zero-event
+intervals can be strongly prior-dependent. Compare the interval-specific
+effects before interpreting a common hazard ratio. The outstanding
+issues above must be resolved and the complete procedure evaluated
+before treating these examples as validation of a trial design.
+
+## References
+
+Haddad, Tarek, Adam Himes, Laura Thompson, Telba Irony, Rajesh Nair, and
+MDIC Computer Modeling and Simulation Working Group Participants. 2017.
+“Incorporation of Stochastic Engineering Models as Prior Information in
+Bayesian Medical Device Trials.” *Journal of Biopharmaceutical
+Statistics* 27 (6): 1089–103.
+<https://doi.org/10.1080/10543406.2017.1300907>.

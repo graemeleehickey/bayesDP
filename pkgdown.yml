@@ -6,7 +6,8 @@ articles:
   bdplm-vignette: bdplm-vignette.html
   bdpnormal-vignette: bdpnormal-vignette.html
   bdpsurvival-vignette: bdpsurvival-vignette.html
-last_built: 2026-11-15T19:32Z
+  borrowing: borrowing.html
+last_built: 2026-11-15T20:05Z
 urls:
   reference: https://graemeleehickey.github.io/bayesDP/reference
   article: https://graemeleehickey.github.io/bayesDP/articles

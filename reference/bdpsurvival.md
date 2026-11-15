@@ -76,8 +76,8 @@ bdpsurvival(
   character. Specify the discount function to use. Currently supports
   `weibull`, `scaledweibull`, and `identity`. The discount function
   `scaledweibull` scales the output of the Weibull CDF to have a max
-  value of 1. The `identity` discount function uses the posterior
-  probability directly as the discount weight. Default value is
+  value of 1. The `identity` discount function uses the transformed
+  comparison directly as the discount weight. Default value is
   "`identity`".
 
 - alpha_max:
@@ -117,21 +117,21 @@ bdpsurvival(
 
   character. Analysis method with respect to estimation of the weight
   parameter alpha. Default method "`mc`" estimates alpha for each Monte
-  Carlo iteration. Under "`mc`", the stochastic comparison probability
-  is recomputed at each Monte Carlo draw, so the resulting
-  `alpha_discount` is a random vector and may exhibit substantial Monte
-  Carlo variability. Alternate value "`fixed`" estimates alpha once and
-  holds it fixed throughout the analysis. See the `bdpsurvival`
-  vignette  
+  Carlo iteration, giving a distribution of generated weights.
+  Increasing the number of draws improves numerical precision but does
+  not remove the spread of that distribution. These weights are not
+  draws from a separately specified prior/posterior model for alpha.
+  Alternate value "`fixed`" estimates alpha once and holds it fixed
+  throughout the analysis. See the `bdpsurvival` vignette  
   [`vignette("bdpsurvival-vignette", package = "bayesDP")`](https://graemeleehickey.github.io/bayesDP/articles/bdpsurvival-vignette.md)
   for more details.
 
 - compare:
 
   logical. Should a comparison object be included in the fit? For a
-  one-arm analysis, the comparison object is simply the posterior chain
+  one-arm analysis, the comparison object is simply the posterior draws
   of the treatment group parameter. For a two-arm analysis, the
-  comparison object is the posterior chain of the treatment effect that
+  comparison object is the posterior draws of the treatment effect that
   compares treatment and control. If `compare = TRUE`, the comparison
   object is accessible in the `final` slot, else the `final` slot is
   `NULL`. Default is `TRUE`.
@@ -157,8 +157,8 @@ following components:
   - `alpha_discount` numeric. Alpha value, the weighting parameter of
     the historical data.
 
-  - `p_hat` numeric. The posterior probability of the stochastic
-    comparison between the current and historical data.
+  - `p_hat` numeric. The current-historical comparison between the
+    current and historical data.
 
   - `posterior_survival` vector. If one-arm trial, a vector of length
     `number_mcmc` containing the posterior probability draws of survival
@@ -215,23 +215,25 @@ following components:
 
 ## Details
 
-`bdpsurvival` uses a two-stage approach for determining the strength of
-historical data in estimation of a survival probability outcome. In the
-first stage, a *discount function* is used that that defines the maximum
-strength of the historical data and discounts based on disagreement with
-the current data. Disagreement between current and historical data is
-determined by stochastically comparing the respective posterior
-distributions under noninformative priors. With a single arm survival
-data analysis, the comparison is the probability (`p`) that the current
-survival is less than the historical survival. For a two-arm survival
-data, analysis the comparison is the probability that the hazard ratio
-comparing treatment and control is different from zero. The comparison
-metric `p` is then input into the discount function and the final
-strength of the historical data is returned (alpha).
+Historical borrowing is assessed separately within each arm by comparing
+survival outcomes. With `method = "fixed"`, estimate a directional
+probability q comparing current and historical outcomes within an arm.
+The discount input is `p = 2 * min(q, 1 - q)` and the weight is
+`alpha_max * W(p)` for the selected discount function W. This comparison
+is not a posterior probability of equality or equivalence. Choosing
+`fix_alpha = TRUE` prespecifies the weight instead.
+
+For one arm, q compares survival at `surv_time`; for two arms it
+compares current and historical hazards separately within treatment and
+control. The default Monte Carlo calculation and historical Gamma update
+have unresolved limitations documented in the survival vignette. The
+vignette uses the fixed method and describes the implemented prior
+update. With one arm and `fix_alpha = TRUE`, the returned `p_hat` is the
+directional q rather than the transformed p.
 
 In the second stage, posterior estimation is performed where the
-discount function parameter, `alpha`, is used incorporated in all
-posterior estimation procedures.
+discount function parameter, `alpha`, is incorporated in all posterior
+estimation procedures.
 
 To carry out a single arm (OPC) analysis, data for the current and
 historical treatments are specified in separate data frames, data and

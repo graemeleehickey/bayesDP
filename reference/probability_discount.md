@@ -1,9 +1,9 @@
 # Bayesian Discount Prior: Comparison Between Current and Historical Data
 
-`probability_discount` can be used to estimate the posterior probability
-of the comparison between historical and current data in the context of
-a clinical trial with normal (mean) data. `probability_discount` is not
-used internally but is given for educational purposes.
+An educational calculation of the current-historical comparison for
+normal summary data. This helper is not used internally. The fixed
+method returns twice the smaller directional posterior probability; the
+Monte Carlo method returns a normal-tail comparison for each draw.
 
 ## Usage
 
@@ -52,32 +52,23 @@ probability_discount(
 
 - method:
 
-  character. Analysis method. Default value "`fixed`" estimates the
-  posterior probability and holds it fixed. Alternative method "`mc`"
-  estimates the posterior probability for each Monte Carlo iteration.
-  See the the `bdpnormal` vignette  
-  [`vignette("bdpnormal-vignette", package = "bayesDP")`](https://graemeleehickey.github.io/bayesDP/articles/bdpnormal-vignette.md)
-  for more details.
+  character. Default `"fixed"` estimates a directional probability q and
+  returns `2 * min(q, 1 - q)`. With `"mc"`, each pair of mean draws is
+  standardized by its conditional standard error and converted to a
+  two-sided normal-tail comparison. See the normal vignette for details.
 
 ## Value
 
-`probability_discount` returns an object of class
-"probability_discount".
-
-An object of class `probability_discount` contains the following:
-
-- `p_hat`:
-
-  scalar. The posterior probability of the comparison historical data
-  weight. If `method = "mc"`, a vector of posterior probabilities of
-  length `number_mcmc` is returned.
+A numeric comparison in \[0, 1\]: one value under `"fixed"`, or a vector
+of length `number_mcmc` under `"mc"`.
 
 ## Details
 
-This function is not used internally but is given for educational
-purposes. Given the inputs, the output is the posterior probability of
-the comparison between current and historical data in the context of a
-clinical trial with normal (mean) data.
+This is a borrowing comparison, not a posterior probability of equality
+or equivalence. Weight variation under `"mc"` is part of that procedure;
+more draws improve the precision of its distributional summaries. The
+baseline prior for each source is proportional to \\1 / \sigma^2\\. The
+fixed method uses direct Monte Carlo simulation.
 
 ## References
 

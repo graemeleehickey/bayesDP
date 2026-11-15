@@ -84,14 +84,11 @@ bdplm(
   Default value is 1e4. If a single value is input, the the scalar is
   repeated to the length of the input covariates. Otherwise, care must
   be taken to ensure the length of the input matches the number of
-  covariates. Note that covariate effects are intentionally assigned a
-  near-zero historical discount weight, so their priors are effectively
-  flat: the value supplied here has negligible influence on the
-  posterior, and the effective prior standard deviation is much larger
-  than the nominal value (by a factor of roughly 1e6 at the default). In
-  practice the covariate coefficients are estimated almost entirely from
-  the current data, and the posterior is insensitive to this argument
-  across many orders of magnitude.
+  covariates. Under `method = "fixed"`, the effective prior SD is the
+  supplied SD multiplied by 1e6 because covariate prior precision is
+  multiplied by 1e-12. Under `method = "mc"`, covariate prior precision
+  is zero, so neither the supplied mean nor SD influences the fit. These
+  arguments do not specify ordinary informative covariate priors.
 
 - number_mcmc_alpha:
 
@@ -156,8 +153,10 @@ bdplm(
 
   character. Analysis method with respect to estimation of the weight
   paramter alpha. Default method "`mc`" estimates alpha for each Monte
-  Carlo iteration. Alternate value "`fixed`" estimates alpha once and
-  holds it fixed throughout the analysis. See the the `bdplm` vignette  
+  Carlo iteration, giving a distribution of generated weights rather
+  than numerical error around a fixed weight. Alternate value "`fixed`"
+  estimates alpha once and holds it fixed throughout the analysis. See
+  the the `bdplm` vignette  
   [`vignette("bdplm-vignette", package = "bayesDP")`](https://graemeleehickey.github.io/bayesDP/articles/bdplm-vignette.md)
   for more details.
 
@@ -170,20 +169,20 @@ components:
 
 - `posterior`:
 
-  data frame. The posterior draws of the covariates, the intercept, and
-  the treatment effect. The grid of sigma values are included.
+  data frame. The posterior draws of the intercept, treatment effect,
+  covariate effects, and residual standard deviation `sigma`.
 
 - `alpha_discount`:
 
-  vector. The posterior probability of the stochastic comparison between
-  the current and historical data for each of the treatment and control
-  arms. If `method = "mc"`, the result is a matrix of estimates,
-  otherwise for `method = "fixed"`, the result is a vector of estimates.
+  data frame. Historical weights for treatment and control, with one row
+  under `"fixed"` or one row per comparison draw under `"mc"`. These are
+  weights, not probabilities of equality.
 
 - `estimates`:
 
-  list. The posterior means and standard errors of the intercept,
-  treatment effect, covariate effect(s) and error variance.
+  list. The `coefficients` component contains posterior means, and `se`
+  contains posterior standard deviations, for the intercept, treatment
+  effect, covariate effects, and residual SD.
 
 ## Details
 
@@ -212,33 +211,34 @@ Internally, the model is parameterized without a fixed intercept, using
 separate treatment and control means rather than an intercept plus a
 treatment effect. In this parameterization the arm means are the fitted
 values at covariate = 0, so when covariates are not centered the
-treatment- and control-mean estimators become strongly correlated and
-their standard errors are extrapolation errors at covariate = 0. This
-distorts the discount-prior construction and the historical borrowing.
-To guard against this, `bdplm` automatically mean-centers each covariate
-on its pooled (current plus historical) mean before fitting, and
-back-transforms the reported intercept onto the original covariate
-scale. Specifically, if \\\bar{x}\_j\\ is the pooled mean of covariate
-\\j\\ and \\\beta_j\\ its estimated effect, the reported intercept is
-\\\beta_0 = \beta_0^{c} - \sum_j \beta_j \bar{x}\_j\\, where
-\\\beta_0^{c}\\ is the control-arm mean estimated on the centered scale.
-The treatment effect and covariate slopes are unchanged by centering;
-the reported `intercept` remains the control-arm mean at covariate = 0
-on the original scale. As a result, estimates are invariant to a
-location shift of any covariate, and users do not need to center
-covariates themselves.
+treatment- and control-mean estimators can become strongly correlated
+and their standard errors can reflect extrapolation to covariate = 0.
+This can affect the discount-prior construction and historical
+borrowing. To guard against this, `bdplm` automatically mean-centers
+each covariate on its pooled (current plus historical) mean before
+fitting, and back-transforms the reported intercept onto the original
+covariate scale. Specifically, if \\\bar{x}\_j\\ is the pooled mean of
+covariate \\j\\ and \\\beta_j\\ its estimated effect, the reported
+intercept is \\\beta_0 = \beta_0^{c} - \sum_j \beta_j \bar{x}\_j\\,
+where \\\beta_0^{c}\\ is the control-arm mean estimated on the centered
+scale. The treatment effect and covariate slopes are unchanged by
+centering; the reported `intercept` remains the control-arm mean at
+covariate = 0 on the original scale. The treatment effect and covariate
+slopes are invariant to a location shift of a covariate; the reported
+intercept changes with the covariate origin. Centering does not
+generally make the arm-mean estimators independent, and their covariance
+is not retained in the diagonal historical prior.
 
-The underlying model results in a marginal posterior distribution for
-the error variance `sigma2` that does not have a known distribution.
-Thus, we use a grid search to draw samples of `sigma2`. First, the
-marginal posterior is evaluated at a grid of `number_mcmc_sigmagrid`
-`sigma2` values. The bounds of the grid are taken as approximately six
-standard deviations from an estimate of `sigma2` using the `lm`
-function. Next, `number_mcmc_sigma` posterior draws of `sigma2` are made
-by sampling with replacement from the grid with each value having the
-corresponding marginal posterior probability of being selected. With
-posterior draws of `sigma2` in hand, we can make posterior draws of the
-regression coefficients.
+The marginal posterior of the residual variance is evaluated
+numerically. Candidate variance values are equally spaced under
+`"fixed"` and uniformly sampled under `"mc"`. Their bounds use extreme
+quantiles of an inverse-gamma approximation from a weighted regression
+on the augmented data. The `number_mcmc_sigma` variance draws are
+sampled with replacement using marginal density weights, followed by
+conditional coefficient draws. Under `"mc"`, each candidate variance is
+paired with a generated historical-weight vector. Increase the grid and
+draw counts to assess numerical stability; the Monte Carlo method
+requires `number_mcmc_sigmagrid <= number_mcmc_alpha`.
 
 ## Examples
 

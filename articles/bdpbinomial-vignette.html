@@ -4,14 +4,14 @@
 <meta charset="UTF-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Binomial Count Estimation with bayesDP • bayesDP</title>
+<title>Binomial outcomes with bayesDP • bayesDP</title>
 <!-- katex math --><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script><script src="../katex-auto.js"></script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
-<meta property="og:title" content="Binomial Count Estimation with bayesDP">
+<meta property="og:title" content="Binomial outcomes with bayesDP">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">bayesDP</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.10</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,10 +34,11 @@
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/bdpbinomial-vignette.html">Binomial Count Estimation with bayesDP</a></li>
-    <li><a class="dropdown-item" href="../articles/bdplm-vignette.html">Linear Regression Estimation with bayesDP</a></li>
-    <li><a class="dropdown-item" href="../articles/bdpnormal-vignette.html">Normal Mean Estimation with bayesDP</a></li>
-    <li><a class="dropdown-item" href="../articles/bdpsurvival-vignette.html">Survival Outcome Estimation with bayesDP</a></li>
+<li><a class="dropdown-item" href="../articles/borrowing.html">Borrowing historical information with bayesDP</a></li>
+    <li><a class="dropdown-item" href="../articles/bdpbinomial-vignette.html">Binomial outcomes with bayesDP</a></li>
+    <li><a class="dropdown-item" href="../articles/bdpnormal-vignette.html">Normal outcomes with bayesDP</a></li>
+    <li><a class="dropdown-item" href="../articles/bdplm-vignette.html">Linear regression with bayesDP</a></li>
+    <li><a class="dropdown-item" href="../articles/bdpsurvival-vignette.html">Survival outcomes with bayesDP</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -68,7 +69,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
-      <h1>Binomial Count Estimation with bayesDP</h1>
+      <h1>Binomial outcomes with bayesDP</h1>
                         <h4 data-toc-skip class="author">Donnie
 Musgrove</h4>
                         <h4 data-toc-skip class="author">Graeme L.
@@ -83,386 +84,139 @@ Hickey</h4>
     
     
 <div class="section level2">
-<h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
+<h2 id="purpose-and-inputs">Purpose and inputs<a class="anchor" aria-label="anchor" href="#purpose-and-inputs"></a>
 </h2>
-<p>The purpose of this vignette is to introduce the
-<code>bdpbinomial</code> function. <code>bdpbinomial</code> is used for
-estimating posterior samples from a Binomial event rate outcome for
-clinical trials where an informative prior is used.</p>
-<p>In the parlance of clinical trials, the informative prior is derived
-from historical data. The weight given to the historical data is
-determined using what we refer to as a discount function. There are
-three steps in carrying out estimation:</p>
-<ol style="list-style-type: decimal">
-<li><p>Estimation of the historical data weight, denoted <span class="math inline">\hat{\alpha}</span>, via the discount
-function</p></li>
-<li><p>Estimation of the posterior distribution of the current data,
-conditional on the historical data weighted by <span class="math inline">\hat{\alpha}</span></p></li>
-<li><p>If a two-arm clinical trial, estimation of the posterior
-treatment effect, i.e., treatment versus control</p></li>
-</ol>
-<p>Throughout this vignette, we use the terms <code>current</code>,
-<code>historical</code>, <code>treatment</code>, and
-<code>control</code>. These terms are used because the model was
-envisioned in the context of clinical trials where historical data may
-be present. Because of this terminology, there are 4 potential sources
-of data:</p>
-<ol style="list-style-type: decimal">
-<li><p>Current treatment data: treatment data from a current
-study</p></li>
-<li><p>Current control data: control (or other treatment) data from a
-current study</p></li>
-<li><p>Historical treatment data: treatment data from a previous
-study</p></li>
-<li><p>Historical control data: control (or other treatment) data from a
-previous study</p></li>
-</ol>
-<p>If only treatment data is input, the function considers the analysis
-a one-arm trial. If treatment data + control data is input, then it is
-considered a two-arm trial.</p>
-<div class="section level3">
-<h3 id="estimation-of-the-historical-data-weight">Estimation of the historical data weight<a class="anchor" aria-label="anchor" href="#estimation-of-the-historical-data-weight"></a>
-</h3>
-<p>In the first estimation step, the historical data weight <span class="math inline">\hat{\alpha}</span> is estimated. In the case of a
-two-arm trial, where both treatment and control data are available, an
-<span class="math inline">\hat{\alpha}</span> value is estimated
-separately for each of the treatment and control arms. Of course,
-historical treatment or historical control data must be present,
-otherwise <span class="math inline">\hat{\alpha}</span> is not estimated
-for the corresponding arm.</p>
-<p>When historical data are available, estimation of <span class="math inline">\hat{\alpha}</span> is carried out as follows. Let
-<span class="math inline">y</span> and <span class="math inline">N</span> denote the number of events and sample size
-of the current data, respectively. Similarly, let <span class="math inline">y_0</span> and <span class="math inline">N_0</span>
-denote the number of events and sample size of the historical data,
-respectively. Let <span class="math inline">a_0</span> and <span class="math inline">b_0</span> denote the rate parameters of a Beta
-distribution. Then, the posterior distributions of the event rates for
-current and historical data, under vague (flat) priors are</p>
-<p><span class="math display">
-\tilde{\theta}\mid y,N \sim \operatorname{Beta}\left(y+a_0,\,N-y+b_0
-\right)
-</span></p>
-<p>and</p>
-<p><span class="math display">
-\theta_0\mid y_0,N_0 \sim \operatorname{Beta}\left(y_0+a_0,\,N_0-y_0+b_0
-\right),
-</span></p>
-<p>respectively. We next compute the posterior probability <span class="math inline">p = \Pr\left(\tilde{\theta} &lt; \theta_0\mid y, N,
-y_0, N_0\right)</span>. Finally, for a discount function, denoted <span class="math inline">W</span>, <span class="math inline">\hat{\alpha}</span> is computed as</p>
-<p><span class="math display">
-\hat{\alpha} = \alpha_{\max}\cdot W\left(p, \,w\right),\,0\le p\le1,
-</span></p>
-<p>where <span class="math inline">w</span> may be one or more
-parameters associated with the discount function and <span class="math inline">\alpha_{\max}</span> scales the weight <span class="math inline">\hat{\alpha}</span> by a user-input maximum value.
-More details on the discount functions are given in the discount
-function section below.</p>
-<p>There are several model inputs at this first stage. First, the user
-can select the discount function type via the
-<code>discount_function</code> input (see below). Next, choosing
-<code>fix_alpha = TRUE</code> forces a fixed value of <span class="math inline">\hat{\alpha}</span> (at the <code>alpha_max</code>
-input), as opposed to estimation via the discount function.</p>
-<p>In the next modeling stage, a Monte Carlo estimation approach is
-used, requiring several samples from the posterior distributions. Thus,
-the user can input a sample size greater than or less than the default
-value of <code>number_mcmc = 10000</code>. Finally, the Beta rate
-parameters can be changed from the defaults of <span class="math inline">a_0=b_0=1</span> (<code>a0</code> and
-<code>b0</code> inputs).</p>
-<p>An alternate Monte Carlo-based estimation scheme of <span class="math inline">\hat{\alpha}</span> has been implemented, controlled
-by the function input <code>method = "mc"</code>. Here, instead of
-treating <span class="math inline">\hat{\alpha}</span> as a fixed
-quantity, <span class="math inline">\hat{\alpha}</span> is treated as
-random. Because <span class="math inline">p</span> is recomputed at each
-Monte Carlo draw using a single pair of posterior samples, the resulting
-sequence of <span class="math inline">\hat{\alpha}</span> values can
-exhibit noticeable Monte Carlo variability.</p>
-<p>First, <span class="math inline">p</span>, is computed as</p>
-<p><span class="math display">
-\begin{aligned}
-v^2 &amp;= {\tilde{\theta}\left(1-\tilde{\theta}\right)/N} ,\\
-v^2_0 &amp;= {\theta_0\left(1-\theta_0\right)/N_0} ,\\
-Z &amp;= {\frac{\left|\tilde{\theta}-\theta_0\right|}{\sqrt{v^2 +
-v^2_0}}} ,\\
-p &amp;= 2\left(1-\Phi\left(Z\right)\right),
-\end{aligned}
-</span></p>
-<p>where <span class="math inline">\Phi\left(x\right)</span> is the
-<span class="math inline">x</span>th quantile of a standard normal (i.e,
-the <code>pnorm</code> R function). Here, <span class="math inline">v^2</span> and <span class="math inline">v^2_0</span> are estimates of the variances of <span class="math inline">\tilde{\theta}</span> and <span class="math inline">\theta_0</span>, respectively.</p>
-<p>Next, <span class="math inline">p</span> is used to construct <span class="math inline">\hat{\alpha}</span> via the discount function. Since
-the values <span class="math inline">Z</span> and <span class="math inline">p</span> are computed at each iteration of the Monte
-Carlo estimation scheme, <span class="math inline">\hat{\alpha}</span>
-is computed at each iteration of the Monte Carlo estimation scheme,
-resulting in a distribution of <span class="math inline">\hat{\alpha}</span> values.</p>
-<div class="section level4">
-<h4 id="discount-function">Discount function<a class="anchor" aria-label="anchor" href="#discount-function"></a>
-</h4>
-<p>There are currently three discount functions implemented throughout
-the <code>bayesDP</code> package. The discount function is specified
-using the <code>discount_function</code> input with the following
-choices available:</p>
-<ol style="list-style-type: decimal">
-<li><p><code>identity</code> (default): Identity.</p></li>
-<li><p><code>weibull</code>: Weibull cumulative distribution function
-(CDF);</p></li>
-<li><p><code>scaledweibull</code>: Scaled Weibull CDF;</p></li>
-</ol>
-<p>First, the identity discount function (default) sets the discount
-weight <span class="math inline">\hat{\alpha}=p</span>.</p>
-<p>Second, the Weibull CDF has two user-specified parameters associated
-with it, the shape and scale. The default shape is 3 and the default
-scale is 0.135, each of which are controlled by the function inputs
-<code>weibull_shape</code> and <code>weibull_scale</code>, respectively.
-The form of the Weibull CDF is</p>
-<p><span class="math display">
-W(x) = 1 - \exp\left\{-
-(x/w_{\mathrm{scale}})^{w_{\mathrm{shape}}}\right\}.
-</span></p>
-<p>The third discount function option is the Scaled Weibull CDF. The
-Scaled Weibull CDF is the Weibull CDF divided by the value of the
-Weibull CDF evaluated at 1, i.e.,</p>
-<p><span class="math display">
-W^{\ast}(x) = W(x)/W(1).
-</span></p>
-<p>Similar to the Weibull CDF, the Scaled Weibull CDF has two
-user-specified parameters associated with it, the shape and scale, again
-controlled by the function inputs <code>weibull_shape</code> and
-<code>weibull_scale</code>, respectively.</p>
-<p>Using the default shape and scale inputs, each of the discount
-functions are shown below.
-<img src="bdpbinomial-vignette_files/figure-html/unnamed-chunk-1-1.png" class="r-plt" alt="" width="60%" style="display: block; margin: auto;"></p>
-<p><img src="bdpbinomial-vignette_files/figure-html/unnamed-chunk-2-1.png" class="r-plt" alt="" width="60%" style="display: block; margin: auto;"></p>
-<p>In each of the above plots, the x-axis is the stochastic comparison
-between current and historical data, which we’ve denoted <span class="math inline">p</span>. The y-axis is the discount value <span class="math inline">\hat{\alpha}</span> that corresponds to a given
-value of <span class="math inline">p</span>.</p>
-<p>An advanced input for the plot function is <code>print</code>. The
-default value is <code>print = TRUE</code>, which simply returns the
-graphics. Alternately, users can specify <code>print = FALSE</code>,
-which returns a <code>ggplot2</code> object. Below is an example using
-the discount function plot:</p>
+<p><code><a href="../reference/bdpbinomial.html">bdpbinomial()</a></code> estimates an event probability from
+independent binary outcomes. With two arms, the treatment effect is the
+risk difference, treatment minus control. Define whether an event is
+desirable or undesirable before interpreting its sign.</p>
+<p>Supply an event count <code>y</code> and sample size <code>N</code>
+for each available source. The suffixes <code>_t</code>,
+<code>_c</code>, <code>0_t</code>, and <code>0_c</code> identify current
+treatment, current control, historical treatment, and historical
+control. Current treatment is required; control data may be current,
+historical, or both. A historical-only control requires a justification
+for comparing populations across studies.</p>
+<p>The <a href="borrowing.html">borrowing overview</a> explains the
+weighting choices, discount functions, and interpretation. The examples
+below explicitly use <code>method = "fixed"</code>; the function default
+is <code>"mc"</code>.</p>
+</div>
+<div class="section level2">
+<h2 id="one-arm-example">One-arm example<a class="anchor" aria-label="anchor" href="#one-arm-example"></a>
+</h2>
+<p>Suppose 15 of 200 current participants and 25 of 250 historical
+participants experience the event. These are event probabilities over
+the same follow-up period, not incidence rates per unit of
+person-time.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit02</span>, type <span class="op">=</span> <span class="st">"discount"</span>, print <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="va">p1</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Discount Function Plot :-)"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="bdpbinomial-vignette_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" alt="" width="60%" style="display: block; margin: auto;"></p>
-</div>
-</div>
-<div class="section level3">
-<h3 id="estimation-of-the-posterior-distribution-of-the-current-data-conditional-on-the-historical-data">Estimation of the posterior distribution of the current data,
-conditional on the historical data<a class="anchor" aria-label="anchor" href="#estimation-of-the-posterior-distribution-of-the-current-data-conditional-on-the-historical-data"></a>
-</h3>
-<p>With <span class="math inline">\hat{\alpha}</span> in hand, we can
-now estimate the posterior distribution of the current data event rate.
-Using the notation of the previous section, the posterior distribution
-is</p>
-<p><span class="math display">
-\theta \sim \operatorname{Beta}\left(y+y_0\hat{\alpha}+a_0,\,
-N-y+\hat{\alpha}(N_0-y_0)+b_0 \right).
-</span></p>
-<p>At this model stage, we have in hand <code>number_mcmc</code>
-simulations from the augmented event rate distribution. If there are no
-control data, i.e., a one-arm trial, then the modeling stops and we
-generate summaries of the posterior distribution of <span class="math inline">\theta</span>. Otherwise, if there are control data,
-we proceed to a third step and compute a comparison between treatment
-and control data.</p>
-</div>
-<div class="section level3">
-<h3 id="estimation-of-the-posterior-treatment-effect-treatment-versus-control">Estimation of the posterior treatment effect: treatment versus
-control<a class="anchor" aria-label="anchor" href="#estimation-of-the-posterior-treatment-effect-treatment-versus-control"></a>
-</h3>
-<p>This step of the model is carried out on-the-fly using the
-<code>summary</code> or <code>print</code> methods. Let <span class="math inline">\theta_T</span> and <span class="math inline">\theta_C</span> denote posterior event rate
-estimates of the treatment and control arms, respectively. Currently,
-the implemented comparison between treatment and control is the
-difference, i.e., summary statistics related to the posterior
-difference: <span class="math inline">\theta_T - \theta_C</span>. In a
-future release, we may consider implementing additional comparison
-types.</p>
-</div>
-<div class="section level3">
-<h3 id="inputting-data">Inputting Data<a class="anchor" aria-label="anchor" href="#inputting-data"></a>
-</h3>
-<p>The data inputs for <code>bdpbinomial</code> are <code>y_t</code>,
-<code>N_t</code>, <code>y0_t</code>, <code>N0_t</code>,
-<code>y_c</code>, <code>N_c</code>, <code>y0_c</code>, and
-<code>N0_c</code>. The data must be input as (<code>y</code>,
-<code>N</code>) pairs. For example, <code>y_t</code>, the number of
-events in the current treatment group, must be accompanied by
-<code>N_t</code>, the sample size of the current treatment group.
-Historical data inputs are not necessary, but using this function would
-not be necessary either.</p>
-<p><strong>At the minimum, <code>y_t</code> and <code>N_t</code> must be
-input</strong>. In the case that only <code>y_t</code> and
-<code>N_t</code> are input, the analysis is analogous to using
-<code>prop.test</code>. Each of the following input combinations are
-allowed:</p>
-<ul>
-<li>(<code>y_t</code>, <code>N_t</code>) - one-arm trial</li>
-<li>(<code>y_t</code>, <code>N_t</code>) + (<code>y0_t</code>,
-<code>N0_t</code>) - one-arm trial</li>
-<li>(<code>y_t</code>, <code>N_t</code>) + (<code>y_c</code>,
-<code>N_c</code>) - two-arm trial</li>
-<li>(<code>y_t</code>, <code>N_t</code>) + (<code>y0_c</code>,
-<code>N0_c</code>) - two-arm trial</li>
-<li>(<code>y_t</code>, <code>N_t</code>) + (<code>y0_t</code>,
-<code>N0_t</code>) + (<code>y_c</code>, <code>N_c</code>) - two-arm
-trial</li>
-<li>(<code>y_t</code>, <code>N_t</code>) + (<code>y0_t</code>,
-<code>N0_t</code>) + (<code>y0_c</code>, <code>N0_c</code>) - two-arm
-trial</li>
-<li>(<code>y_t</code>, <code>N_t</code>) + (<code>y0_t</code>,
-<code>N0_t</code>) + (<code>y_c</code>, <code>N_c</code>) +
-(<code>y0_c</code>, <code>N0_c</code>) - two-arm trial</li>
-</ul>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
+<span><span class="va">current_only</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bdpbinomial.html">bdpbinomial</a></span><span class="op">(</span></span>
+<span>  y_t <span class="op">=</span> <span class="fl">15</span>, N_t <span class="op">=</span> <span class="fl">200</span>, y0_t <span class="op">=</span> <span class="fl">25</span>, N0_t <span class="op">=</span> <span class="fl">250</span>,</span>
+<span>  method <span class="op">=</span> <span class="st">"fixed"</span>, fix_alpha <span class="op">=</span> <span class="cn">TRUE</span>, alpha_max <span class="op">=</span> <span class="fl">0</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
+<span><span class="va">discounted</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bdpbinomial.html">bdpbinomial</a></span><span class="op">(</span></span>
+<span>  y_t <span class="op">=</span> <span class="fl">15</span>, N_t <span class="op">=</span> <span class="fl">200</span>, y0_t <span class="op">=</span> <span class="fl">25</span>, N0_t <span class="op">=</span> <span class="fl">250</span>,</span>
+<span>  method <span class="op">=</span> <span class="st">"fixed"</span>, fix_alpha <span class="op">=</span> <span class="cn">FALSE</span>, alpha_max <span class="op">=</span> <span class="fl">1</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
+<span><span class="va">full_borrowing</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bdpbinomial.html">bdpbinomial</a></span><span class="op">(</span></span>
+<span>  y_t <span class="op">=</span> <span class="fl">15</span>, N_t <span class="op">=</span> <span class="fl">200</span>, y0_t <span class="op">=</span> <span class="fl">25</span>, N0_t <span class="op">=</span> <span class="fl">250</span>,</span>
+<span>  method <span class="op">=</span> <span class="st">"fixed"</span>, fix_alpha <span class="op">=</span> <span class="cn">TRUE</span>, alpha_max <span class="op">=</span> <span class="fl">1</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>The table compares sensitivity analyses using the same baseline
+Beta(1, 1) prior. Limits are the 2.5th and 97.5th percentiles of the
+posterior draws.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fits</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"Current only"</span> <span class="op">=</span> <span class="va">current_only</span>, <span class="st">"Discounted"</span> <span class="op">=</span> <span class="va">discounted</span>,</span>
+<span>  <span class="st">"Full borrowing"</span> <span class="op">=</span> <span class="va">full_borrowing</span><span class="op">)</span></span>
+<span><span class="va">comparison</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">fits</span>, <span class="kw">function</span><span class="op">(</span><span class="va">fit</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">arm</span> <span class="op">&lt;-</span> <span class="va">fit</span><span class="op">$</span><span class="va">posterior_treatment</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>alpha <span class="op">=</span> <span class="va">arm</span><span class="op">$</span><span class="va">alpha_discount</span>,</span>
+<span>    weighted_N0 <span class="op">=</span> <span class="fl">250</span> <span class="op">*</span> <span class="va">arm</span><span class="op">$</span><span class="va">alpha_discount</span>,</span>
+<span>    median <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/median.html" class="external-link">median</a></span><span class="op">(</span><span class="va">arm</span><span class="op">$</span><span class="va">posterior</span><span class="op">)</span>,</span>
+<span>    lower <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unname.html" class="external-link">unname</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">arm</span><span class="op">$</span><span class="va">posterior</span>, <span class="fl">0.025</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    upper <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unname.html" class="external-link">unname</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">arm</span><span class="op">$</span><span class="va">posterior</span>, <span class="fl">0.975</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">comparison</span>, digits <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  col.names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Historical weight"</span>, <span class="st">"Weighted historical N"</span>, <span class="st">"Median"</span>, <span class="st">"Lower 95% CrI"</span>, <span class="st">"Upper 95% CrI"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<colgroup>
+<col width="16%">
+<col width="20%">
+<col width="24%">
+<col width="7%">
+<col width="15%">
+<col width="15%">
+</colgroup>
+<thead><tr class="header">
+<th align="left"></th>
+<th align="right">Historical weight</th>
+<th align="right">Weighted historical N</th>
+<th align="right">Median</th>
+<th align="right">Lower 95% CrI</th>
+<th align="right">Upper 95% CrI</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Current only</td>
+<td align="right">0.0000</td>
+<td align="right">0.0</td>
+<td align="right">0.0781</td>
+<td align="right">0.0464</td>
+<td align="right">0.1207</td>
+</tr>
+<tr class="even">
+<td align="left">Discounted</td>
+<td align="right">0.3664</td>
+<td align="right">91.6</td>
+<td align="right">0.0850</td>
+<td align="right">0.0566</td>
+<td align="right">0.1211</td>
+</tr>
+<tr class="odd">
+<td align="left">Full borrowing</td>
+<td align="right">1.0000</td>
+<td align="right">250.0</td>
+<td align="right">0.0902</td>
+<td align="right">0.0663</td>
+<td align="right">0.1194</td>
+</tr>
+</tbody>
+</table>
+<p>The estimated weight is 0.3664, corresponding to 91.6 weighted
+historical observations. This is moderate borrowing. The augmented
+posterior median is 0.085, compared with an observed current proportion
+of 0.075 and a current-only posterior median of 0.0781.</p>
+<p>With full borrowing the posterior is Beta(41, 411), so the posterior
+mean is 0.0907. This differs slightly from the pooled observed
+proportion, 0.0889, because the baseline prior is retained. The table
+reports medians rather than means.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">discounted</span>, type <span class="op">=</span> <span class="st">"posteriors"</span><span class="op">)</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="bdpbinomial-vignette_files/figure-html/one-arm-posteriors-1.png" class="r-plt" alt="The augmented posterior borrows moderately from the historical observations. All curves describe uncertainty about the event probability, not the distribution of individual binary outcomes." width="100%"><p class="caption">
+The augmented posterior borrows moderately from the historical
+observations. All curves describe uncertainty about the event
+probability, not the distribution of individual binary outcomes.
+</p>
 </div>
 </div>
 <div class="section level2">
-<h2 id="examples">Examples<a class="anchor" aria-label="anchor" href="#examples"></a>
+<h2 id="two-arm-example">Two-arm example<a class="anchor" aria-label="anchor" href="#two-arm-example"></a>
 </h2>
-<div class="section level3">
-<h3 id="one-arm-trial">One-arm trial<a class="anchor" aria-label="anchor" href="#one-arm-trial"></a>
-</h3>
-<p>Suppose we have historical data with <code>y0_t = 25</code> events
-out of a sample size of <code>N0_t = 250</code> patients. This gives a
-historical event rate of 0.1. Now, suppose we have current data with
-<code>y_t = 15</code> events out of a sample size of
-<code>N_t = 200</code> patients, giving an event rate of 0.075. To
-illustrate the approach, let’s first give full weight to the historical
-data. This is accomplished by setting <code>alpha_max = 1</code> and
-<code>fix_alpha = TRUE</code> as follows:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
-<span><span class="va">fit1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bdpbinomial.html">bdpbinomial</a></span><span class="op">(</span></span>
-<span>  y_t <span class="op">=</span> <span class="fl">15</span>,</span>
-<span>  N_t <span class="op">=</span> <span class="fl">200</span>,</span>
-<span>  y0_t <span class="op">=</span> <span class="fl">25</span>,</span>
-<span>  N0_t <span class="op">=</span> <span class="fl">250</span>,</span>
-<span>  alpha_max <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  fix_alpha <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  method <span class="op">=</span> <span class="st">"fixed"</span></span>
-<span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit1</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## </span></span>
-<span><span class="co">##     One-armed bdp binomial</span></span>
-<span><span class="co">## </span></span>
-<span><span class="co">## Current treatment data: 15 and 200</span></span>
-<span><span class="co">## Historical treatment data: 25 and 250</span></span>
-<span><span class="co">## Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.3664</span></span>
-<span><span class="co">## Discount function value (alpha) - treatment: 1</span></span>
-<span><span class="co">## 95 percent CI: </span></span>
-<span><span class="co">##  0.0663  0.1194</span></span>
-<span><span class="co">## sample estimates:</span></span>
-<span><span class="co">##  0.0902</span></span></code></pre>
-<p>Based on the <code>summary</code> output of <code>fit1</code>, we can
-see that the value of <code>alpha</code> was held fixed at 1. The
-resulting (augmented) event rate was estimated at 0.0902 which is
-approximately the event rate if we combined the historical and current
-data together, i.e., <code>(15 + 25) / (200 + 250) = 0.089</code>. Note
-that the <code>print</code> and <code>summary</code> methods result in
-the same output.</p>
-<p>Now, let’s relax the constraint on fixing <code>alpha</code> at 1.
-We’ll also take this opportunity to describe the output of the plot
-method.</p>
+<p>Now add 20 events among 250 current control participants and 20 among
+250 historical control participants. Borrowing is assessed separately
+for treatment and control.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
-<span><span class="va">fit1a</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bdpbinomial.html">bdpbinomial</a></span><span class="op">(</span></span>
-<span>  y_t <span class="op">=</span> <span class="fl">15</span>,</span>
-<span>  N_t <span class="op">=</span> <span class="fl">200</span>,</span>
-<span>  y0_t <span class="op">=</span> <span class="fl">25</span>,</span>
-<span>  N0_t <span class="op">=</span> <span class="fl">250</span>,</span>
-<span>  alpha_max <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  fix_alpha <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  method <span class="op">=</span> <span class="st">"fixed"</span></span>
+<span><span class="va">fit_two</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bdpbinomial.html">bdpbinomial</a></span><span class="op">(</span></span>
+<span>  y_t <span class="op">=</span> <span class="fl">15</span>, N_t <span class="op">=</span> <span class="fl">200</span>, y0_t <span class="op">=</span> <span class="fl">25</span>, N0_t <span class="op">=</span> <span class="fl">250</span>,</span>
+<span>  y_c <span class="op">=</span> <span class="fl">20</span>, N_c <span class="op">=</span> <span class="fl">250</span>, y0_c <span class="op">=</span> <span class="fl">20</span>, N0_c <span class="op">=</span> <span class="fl">250</span>,</span>
+<span>  method <span class="op">=</span> <span class="st">"fixed"</span>, fix_alpha <span class="op">=</span> <span class="cn">FALSE</span>, alpha_max <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit1a</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## </span></span>
-<span><span class="co">##     One-armed bdp binomial</span></span>
-<span><span class="co">## </span></span>
-<span><span class="co">## Current treatment data: 15 and 200</span></span>
-<span><span class="co">## Historical treatment data: 25 and 250</span></span>
-<span><span class="co">## Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.3664</span></span>
-<span><span class="co">## Discount function value (alpha) - treatment: 0.3664</span></span>
-<span><span class="co">## 95 percent CI: </span></span>
-<span><span class="co">##  0.0566  0.1211</span></span>
-<span><span class="co">## sample estimates:</span></span>
-<span><span class="co">##  0.085</span></span></code></pre>
-<p>When <code>alpha</code> is not constrained to one, it is estimated
-based on a comparison between the current and historical data. We see
-that the stochastic comparison, <code>p_hat</code>, between historical
-and control is 0.3664. Here, <code>p_hat</code> is the posterior
-probability of the comparison between current and historical data.</p>
-<p>With the present example, <code>p_hat = 0.3664</code> implies that
-the current and historical event rates are moderately different. The
-result is that the weight given to the historical data is shrunk towards
-zero. Thus, the estimate of <code>alpha</code> from the discount
-function is 0.3664, and the augmented posterior estimate of the event
-rate moves up from 0.075 observed in the current data to a value closer
-to 0.089.</p>
-<p>Many of the the values presented in the <code>summary</code> method
-are accessible from the fit object. For instance, <code>alpha</code> is
-found in <code>fit1a$posterior_treatment$alpha_discount</code> and
-<code>p_hat</code> is located at
-<code>fit1a$posterior_treatment$p_hat</code>. The
-<code>sample estimates</code> and CI are computed at run-time. The
-results can be replicated as:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">mean_augmented</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/median.html" class="external-link">median</a></span><span class="op">(</span><span class="va">fit1a</span><span class="op">$</span><span class="va">posterior_treatment</span><span class="op">$</span><span class="va">posterior</span><span class="op">)</span>, <span class="fl">4</span><span class="op">)</span></span>
-<span><span class="va">mean_augmented</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1] 0.085</span></span></code></pre>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">CI95_augmented</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">fit1a</span><span class="op">$</span><span class="va">posterior_treatment</span><span class="op">$</span><span class="va">posterior</span>, prob <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.025</span>, <span class="fl">0.975</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>  <span class="fl">4</span></span>
-<span><span class="op">)</span></span>
-<span><span class="va">CI95_augmented</span></span></code></pre></div>
-<pre><code><span><span class="co">##   2.5%  97.5% </span></span>
-<span><span class="co">## 0.0566 0.1211</span></span></code></pre>
-<p>Finally, we’ll explore the <code>plot</code> method.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit1a</span>, type <span class="op">=</span> <span class="st">"posteriors"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="bdpbinomial-vignette_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" alt="" width="60%" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit1a</span>, type <span class="op">=</span> <span class="st">"density"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="bdpbinomial-vignette_files/figure-html/unnamed-chunk-7-2.png" class="r-plt" alt="" width="60%" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit1a</span>, type <span class="op">=</span> <span class="st">"discount"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="bdpbinomial-vignette_files/figure-html/unnamed-chunk-7-3.png" class="r-plt" alt="" width="60%" style="display: block; margin: auto;"></p>
-<p>The top plot displays three density curves. The blue curve is the
-density of the historical event rate, the green curve is the density of
-the current event rate, and the red curve is the density of the current
-event rate augmented by historical data. Since little weight was given
-to the historical data, the current and posterior event rates
-essentially overlap.</p>
-<p>The middle plot simply re-displays the posterior event rate.</p>
-<p>The bottom plot displays the discount function (solid curve) as well
-as <code>alpha</code> (horizontal dashed line) and <code>p_hat</code>
-(vertical dashed line). In the present example, the discount function is
-the identity.</p>
-</div>
-<div class="section level3">
-<h3 id="two-arm-trial">Two-arm trial<a class="anchor" aria-label="anchor" href="#two-arm-trial"></a>
-</h3>
-<p>On to two-arm trials. In this package, we define a two-arm trial as
-an analysis where a current and/or historical control arm is present.
-Suppose we have the same treatment data as in the one-arm example, but
-now we introduce control data: <code>y_c = 15</code>,
-<code>N_c = 200</code>, <code>y0_c = 20</code>, and
-<code>N0_c = 250</code>. This control data gives a current and
-historical event rate of <code>20 / 250 = 0.08</code>.</p>
-<p>Before proceeding, it is worth pointing out that the discount
-function is applied separately to the treatment and control data. Now,
-let’s carry out the two-arm analysis using default inputs:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
-<span><span class="va">fit2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bdpbinomial.html">bdpbinomial</a></span><span class="op">(</span></span>
-<span>  y_t <span class="op">=</span> <span class="fl">15</span>,</span>
-<span>  N_t <span class="op">=</span> <span class="fl">200</span>,</span>
-<span>  y0_t <span class="op">=</span> <span class="fl">25</span>,</span>
-<span>  N0_t <span class="op">=</span> <span class="fl">250</span>,</span>
-<span>  y_c <span class="op">=</span> <span class="fl">20</span>,</span>
-<span>  N_c <span class="op">=</span> <span class="fl">250</span>,</span>
-<span>  y0_c <span class="op">=</span> <span class="fl">20</span>,</span>
-<span>  N0_c <span class="op">=</span> <span class="fl">250</span>,</span>
-<span>  method <span class="op">=</span> <span class="st">"fixed"</span></span>
-<span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit2</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit_two</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## </span></span>
 <span><span class="co">##     Two-armed bdp binomial</span></span>
 <span><span class="co">## </span></span>
@@ -474,38 +228,139 @@ let’s carry out the two-arm analysis using default inputs:</p>
 <span><span class="co">## Discount function value (alpha) - treatment: 0.3664</span></span>
 <span><span class="co">## Stochastic comparison (p_hat) - control (current vs. historical data): 0.9914</span></span>
 <span><span class="co">## Discount function value (alpha) - control: 0.9914</span></span>
-<span><span class="co">## alternative hypothesis: two.sided</span></span>
-<span><span class="co">## 95 percent CI:</span></span>
+<span><span class="co">## Treatment effect: treatment - control</span></span>
+<span><span class="co">## 95 percent equal-tailed credible interval:</span></span>
 <span><span class="co">##   -0.0347 0.0453</span></span>
-<span><span class="co">## sample estimates:</span></span>
-<span><span class="co">## prop 1 prop2</span></span>
-<span><span class="co">##   0.08  0.08</span></span></code></pre>
-<p>The <code>summary</code> method of a two-arm analysis is slightly
-different than a one-arm analysis. First, we see <code>p_hat</code> and
-<code>alpha</code> reported for the control data. In the present
-analysis, the current and historical control data have event rates that
-are very close, thus the historical control data is given full weight.
-This implies that the (augmented) posterior control event rate is
-approximately <code>(20 + 20) / (250 + 250) = 0.08</code>.</p>
-<p>Again, moderate weight is given to the historical treatment data, so
-we have an (augmented) posterior treatment event rate of 0.08.</p>
-<p>The CI is computed at run time and is the interval estimate of the
-difference between the posterior treatment and control event rates. With
-a 95% CI of <code>(-0.0347, 0.0453)</code>, we would conclude that the
-treatment and control arms are not significantly different.</p>
-<p>The <code>plot</code> method of a two-arm analysis is slightly
-different than a one-arm analysis as well:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit2</span>, type <span class="op">=</span> <span class="st">"posteriors"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="bdpbinomial-vignette_files/figure-html/unnamed-chunk-9-1.png" class="r-plt" alt="" width="60%" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit2</span>, type <span class="op">=</span> <span class="st">"density"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="bdpbinomial-vignette_files/figure-html/unnamed-chunk-9-2.png" class="r-plt" alt="" width="60%" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit2</span>, type <span class="op">=</span> <span class="st">"discount"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="bdpbinomial-vignette_files/figure-html/unnamed-chunk-9-3.png" class="r-plt" alt="" width="60%" style="display: block; margin: auto;">
-Each of the three plots are analogous to the one-arm analysis, but each
-plot now presents additional data related to the control arm.</p>
+<span><span class="co">## Posterior medians:</span></span>
+<span><span class="co">## treatment  control</span></span>
+<span><span class="co">##   0.0850  0.0813</span></span></code></pre>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">risk_difference</span> <span class="op">&lt;-</span> <span class="va">fit_two</span><span class="op">$</span><span class="va">posterior_treatment</span><span class="op">$</span><span class="va">posterior</span> <span class="op">-</span></span>
+<span>  <span class="va">fit_two</span><span class="op">$</span><span class="va">posterior_control</span><span class="op">$</span><span class="va">posterior</span></span>
+<span><span class="va">risk_interval</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">risk_difference</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.025</span>, <span class="fl">0.975</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p>The control weight is 0.9914, giving nearly full borrowing, while the
+treatment weight remains 0.3664. The posterior median risk difference is
+0.0035, with a 95% credible interval from -0.0347 to 0.0453. This
+interval includes both negative and positive differences; it does not
+establish equivalence. If the event is adverse, a negative difference
+favours treatment.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit_two</span>, type <span class="op">=</span> <span class="st">"effect"</span><span class="op">)</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="bdpbinomial-vignette_files/figure-html/risk-difference-1.png" class="r-plt" alt="Posterior risk difference. The dashed line marks no difference; clinical equivalence would require a separately specified margin." width="100%"><p class="caption">
+Posterior risk difference. The dashed line marks no difference; clinical
+equivalence would require a separately specified margin.
+</p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="sensitivity-to-the-weighting-method">Sensitivity to the weighting method<a class="anchor" aria-label="anchor" href="#sensitivity-to-the-weighting-method"></a>
+</h2>
+<p>The draw-specific method produces a distribution of weights rather
+than one estimated weight. Compare both its weights and outcome
+summaries with the fixed analysis.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
+<span><span class="va">fit_mc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bdpbinomial.html">bdpbinomial</a></span><span class="op">(</span></span>
+<span>  y_t <span class="op">=</span> <span class="fl">15</span>, N_t <span class="op">=</span> <span class="fl">200</span>, y0_t <span class="op">=</span> <span class="fl">25</span>, N0_t <span class="op">=</span> <span class="fl">250</span>,</span>
+<span>  method <span class="op">=</span> <span class="st">"mc"</span>, fix_alpha <span class="op">=</span> <span class="cn">FALSE</span>, alpha_max <span class="op">=</span> <span class="fl">1</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span></span>
+<span>  <span class="st">"Historical weight"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">fit_mc</span><span class="op">$</span><span class="va">posterior_treatment</span><span class="op">$</span><span class="va">alpha_discount</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.025</span>, <span class="fl">0.5</span>, <span class="fl">0.975</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  <span class="st">"Event probability"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">fit_mc</span><span class="op">$</span><span class="va">posterior_treatment</span><span class="op">$</span><span class="va">posterior</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.025</span>, <span class="fl">0.5</span>, <span class="fl">0.975</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">)</span>, digits <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<thead><tr class="header">
+<th align="left"></th>
+<th align="right">2.5%</th>
+<th align="right">50%</th>
+<th align="right">97.5%</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Historical weight</td>
+<td align="right">0.004</td>
+<td align="right">0.3237</td>
+<td align="right">0.9612</td>
+</tr>
+<tr class="even">
+<td align="left">Event probability</td>
+<td align="right">0.054</td>
+<td align="right">0.0846</td>
+<td align="right">0.1205</td>
+</tr>
+</tbody>
+</table>
+<p>The interval for the weight describes variation induced by the
+draw-specific procedure, not numerical error in one fixed weight.
+Increasing <code>number_mcmc</code> improves the precision of these
+summaries.</p>
+</div>
+<div class="section level2">
+<h2 id="model-and-computation">Model and computation<a class="anchor" aria-label="anchor" href="#model-and-computation"></a>
+</h2>
+<p>Let <span class="math inline">y,N</span> and <span class="math inline">y_0,N_0</span> be current and historical counts and
+sample sizes. The baseline prior is <span class="math inline">\operatorname{Beta}(a_0,b_0)</span>, where both
+parameters are shapes. The defaults <span class="math inline">a_0=b_0=1</span> give a uniform prior; other choices
+need not be flat.</p>
+<p>The separate posterior distributions used for comparison are</p>
+<p><span class="math display">
+\begin{aligned}
+\tilde\theta\mid y,N &amp;\sim \operatorname{Beta}(a_0+y,b_0+N-y),\\
+\theta_0\mid y_0,N_0 &amp;\sim \operatorname{Beta}(a_0+y_0,b_0+N_0-y_0).
+\end{aligned}
+</span></p>
+<p>For <code>method = "fixed"</code>, compute <span class="math inline">q=\Pr(\tilde\theta&lt;\theta_0\mid\text{data})</span>,
+then <span class="math inline">p=2\min(q,1-q)</span> and <span class="math inline">\alpha=\alpha_{\max}W(p)</span>. For
+<code>method = "mc"</code>, draw <span class="math inline">s</span>
+instead uses</p>
+<p><span class="math display">
+\begin{aligned}
+v_s &amp;= \tilde\theta^{(s)}(1-\tilde\theta^{(s)})/N,\\
+v_{0s} &amp;= \theta_0^{(s)}(1-\theta_0^{(s)})/N_0,\\
+Z_s &amp;=
+\frac{|\tilde\theta^{(s)}-\theta_0^{(s)}|}{\sqrt{v_s+v_{0s}}},\\
+p_s &amp;= 2\{1-\Phi(Z_s)\},\qquad \alpha_s=\alpha_{\max}W(p_s).
+\end{aligned}
+</span></p>
+<p>The quantities <span class="math inline">v_s,v_{0s}</span> are
+plug-in binomial variance approximations used in the comparison, not the
+exact variances of the Beta posteriors. <span class="math inline">\Phi</span> is the standard normal CDF.</p>
+<p>Conditional on a weight, the augmented posterior is</p>
+<p><span class="math display">
+\theta\mid\text{data},\alpha\sim\operatorname{Beta}
+\left(a_0+y+\alpha y_0,\ b_0+N-y+\alpha(N_0-y_0)\right).
+</span></p>
+<p>The fixed method draws from this Beta distribution. The draw-specific
+method uses a different <span class="math inline">\alpha_s</span> for
+each draw, giving a mixture over the generated weights. Two-arm
+contrasts are calculated by subtracting paired treatment and control
+draws, not by subtracting two posterior summary estimates. The
+power-prior construction is described by <span class="citation">Haddad
+et al. (2017)</span>.</p>
+</div>
+<div class="section level2">
+<h2 id="assumptions-and-checks">Assumptions and checks<a class="anchor" aria-label="anchor" href="#assumptions-and-checks"></a>
+</h2>
+<p>Use a consistent event definition, follow-up period, and analysis
+population in current and historical data. The model assumes independent
+Bernoulli outcomes within each source; clustering, repeated events, and
+varying exposure times require another likelihood. Check sensitivity to
+the baseline prior, maximum weight, and discount function, especially
+with sparse events or very large historical cohorts. Similar observed
+probabilities do not establish comparability of populations.</p>
+</div>
+<div class="section level2">
+<h2 class="unnumbered" id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
+</h2>
+<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="ref-haddad2017" class="csl-entry">
+Haddad, Tarek, Adam Himes, Laura Thompson, Telba Irony, Rajesh Nair, and
+MDIC Computer Modeling and Simulation Working Group Participants. 2017.
+<span>“Incorporation of Stochastic Engineering Models as Prior
+Information in <span>Bayesian</span> Medical Device Trials.”</span>
+<em>Journal of Biopharmaceutical Statistics</em> 27 (6): 1089–103. <a href="https://doi.org/10.1080/10543406.2017.1300907" class="external-link">https://doi.org/10.1080/10543406.2017.1300907</a>.
+</div>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

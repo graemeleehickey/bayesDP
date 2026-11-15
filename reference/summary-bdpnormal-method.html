@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">bayesDP</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.10</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -18,10 +18,11 @@
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/bdpbinomial-vignette.html">Binomial Count Estimation with bayesDP</a></li>
-    <li><a class="dropdown-item" href="../articles/bdplm-vignette.html">Linear Regression Estimation with bayesDP</a></li>
-    <li><a class="dropdown-item" href="../articles/bdpnormal-vignette.html">Normal Mean Estimation with bayesDP</a></li>
-    <li><a class="dropdown-item" href="../articles/bdpsurvival-vignette.html">Survival Outcome Estimation with bayesDP</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/borrowing.html">Borrowing historical information with bayesDP</a></li>
+    <li><a class="dropdown-item" href="../articles/bdpbinomial-vignette.html">Binomial outcomes with bayesDP</a></li>
+    <li><a class="dropdown-item" href="../articles/bdpnormal-vignette.html">Normal outcomes with bayesDP</a></li>
+    <li><a class="dropdown-item" href="../articles/bdplm-vignette.html">Linear regression with bayesDP</a></li>
+    <li><a class="dropdown-item" href="../articles/bdpsurvival-vignette.html">Survival outcomes with bayesDP</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -67,20 +68,14 @@
 </dl></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Displays a summary of the <code>bdpnormal</code> fit including the input
-  data, the stochastic comparison between current and historical data, and
-  the resulting historical data weight (alpha). If historical data is missing
-  then no stochastic comparison nor weight are displayed.</p>
-<p>In the case of a one-arm analysis, the displayed 95 percent CI contains the
-  lower and upper limits of the augmented mean value of the current data. The
-  displayed <code>mean of treatment group</code> is the mean of the current data
-  augmented by the historical data.</p>
-<p>When a control arm is present, a two-arm analysis is carried out. Now, the
-  displayed 95 percent CI contains the lower and upper limits of the
-  difference between the treatment and control arms with the historical data
-  augmented to current data, if present. The displayed posterior sample
-  estimates are the mean of the treatment and control arms, each of which are
-  augmented when historical data are present.</p>
+    <p>Displays input data, the current-historical comparison, and
+  historical weights when both sources are available. Under <code>method =
+  "mc"</code>, the comparison and weight summaries are medians across draws.
+  The outcome estimates are posterior medians of each arm's population mean.
+  Intervals are the 2.5th and 97.5th posterior percentiles. For a two-arm
+  analysis, the interval describes the treatment-minus-control difference,
+  calculated from paired draws. It is not a confidence interval or a test
+  of equality. Printed estimates retain four decimal places.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

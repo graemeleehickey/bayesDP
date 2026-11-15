@@ -19,19 +19,11 @@ summary(object)
 
 ## Details
 
-Displays a summary of the `bdpbinomial` fit including the input data,
-the stochastic comparison between current and historical data, and the
-resulting historical data weight (alpha). If historical data is missing
-then no stochastic comparison nor weight are displayed.
-
-In the case of a one-arm analysis, the displayed 95 percent CI contains
-the lower and upper limits of the augmented event rate of the current
-data. The displayed `sample estimate` is the event rate of the current
-data augmented by the historical data.
-
-When a control arm is present, a two-arm analysis is carried out. Now,
-the displayed 95 percent CI contains the lower and upper limits of the
-difference between the treatment and control arms with the historical
-data augmented to current data, if present. The displayed
-`sample estimates` are the event rates of the treatment and control
-arms, each of which are augmented when historical data are present.
+Displays input data, the current-historical comparison, and historical
+weights when both sources are available. Under `method = "mc"`, the
+comparison and weight summaries are medians across draws. The outcome
+estimates are posterior medians of each arm's event probability.
+Intervals are the 2.5th and 97.5th posterior percentiles. For a two-arm
+analysis, the interval describes the treatment-minus-control difference,
+calculated from paired draws. It is not a confidence interval or a test
+of equality. Printed estimates retain four decimal places.

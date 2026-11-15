@@ -1,5 +1,55 @@
 # Changelog
 
+## bayesDP 1.3.10
+
+### Bug fixes
+
+- Corrected the normal-data
+  [`probability_discount()`](https://graemeleehickey.github.io/bayesDP/reference/probability_discount.md)
+  helper to standardize Monte Carlo mean differences by their
+  conditional standard error, matching
+  [`bdpnormal()`](https://graemeleehickey.github.io/bayesDP/reference/bdpnormal.md)
+  and preserving the comparison when outcome units change.
+- Corrected discount plots to include `alpha_max` for each arm and to
+  show a constant weight when `fix_alpha = TRUE`.
+- Corrected the fixed-weight probability definitions and the normal
+  vignette’s treatment-effect conclusion
+  ([\#19](https://github.com/graemeleehickey/bayesDP/issues/19),
+  [\#20](https://github.com/graemeleehickey/bayesDP/issues/20)).
+
+### Presentation and documentation
+
+- Reorganised the four model vignettes around worked examples,
+  interpretation, assumptions, and model details, with a shared
+  historical-borrowing overview and formal references.
+- Added comparisons of current-only, estimated, and full borrowing;
+  generated numerical interpretations from fitted draws; and included a
+  survival example with right censoring.
+- Clarified the distinction between estimated fixed and draw-specific
+  weights, conditional and marginal distributions, baseline priors,
+  regression covariate-prior precision, and posterior medians versus
+  means.
+- Added `type = "effect"` plots for binomial and normal
+  treatment-minus-control contrasts. Posterior plots now use explicit
+  parameter labels and consistent information-source colours and line
+  types.
+- Labelled binomial and normal summary intervals as equal-tailed
+  credible intervals and retained four decimal places for arm estimates.
+- Documented the unresolved survival Monte Carlo calculation,
+  Gamma-prior augmentation, and summary-output problems
+  ([\#16](https://github.com/graemeleehickey/bayesDP/issues/16)–#18).
+  These calculations are not changed in this release; affected examples
+  identify the limitations and avoid the incorrect summary output.
+
+### Tests
+
+- Added checks against numerical integration, outcome-unit changes, the
+  model’s comparison draws, discount-plot limits, treatment-effect
+  plots, numerical summary labels, and the documented regression
+  covariate-prior behaviour.
+- Included the test suite in source packages so `R CMD check` runs it,
+  and declared the existing `withr` test dependency.
+
 ## bayesDP 1.3.9
 
 ### Bug fixes
