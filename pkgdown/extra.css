@@ -1,0 +1,13 @@
+/* Give displayed equations space and allow wide formulas to scroll on small screens. */
+.math.display {
+  display: block;
+  margin: 1.5rem 0;
+  padding: 0.5rem 0;
+  overflow-x: auto;
+}
+
+.math.display .katex-display {
+  margin: 0;
+  width: max-content;
+  min-width: 100%;
+}

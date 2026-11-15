@@ -1,3 +1,18 @@
+# bayesDP 1.3.9
+
+## Bug fixes
+
+* Fixed equation rendering in the pkgdown articles with KaTeX and updated the standalone HTML vignettes to MathJax 3.
+
+## New features
+
+* Added a light/dark mode switch to the pkgdown website, including matching colours for R code.
+
+## Housekeeping
+
+* Improved equation spacing and alignment, split long equations across lines, and divided dense paragraphs in all four vignettes to make them easier to read.
+* Standardised spacing in R examples and documented function calls throughout the vignettes, README, and help pages.
+
 # bayesDP 1.3.8
 
 ## Bug fixes
