@@ -3,22 +3,14 @@
 #' @param object object of class \code{bdpnormal}. The result of a call to the
 #'   \code{\link{bdpnormal}} function.
 #'
-#' @details Displays a summary of the \code{bdpnormal} fit including the input
-#'   data, the stochastic comparison between current and historical data, and
-#'   the resulting historical data weight (alpha). If historical data is missing
-#'   then no stochastic comparison nor weight are displayed.
-#'
-#'   In the case of a one-arm analysis, the displayed 95 percent CI contains the
-#'   lower and upper limits of the augmented mean value of the current data. The
-#'   displayed \code{mean of treatment group} is the mean of the current data
-#'   augmented by the historical data.
-#'
-#'   When a control arm is present, a two-arm analysis is carried out. Now, the
-#'   displayed 95 percent CI contains the lower and upper limits of the
-#'   difference between the treatment and control arms with the historical data
-#'   augmented to current data, if present. The displayed posterior sample
-#'   estimates are the mean of the treatment and control arms, each of which are
-#'   augmented when historical data are present.
+#' @details Displays input data, the current-historical comparison, and
+#'   historical weights when both sources are available. Under \code{method =
+#'   "mc"}, the comparison and weight summaries are medians across draws.
+#'   The outcome estimates are posterior medians of each arm's population mean.
+#'   Intervals are the 2.5th and 97.5th posterior percentiles. For a two-arm
+#'   analysis, the interval describes the treatment-minus-control difference,
+#'   calculated from paired draws. It is not a confidence interval or a test
+#'   of equality. Printed estimates retain four decimal places.
 #'
 #' @import methods
 #' @importFrom utils head
@@ -71,18 +63,18 @@ setMethod("summary", signature(object = "bdpnormal"), function(object) {
       ))
       cat("\n")
     }
-    cat("95 percent CI: \n")
+    cat("95 percent equal-tailed credible interval: \n")
     cat(paste0(" ", mean_CI_t))
     cat("\n")
-    cat("posterior sample estimate:\n")
-    cat("mean of treatment group\n")
+    cat("Posterior median:\n")
+    cat("population mean of treatment group\n")
     cat(paste0(" ", mean_est_t))
     cat("\n")
   } else {
     comparison_est <- posterior_treatment$posterior_mu - posterior_control$posterior_mu
     
-    mean_est_t <- format(round(median(posterior_treatment$posterior_mu), 2), nsmall = 2)
-    mean_est_c <- format(round(median(posterior_control$posterior_mu), 2), nsmall = 2)
+    mean_est_t <- format(round(median(posterior_treatment$posterior_mu), 4), nsmall = 4)
+    mean_est_c <- format(round(median(posterior_control$posterior_mu), 4), nsmall = 4)
     comp_CI <- round(quantile(comparison_est, prob = c(0.025, 0.975)), 4)
     cat("\n")
     cat("    Two-armed bdp normal\n\n")
@@ -133,13 +125,13 @@ setMethod("summary", signature(object = "bdpnormal"), function(object) {
       ))
       cat("\n")
     }
-    cat("alternative hypothesis: two.sided")
+    cat("Treatment effect: treatment - control")
     cat("\n")
     
-    cat("95 percent CI: \n")
+    cat("95 percent equal-tailed credible interval: \n")
     cat(paste0(" ", comp_CI))
     cat("\n")
-    cat("posterior sample estimates:\n")
+    cat("Posterior medians:\n")
     cat("treatment group  control group\n")
     cat(paste0("          ", mean_est_t, "          ", mean_est_c))
     cat("\n")
@@ -152,22 +144,14 @@ setMethod("summary", signature(object = "bdpnormal"), function(object) {
 #' @param object object of class \code{bdpbinomial}. The result of a call to the
 #'   \code{\link{bdpbinomial}} function.
 #'
-#' @details Displays a summary of the \code{bdpbinomial} fit including the input
-#'   data, the stochastic comparison between current and historical data, and
-#'   the resulting historical data weight (alpha). If historical data is missing
-#'   then no stochastic comparison nor weight are displayed.
-#'
-#'   In the case of a one-arm analysis, the displayed 95 percent CI contains the
-#'   lower and upper limits of the augmented event rate of the current data. The
-#'   displayed \code{sample estimate} is the event rate of the current data
-#'   augmented by the historical data.
-#'
-#'   When a control arm is present, a two-arm analysis is carried out. Now, the
-#'   displayed 95 percent CI contains the lower and upper limits of the
-#'   difference between the treatment and control arms with the historical data
-#'   augmented to current data, if present. The displayed \code{sample
-#'   estimates} are the event rates of the treatment and control arms, each of
-#'   which are augmented when historical data are present.
+#' @details Displays input data, the current-historical comparison, and
+#'   historical weights when both sources are available. Under \code{method =
+#'   "mc"}, the comparison and weight summaries are medians across draws.
+#'   The outcome estimates are posterior medians of each arm's event probability.
+#'   Intervals are the 2.5th and 97.5th posterior percentiles. For a two-arm
+#'   analysis, the interval describes the treatment-minus-control difference,
+#'   calculated from paired draws. It is not a confidence interval or a test
+#'   of equality. Printed estimates retain four decimal places.
 #'
 #' @import methods
 #' @importFrom utils head
@@ -211,10 +195,10 @@ setMethod("summary", signature(object = "bdpbinomial"), function(object) {
       ))
       cat("\n")
     }
-    cat("95 percent CI: \n")
+    cat("95 percent equal-tailed credible interval: \n")
     cat(paste0(" ", mean_CI_t))
     cat("\n")
-    cat("sample estimates:\n")
+    cat("Posterior medians:\n")
     cat(paste0(" ", mean_est_t))
     cat("\n")
   } else {
@@ -222,8 +206,8 @@ setMethod("summary", signature(object = "bdpbinomial"), function(object) {
     ### Format control mean output
     comparison_est <- posterior_treatment$posterior - posterior_control$posterior
     
-    mean_est_t <- format(round(median(posterior_treatment$posterior), 2), nsmall = 2)
-    mean_est_c <- format(round(median(posterior_control$posterior), 2), nsmall = 2)
+    mean_est_t <- format(round(median(posterior_treatment$posterior), 4), nsmall = 4)
+    mean_est_c <- format(round(median(posterior_control$posterior), 4), nsmall = 4)
     
     mean_CI_c <- round(quantile(posterior_control$posterior, prob = c(0.025, 0.975)), 4)
     mean_print_c <- paste0(mean_est_c, " (", mean_CI_c[1], ", ", mean_CI_c[2], ")")
@@ -272,13 +256,13 @@ setMethod("summary", signature(object = "bdpbinomial"), function(object) {
       cat("\n")
     }
     
-    cat("alternative hypothesis: two.sided")
+    cat("Treatment effect: treatment - control")
     cat("\n")
-    cat("95 percent CI:\n")
+    cat("95 percent equal-tailed credible interval:\n")
     cat(paste0(" "), comp_CI)
     cat("\n")
-    cat("sample estimates:\n")
-    cat("prop 1 prop2\n")
+    cat("Posterior medians:\n")
+    cat("treatment  control\n")
     cat(paste0("  ", mean_est_t, "  ", mean_est_c))
   }
 })

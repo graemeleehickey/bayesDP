@@ -14,8 +14,8 @@ alpha_discount(
 )
 }
 \arguments{
-\item{p_hat}{scalar. The posterior probability of a stochastic comparison.
-This value can be the output of \code{posterior_probability} or a value
+\item{p_hat}{scalar. A current-historical comparison in [0, 1].
+This value can be the output of \code{probability_discount} or a value
 between 0 and 1.}
 
 \item{discount_function}{character. Specify the discount function to use.
@@ -37,14 +37,8 @@ used to compute alpha, the weight parameter of the historical data. Default
 value is 3.}
 }
 \value{
-\code{alpha_discount} returns an object of class "alpha_discount".
-
-An object of class \code{alpha_discount} contains the following:
-\describe{
- \item{\code{alpha_hat}}{
-   scalar. The historical data weight.
-  }
- }
+A numeric historical weight (or vector of weights when
+  \code{p_hat} is a vector), scaled by \code{alpha_max}.
 }
 \description{
 \code{alpha_discount} can be used to estimate the weight

@@ -6,3 +6,13 @@ template:
   theme: github-light
   theme-dark: github-dark
   math-rendering: katex
+
+articles:
+  - title: "Using bayesDP"
+    navbar: ~
+    contents:
+      - borrowing
+      - bdpbinomial-vignette
+      - bdpnormal-vignette
+      - bdplm-vignette
+      - bdpsurvival-vignette

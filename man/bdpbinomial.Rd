@@ -48,7 +48,7 @@ bdpbinomial(
 Currently supports \code{weibull}, \code{scaledweibull}, and
 \code{identity}. The discount function \code{scaledweibull} scales the
 output of the Weibull CDF to have a max value of 1. The \code{identity}
-discount function uses the posterior probability directly as the discount
+discount function uses the transformed comparison directly as the discount
 weight. Default value is "\code{identity}".}
 
 \item{alpha_max}{scalar. Maximum weight the discount function can apply.
@@ -58,9 +58,9 @@ the second value is used to weight the historical control group.}
 
 \item{fix_alpha}{logical. Fix alpha at alpha_max? Default value is FALSE.}
 
-\item{a0}{scalar. Prior value for the beta rate. Default is 1.}
+\item{a0}{scalar. Prior value for a beta shape parameter. Default is 1.}
 
-\item{b0}{scalar. Prior value for the beta rate. Default is 1.}
+\item{b0}{scalar. Prior value for a beta shape parameter. Default is 1.}
 
 \item{number_mcmc}{scalar. Number of Monte Carlo simulations. Default is
 10000.}
@@ -83,19 +83,20 @@ historical control group. Not used when \code{discount_function} =
 
 \item{method}{character. Analysis method with respect to estimation of the
 weight parameter alpha. Default method "\code{mc}" estimates alpha for each
-Monte Carlo iteration. Under "\code{mc}", the stochastic comparison
-probability is recomputed at each Monte Carlo draw, so the resulting
-\code{alpha_discount} is a random vector and may exhibit substantial
-Monte Carlo variability. Alternate value "\code{fixed}" estimates alpha
+Monte Carlo iteration, giving a distribution of generated weights.
+Increasing the number of draws improves numerical precision but does not
+remove the spread of that distribution. These weights are not draws from
+a separately specified prior/posterior model for alpha.
+Alternate value "\code{fixed}" estimates alpha
 once and holds it fixed throughout the analysis. See the
 \code{bdpbinomial} vignette \cr
 \code{vignette("bdpbinomial-vignette", package = "bayesDP")} for more
 details.}
 
 \item{compare}{logical. Should a comparison object be included in the fit?
-For a one-arm analysis, the comparison object is simply the posterior chain
+For a one-arm analysis, the comparison object is simply the posterior draws
 of the treatment group parameter. For a two-arm analysis, the comparison
-object is the posterior chain of the treatment effect that compares
+object is the posterior draws of the treatment effect that compares
 treatment and control. If \code{compare = TRUE}, the comparison object is
 accessible in the \code{final} slot, else the \code{final} slot is
 \code{NULL}. Default is \code{TRUE}.}
@@ -118,7 +119,7 @@ accessible in the \code{final} slot, else the \code{final} slot is
      \item \code{alpha_discount}
        numeric. Alpha value, the weighting parameter of the historical data.
      \item \code{p_hat}
-       numeric. The posterior probability of the stochastic comparison
+       numeric. The current-historical comparison
        between the current and historical data.
      \item \code{posterior}
        vector. A vector of length \code{number_mcmc} containing
@@ -170,20 +171,16 @@ accessible in the \code{final} slot, else the \code{final} slot is
   methodologies developed in Haddad et al. (2017).
 }
 \details{
-\code{bdpbinomial} uses a two-stage approach for determining the
-  strength of historical data in estimation of a binomial count mean outcome.
-  In the first stage, a \emph{discount function} is used that that defines
-  the maximum strength of the historical data and discounts based on
-  disagreement with the current data. Disagreement between current and
-  historical data is determined by stochastically comparing the respective
-  posterior distributions under noninformative priors. With binomial data,
-  the comparison is the probability (\code{p}) that the current count is less
-  than the historical count. The comparison metric \code{p} is then input
-  into the Weibull discount function and the final strength of the historical
-  data is returned (alpha).
+Historical borrowing is assessed separately within each arm by
+  comparing event probabilities. With \code{method = "fixed"}, estimate
+  the probability q that the current event probability is below the historical one.
+  The discount input is \code{p = 2 * min(q, 1 - q)} and the weight is
+  \code{alpha_max * W(p)} for the selected discount function W. This
+  comparison is not a posterior probability of equality or equivalence.
+  Choosing \code{fix_alpha = TRUE} prespecifies the weight instead.
 
   In the second stage, posterior estimation is performed where the discount
-  function parameter, \code{alpha}, is used incorporated in all posterior
+  function parameter, \code{alpha}, is incorporated in all posterior
   estimation procedures.
 
   To carry out a single arm (OPC) analysis, data for the current treatment

@@ -12,8 +12,8 @@
 #'   applied to historical data in the context of a one- or two-arm
 #'   clinical trial. \code{alpha_discount} is not used internally but is
 #'   given for educational purposes.
-#' @param p_hat scalar. The posterior probability of a stochastic comparison.
-#'   This value can be the output of \code{posterior_probability} or a value
+#' @param p_hat scalar. A current-historical comparison in [0, 1].
+#'   This value can be the output of \code{probability_discount} or a value
 #'   between 0 and 1.
 #' @param discount_function character. Specify the discount function to use.
 #'   Currently supports \code{weibull}, \code{scaledweibull}, and
@@ -36,14 +36,8 @@
 #'   that would be applied to historical data in the context of a one- or
 #'   two-arm clinical trial.
 #'
-#' @return \code{alpha_discount} returns an object of class "alpha_discount".
-#'
-#' An object of class \code{alpha_discount} contains the following:
-#' \describe{
-#'  \item{\code{alpha_hat}}{
-#'    scalar. The historical data weight.
-#'   }
-#'  }
+#' @return A numeric historical weight (or vector of weights when
+#'   \code{p_hat} is a vector), scaled by \code{alpha_max}.
 #'
 #' @references
 #' Haddad, T., Himes, A., Thompson, L., Irony, T., Nair, R. MDIC Computer

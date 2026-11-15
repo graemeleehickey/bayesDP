@@ -32,36 +32,28 @@ probability_discount(
 \item{number_mcmc}{scalar. Number of Monte Carlo simulations. Default is
 10000.}
 
-\item{method}{character. Analysis method. Default value "\code{fixed}"
-estimates the posterior probability and holds it fixed. Alternative method
-"\code{mc}" estimates the posterior probability for each Monte Carlo
-iteration. See the the \code{bdpnormal} vignette \cr
-\code{vignette("bdpnormal-vignette", package = "bayesDP")} for more details.}
+\item{method}{character. Default \code{"fixed"} estimates a directional
+probability q and returns \code{2 * min(q, 1 - q)}. With \code{"mc"},
+each pair of mean draws is standardized by its conditional standard error
+and converted to a two-sided normal-tail comparison. See the normal
+vignette for details.}
 }
 \value{
-\code{probability_discount} returns an object of class
-  "probability_discount".
-
-An object of class \code{probability_discount} contains the following:
-\describe{
- \item{\code{p_hat}}{
-   scalar. The posterior probability of the comparison historical data weight. If
-   \code{method = "mc"}, a vector of posterior probabilities of length
-   \code{number_mcmc} is returned.}
-}
+A numeric comparison in [0, 1]: one value under \code{"fixed"}, or
+  a vector of length \code{number_mcmc} under \code{"mc"}.
 }
 \description{
-\code{probability_discount} can be used to estimate the posterior
-  probability of the comparison between historical and current data in the
-  context of a clinical trial with normal (mean) data.
-  \code{probability_discount} is not used internally but is given for
-  educational purposes.
+An educational calculation of the current-historical comparison
+  for normal summary data. This helper is not used internally. The fixed
+  method returns twice the smaller directional posterior probability; the
+  Monte Carlo method returns a normal-tail comparison for each draw.
 }
 \details{
-This function is not used internally but is given for educational purposes.
-  Given the inputs,  the output is the posterior probability of the comparison
-  between current and historical data in the context of a clinical
-  trial with normal (mean) data.
+This is a borrowing comparison, not a posterior probability of
+  equality or equivalence. Weight variation under \code{"mc"} is part of
+  that procedure; more draws improve the precision of its distributional
+  summaries. The baseline prior for each source is proportional to
+  \eqn{1 / \sigma^2}. The fixed method uses direct Monte Carlo simulation.
 }
 \examples{
 probability_discount(

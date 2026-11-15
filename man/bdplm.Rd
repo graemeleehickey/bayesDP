@@ -63,13 +63,11 @@ covariates.}
 covariate effect(s). Default value is 1e4. If a single value is input, the
 the scalar is repeated to the length of the input covariates. Otherwise,
 care must be taken to ensure the length of the input matches the number of
-covariates. Note that covariate effects are intentionally assigned a
-near-zero historical discount weight, so their priors are effectively flat:
-the value supplied here has negligible influence on the posterior, and the
-effective prior standard deviation is much larger than the nominal value
-(by a factor of roughly 1e6 at the default). In practice the covariate
-coefficients are estimated almost entirely from the current data, and the
-posterior is insensitive to this argument across many orders of magnitude.}
+covariates. Under \code{method = "fixed"}, the effective prior SD is the
+supplied SD multiplied by 1e6 because covariate prior precision is
+multiplied by 1e-12. Under \code{method = "mc"}, covariate prior precision
+is zero, so neither the supplied mean nor SD influences the fit. These
+arguments do not specify ordinary informative covariate priors.}
 
 \item{number_mcmc_alpha}{scalar. Number of Monte Carlo simulations for
 estimating the historical data weight. Default is 5000.}
@@ -113,7 +111,8 @@ group. Not used when \code{discount_function} = "identity".}
 
 \item{method}{character. Analysis method with respect to estimation of the
 weight paramter alpha. Default method "\code{mc}" estimates alpha for each
-Monte Carlo iteration. Alternate value "\code{fixed}" estimates alpha once
+Monte Carlo iteration, giving a distribution of generated weights rather
+than numerical error around a fixed weight. Alternate value "\code{fixed}" estimates alpha once
 and holds it fixed throughout the analysis.  See the the \code{bdplm}
 vignette \cr \code{vignette("bdplm-vignette", package = "bayesDP")} for more
 details.}
@@ -123,14 +122,14 @@ details.}
 
   An object of class "\code{bdplm}" is a list containing at least the
   following components: \describe{ \item{\code{posterior}}{ data frame. The
-  posterior draws of the covariates, the intercept, and the treatment effect.
-  The grid of sigma values are included.} \item{\code{alpha_discount}}{
-  vector. The posterior probability of the stochastic comparison between the
-  current and historical data for each of the treatment and control arms. If
-  \code{method = "mc"}, the result is a matrix of estimates, otherwise for
-  \code{method = "fixed"}, the result is a vector of estimates.}
-  \item{\code{estimates}}{ list. The posterior means and standard errors of
-  the intercept, treatment effect, covariate effect(s) and error variance.} }
+  posterior draws of the intercept, treatment effect, covariate effects,
+  and residual standard deviation \code{sigma}.}
+  \item{\code{alpha_discount}}{ data frame. Historical weights for treatment
+  and control, with one row under \code{"fixed"} or one row per comparison
+  draw under \code{"mc"}. These are weights, not probabilities of equality.}
+  \item{\code{estimates}}{ list. The \code{coefficients} component contains
+  posterior means, and \code{se} contains posterior standard deviations, for
+  the intercept, treatment effect, covariate effects, and residual SD.} }
 }
 \description{
 \code{bdplm} is used to estimate the treatment effect in the
@@ -166,9 +165,9 @@ details.}
   separate treatment and control means rather than an intercept plus a
   treatment effect. In this parameterization the arm means are the fitted
   values at covariate = 0, so when covariates are not centered the
-  treatment- and control-mean estimators become strongly correlated and
-  their standard errors are extrapolation errors at covariate = 0. This
-  distorts the discount-prior construction and the historical borrowing. To
+  treatment- and control-mean estimators can become strongly correlated and
+  their standard errors can reflect extrapolation to covariate = 0. This
+  can affect the discount-prior construction and historical borrowing. To
   guard against this, \code{bdplm} automatically mean-centers each covariate
   on its pooled (current plus historical) mean before fitting, and
   back-transforms the reported intercept onto the original covariate scale.
@@ -178,21 +177,22 @@ details.}
   \eqn{\beta_0^{c}} is the control-arm mean estimated on the centered scale.
   The treatment effect and covariate slopes are unchanged by centering; the
   reported \code{intercept} remains the control-arm mean at covariate = 0 on
-  the original scale. As a result, estimates are invariant to a location
-  shift of any covariate, and users do not need to center covariates
-  themselves.
+  the original scale. The treatment effect and covariate slopes are invariant
+  to a location shift of a covariate; the reported intercept changes with
+  the covariate origin. Centering does not generally make the arm-mean
+  estimators independent, and their covariance is not retained in the
+  diagonal historical prior.
 
-  The underlying model results in a marginal posterior distribution for the
-  error variance \code{sigma2} that does not have a known distribution. Thus,
-  we use a grid search to draw samples of \code{sigma2}. First, the marginal
-  posterior is evaluated at a grid of \code{number_mcmc_sigmagrid}
-  \code{sigma2} values. The bounds of the grid are taken as approximately six
-  standard deviations from an estimate of \code{sigma2} using the \code{lm}
-  function. Next, \code{number_mcmc_sigma} posterior draws of \code{sigma2}
-  are made by sampling with replacement from the grid with each value having
-  the corresponding marginal posterior probability of being selected. With
-  posterior draws of \code{sigma2} in hand, we can make posterior draws of
-  the regression coefficients.
+  The marginal posterior of the residual variance is evaluated numerically.
+  Candidate variance values are equally spaced under \code{"fixed"} and
+  uniformly sampled under \code{"mc"}. Their bounds use extreme quantiles
+  of an inverse-gamma approximation from a weighted regression on the
+  augmented data. The \code{number_mcmc_sigma} variance draws are sampled
+  with replacement using marginal density weights, followed by conditional
+  coefficient draws. Under \code{"mc"}, each candidate variance is paired
+  with a generated historical-weight vector. Increase the grid and draw
+  counts to assess numerical stability; the Monte Carlo method requires
+  \code{number_mcmc_sigmagrid <= number_mcmc_alpha}.
 }
 \examples{
 # Set sample sizes

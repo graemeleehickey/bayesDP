@@ -1,5 +1,5 @@
 ---
-title: "Linear Regression Estimation with bayesDP"
+title: "Linear regression with bayesDP"
 author:
   - "Donnie Musgrove"
   - "Graeme L. Hickey"
@@ -11,315 +11,198 @@ output:
     math_method:
       engine: mathjax
       url: https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js
+bibliography: references.bib
 vignette: >
-  %\VignetteIndexEntry{Linear Regression Estimation with bayesDP}
+  %\VignetteIndexEntry{Linear regression with bayesDP}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, SETTINGS-knitr, include = FALSE}
+```{r setup, include=FALSE}
 library(bayesDP)
-stopifnot(require(knitr))
-opts_chunk$set(
-  dev = "png",
-  dpi = 150,
-  fig.asp = 0.8,
-  fig.width = 5,
-  out.width = "60%",
-  fig.align = "center"
-)
+knitr::opts_chunk$set(fig.width = 7, fig.height = 4.5, out.width = "100%", fig.align = "center", dpi = 150)
+```
 
+# Purpose and inputs
+
+`bdplm()` estimates an adjusted treatment-minus-control mean difference for a continuous normal outcome. It requires individual-level current and historical data, with both treatment and control represented in each study. The binary column must be named `treatment`, coded 1 for treatment and 0 for control; the formula must include an intercept. Covariates must have compatible definitions and factor levels across studies.
+
+The example uses `method = "fixed"` explicitly. The default is `"mc"`; the distinction and discount functions are explained in the [borrowing overview](borrowing.html). The model assumes a common treatment effect across covariate values, additive covariate effects, and independent normal residuals with a common variance within the current analysis.
+
+# Worked example
+
+We simulate 30 current participants per arm and 80 historical participants per arm. The current treatment effect is 31 outcome units, the historical effect is 30, the covariate slope is 3, and the residual SD is 5. These are illustrative values, not a proposed clinical design.
+
+```{r regression-data}
 set.seed(42)
-fit01 <- bdpbinomial(
-  y_t = 10, N_t = 500, y0_t = 25, N0_t = 250, method = "fixed"
+treatment <- rep(c(1, 0), each = 30)
+treatment0 <- rep(c(1, 0), each = 80)
+x <- rnorm(60, mean = 1, sd = 5)
+x0 <- rnorm(160, mean = 1, sd = 5)
+current <- data.frame(
+  Y = 10 + 31 * treatment + 3 * x + rnorm(60, sd = 5),
+  treatment = treatment, x = x
 )
-fit02 <- bdpbinomial(
-  y_t = 10, N_t = 500, y0_t = 10, N0_t = 250, method = "fixed",
-  discount_function = "weibull"
-)
-
-fit_scaledweibull <- bdpbinomial(
-  y_t = 10, N_t = 500, y0_t = 25, N0_t = 250,
-  discount_function = "scaledweibull",
-  method = "fixed"
-)
-fit_identity <- bdpbinomial(
-  y_t = 10, N_t = 500, y0_t = 10, N0_t = 250,
-  method = "fixed"
+historical <- data.frame(
+  Y = 10 + 30 * treatment0 + 3 * x0 + rnorm(160, sd = 5),
+  treatment = treatment0, x = x0
 )
 ```
 
-# Introduction
-The purpose of this vignette is to introduce the `bdplm` function. `bdplm` is used for estimating posterior samples in the context of linear regression for clinical trials where an informative prior is used.
-
-In the parlance of clinical trials, the informative prior is derived from historical data. The weight given to the historical data is determined using what we refer to as a discount function. There are three steps in carrying out estimation:
-
-1. Estimation of the historical data weight, denoted $\hat{\alpha}$, via the discount function
-
-2. Estimation of the posterior distribution of the current data, conditional on the historical data weighted by $\hat{\alpha}$
-
-3. Estimation of the posterior treatment effect, i.e., treatment versus control
-
-Throughout this vignette, we use the terms `current`, `historical`, `treatment`, and `control`. These terms are used because the model was envisioned in the context of clinical trials where historical data may be present. Because of this terminology, there are 4 potential sources of data:
-
-1. Current treatment data: treatment data from a current study
-
-2. Current control data: control (or other treatment) data from a current study
-
-3. Historical treatment data: treatment data from a previous study
-
-4. Historical control data: control (or other treatment) data from a previous study
-
-If only treatment data is input, the function considers the analysis a one-arm trial. If treatment data + control data is input, then it is considered a two-arm trial.
-
-**Note that the `bdplm` function currently only has support for a two-arm clinical trial where current and historical treatment and current and historical control data are all present.**  
-
-## Linear Regression Model Background
-Before we get into our estimation scheme, we will briefly describe our implementation of the linear regression model. The linear regression model implementation, via `bdplm`, serves as an advanced companion to the `bdpnormal` model. With the `bdpnormal` model, we are interested in comparing mean outcomes via the probability that the mean values from treatment and control arms are not equivalent.
-
-When covariate adjustments are needed, `bdpnormal` is no longer a viable solution. Thus, `bdplm` allows analysts to adjust the treatment and control arm comparison for covariate effects.
-
-The analysis model of interest has the form
-
-$$
-\begin{aligned}
-y_i &= \beta_0 + \beta_1I(\mathrm{treatment}_i) + x_{2i}\beta_2 + \cdots+x_{mi}\beta_m + \varepsilon_i,\\
-\varepsilon_i &\sim \mathcal{N}\left(0,\,\sigma^2\right),\qquad i=1,\dots,n.
-\end{aligned}
-$$
-
-where $I(\mathrm{treatment}_i)$ indicates whether observation $i$ is in the treatment arm, $\beta_0$ is the intercept, $\beta_1$ is the treatment effect, $x_{ji}$ is the $j$th covariate with corresponding $\beta_j$ covariate effect, $j=2,\dots,m$, and $\sigma^2$ is the unknown error variance.
-
-Let $\boldsymbol{x}_i^T\boldsymbol{\beta}_{-(0,1)} = x_{2i}\beta_2 + \cdots+x_{mi}\beta_m$. Then, in order to place prior values on the treatment effect, we reparameterize the linear regression model as
-
-$$
-\begin{aligned}
-y_i &= \beta_0^{\ast}I(\mathrm{control}_i) + \beta_1^{\ast}I(\mathrm{treatment}_i) + \boldsymbol{x}_i^T\beta_{-(0,1)} + \varepsilon_i,\\
-\varepsilon_i &\sim \mathcal{N}\left(0,\,\sigma^2\right),\qquad i=1,\dots,n,
-\end{aligned}
-$$
-
-where now $I(\mathrm{control}_i)$ indicates whether observation $i$ is in the control arm, i.e., $I(\mathrm{control}_i) = 1 - I(\mathrm{treatment}_i)$. It is then straightforward to show that $\beta_0 = \beta^{\ast}_0$ and $\beta_1 = \beta_1^{\ast} - \beta^{\ast}_0$.
-
-In this reparameterization, $\beta_0^{\ast}$ and $\beta_1^{\ast}$ are the control and treatment arm means evaluated at covariate $= 0$. When the covariates are not centered, these arm-mean parameters become strongly correlated and their (historical) standard errors are extrapolation errors at covariate $= 0$. Because the historical information is incorporated through an independent (diagonal) prior on each arm mean, this correlation and the inflated standard errors distort the borrowing of historical data.
-
-To avoid this, `bdplm` automatically mean-centers each covariate on its pooled (current plus historical) mean before fitting, so that $\beta_0^{\ast}$ and $\beta_1^{\ast}$ are the arm means at the average covariate value.
-
-The intercept is then back-transformed onto the original covariate scale: with pooled covariate means $\bar{x}_j$ and estimated covariate effects $\beta_j$, the reported intercept is $\beta_0 = \beta_0^{\ast} - \sum_j \beta_j\bar{x}_j$, so $\beta_0$ is still the control mean at covariate $= 0$ on the original scale. The treatment effect $\beta_1$ and the covariate effects are unchanged by centering, and the estimates are invariant to a location shift of any covariate. Users therefore do not need to center covariates themselves.
-
-## Estimation of the historical data weight
-In the first estimation step, the historical data weight $\hat{\alpha}$ is estimated. In the case of a two-arm trial, where both treatment and control data are available, an $\hat{\alpha}$ value is estimated separately for each of the treatment and control arms. Of course, historical treatment or historical control data must be present, otherwise $\hat{\alpha}$ is not estimated for the corresponding arm.
-
-When historical data are available, estimation of $\hat{\alpha}$ is carried out as follows. Let $\boldsymbol{y}$ and $\boldsymbol{y}_0$ denote the current and historical data, respectively. The following linear regression model is then fit to the data:
-
-$$
-\begin{aligned}
-y_i &= \tilde{\beta}_0 + \tilde{\beta}_1I(\mathrm{historical}_i) + x_{2i}\tilde{\beta}_2 + \cdots+x_{mi}\tilde{\beta}_m + \varepsilon_i,\\
-\varepsilon_i &\sim \mathcal{N}\left(0,\,\sigma^2\right),\qquad i=1,\dots,n,
-\end{aligned}
-$$
-
-where $I(\mathrm{historical}_i)$ indicates whether observation $i$ is historical.
-
-With vague priors on each parameter, we estimate the posterior probability that $\tilde{\beta}_1 > 0$ by first computing $p_1 = \Pr\left(\tilde{\beta_1} > 0 \mid \boldsymbol{y}, \boldsymbol{y}_0\right)$. Then, we calculate the posterior probability $p$ as
-
-$$
-p=\begin{cases}
-2p_{1}, & p_{1}\le0.5,\\
-2\left(1-p_{1}\right), & p_{1}>0.5.
-\end{cases}
-$$
-
-Finally, for a discount function, denoted $W$, $\hat{\alpha}$ is computed as
-
-$$
-\hat{\alpha} = \alpha_{\max}\cdot W\left(p, \,w\right),\,0\le p\le1,
-$$
-
-where $w$ may be one or more parameters associated with the discount function and $\alpha_{\max}$ scales the weight $\hat{\alpha}$ by a user-input maximum value. More details on the discount functions are given in the discount function section below.
-
-There are several model inputs at this first stage. First, the user can select `fix_alpha = TRUE` and force a fixed value of $\hat{\alpha}$ (at the `alpha_max` input), as opposed to estimation via the discount function.  
-
-An alternate Monte Carlo-based estimation scheme of $\hat{\alpha}$ has been implemented, controlled by the function input `method = "mc"`. Here, instead of treating $\hat{\alpha}$ as a fixed quantity, $\hat{\alpha}$ is treated as random.
-
-First, $p$, is computed as
-
-$$
-\begin{aligned}
-Z &= {\frac{\left|\beta_1\right|}{\sigma_{\beta}}},\\
-p &= 2\left(1-\Phi\left(Z\right)\right),
-\end{aligned}
-$$
-
-where $\sigma_{\beta}$ is an estimate of the standard deviation of $\beta_1$ and $\Phi\left(x\right)$ is the $x$th quantile of a standard normal (i.e., the `pnorm` R function).
-
-Next, $p$ is used to construct $\hat{\alpha}$ via the discount function. Since the values $Z$ and $p$ are computed at each iteration of the Monte Carlo estimation scheme, $\hat{\alpha}$ is computed at each iteration of the Monte Carlo estimation scheme, resulting in a distribution of $\hat{\alpha}$ values.
-
-### Discount function
-There are currently three discount functions implemented throughout the `bayesDP` package. The discount function is specified using the `discount_function` input with the following choices available:
-
-1. `identity` (default): Identity.
-
-2. `weibull`: Weibull cumulative distribution function (CDF);
-
-3. `scaledweibull`: Scaled Weibull CDF;
-
-First, the identity discount function (default) sets the discount weight $\hat{\alpha}=p$.
-
-Second, the Weibull CDF has two user-specified parameters associated with it, the shape and scale. The default shape is 3 and the default scale is 0.135, each of which are controlled by the function inputs `weibull_shape` and `weibull_scale`, respectively. The form of the Weibull CDF is
-
-$$
-W(x) = 1 - \exp\left\{- (x/w_{\mathrm{scale}})^{w_{\mathrm{shape}}}\right\}.
-$$
-
-The third discount function option is the Scaled Weibull CDF. The Scaled Weibull CDF is the Weibull CDF divided by the value of the Weibull CDF evaluated at 1, i.e.,
-
-$$
-W^{\ast}(x) = W(x)/W(1).
-$$
-
-Similar to the Weibull CDF, the Scaled Weibull CDF has two user-specified parameters associated with it, the shape and scale, again controlled by the function inputs `weibull_shape` and `weibull_scale`, respectively.
-
-Using the default shape and scale inputs, each of the discount functions are shown below.
-```{r, echo = FALSE}
-df2 <- plot(fit_identity, type = "discount", print = FALSE)
-df2 + ggtitle("Discount function plot", "Identity")
-```
-
-```{r, echo = FALSE}
-df1 <- plot(fit02, type = "discount", print = FALSE)
-df1 + ggtitle(
-  "Discount function plot",
-  "Weibull distribution with shape=3 and scale=0.135"
-)
-```
-
-In each of the above plots, the x-axis is the stochastic comparison between current and historical data, which we've denoted $p$. The y-axis is the discount value $\hat{\alpha}$ that corresponds to a given value of $p$.
-
-An advanced input for the plot function is `print`. The default value is `print = TRUE`, which simply returns the graphics. Alternately, users can specify `print = FALSE`, which returns a `ggplot2` object. Below is an example using the discount function plot:
-```{r}
-p1 <- plot(fit02, type = "discount", print = FALSE)
-p1 + ggtitle("Discount Function Plot :-)")
-```
-
-## Estimation of the posterior distribution of the current data, conditional on the historical data
-This section details the modeling scheme used to estimate the parameters of the linear regression model. In vector notation the model can be written
-
-$$
-\begin{aligned}
-\mathbf{y} &\sim \mathcal{N}\left(\mathbf{X}\boldsymbol{\beta},\,\boldsymbol{\Sigma}_{y}\right),\\
-\boldsymbol{\beta} &\sim \mathcal{N}\left(\boldsymbol{\mu}_{\beta},\,\boldsymbol{\Sigma}_{\beta}\right),
-\end{aligned}
-$$
-
-where $\boldsymbol{\mu}_{\beta}=\left(\mu_0,\,\mu_1,\,\mu_2,\dots,\,\mu_m\right)^T$ and $\boldsymbol{\Sigma}_{\beta}=\operatorname{diag}\left(\tau^2_0/\alpha_{00},\,\tau^2_1/\alpha_{01},\,\tau^2_2,\dots,\tau^2_m\right)$ are known and $\boldsymbol{\Sigma}_y=\sigma^2\mathbf{I}_n$.
-
-Here, $\mu_0$ and $\mu_1$ are the prior means of the control and treatment effects, respectively, while $\mu_2,\dots,\,\mu_m$ are the prior means of the covariate effects.
-
-Likewise, $\tau^2_0/\alpha_{00}$ and $\tau^2_1/\alpha_{01}$ are the prior variances of the control and treatment effects (weighted by the discount function result $\alpha$), respectively, while $\tau^2_2,\dots,\tau^2_m$ are the prior variances of the remaining covariate effects.
-
-Using what we refer to as the Gelman parameterization (see Gelman's Bayesian Data Analysis, 3rd edition, chapter 14, for more information), the model can be reparameterized to improve computational efficiency. First, write
-
-$$
-\begin{aligned}
-\mathbf{y}_{\ast} &= \begin{pmatrix}
-\mathbf{y}\\
-\boldsymbol{\mu}_{\beta}
-\end{pmatrix},\qquad
-\mathbf{X}_{\ast} = \begin{pmatrix}
-\mathbf{X}\\
-\mathbf{I}_m
-\end{pmatrix},\\
-\boldsymbol{\Sigma}_{\ast} &= \begin{pmatrix}
-\boldsymbol{\Sigma}_y & 0\\
-0 & \boldsymbol{\Sigma}_{\beta}
-\end{pmatrix}.
-\end{aligned}
-$$
-
-Then, the Gelman parameterization has the form
-
-$$
-\begin{aligned}
-\mathbf{y}_{\ast} &= \mathbf{X}_{\ast}\boldsymbol{\beta}+\boldsymbol{\varepsilon},\\
-\boldsymbol{\varepsilon} &\sim \mathcal{N}\left(\mathbf{0},\,\boldsymbol{\Sigma}_{\ast}\right).
-\end{aligned}
-$$
-
-The estimate of $\boldsymbol{\beta}$ is computed as
-
-$$
-\hat{\boldsymbol{\beta}}=\mathbf{V}_{\beta}\mathbf{X}_{\ast}^T\boldsymbol{\Sigma}_{\ast}^{-1}\mathbf{y}_{\ast},
-$$
-
-where
-
-$$
-\mathbf{V}_{\beta}=\left(\mathbf{X}_{\ast}^T\boldsymbol{\Sigma}_{\ast}^{-1}\mathbf{X}_{\ast}\right)^{-1}.
-$$
-
-This estimate of $\hat{\boldsymbol{\beta}}$ is the posterior mean and relies on an unknown parameter, $\sigma^2$. The marginal posterior distribution of $\sigma^2$ is found as
-
-$$
-\begin{aligned}
-\pi\left(\sigma^2\mid\mathbf{y}\right) &\propto \left(\frac{1}{\sigma^2}\right)^{n/2+1}\left|\mathbf{V}_{\beta}\right|^{1/2}\\
-&\quad\times\exp\left\{ -\frac{1}{2}\left(\mathbf{y}_{\ast}-\mathbf{X}_{\ast}\hat{\boldsymbol{\beta}}\right)^T\boldsymbol{\Sigma}_{\ast}^{-1}\left(\mathbf{y}_{\ast}-\mathbf{X}_{\ast}\hat{\boldsymbol{\beta}}\right)\right\}.
-\end{aligned}
-$$
-
-Notice that both $\mathbf{V}_{\beta}$ and $\Sigma_{\ast}$ contain $\sigma^2$. Thus, this marginal posterior of $\sigma^2$ does not have a known distribution. We resort to a grid search of $\sigma^2$ where 100s or 1000s of values of $\sigma^2$ are proposed, on a grid, and the proposed values are sampled with probability proportional to the likelihood evaluated at the proposal.
-
-Finally, values of $\sigma^2$ sampled from the posterior distribution are then used to sample values of $\boldsymbol{\beta}$ from
-
-$$
-\boldsymbol{\beta} \sim \mathcal{N}\left(\hat{\boldsymbol{\beta}},\, \mathbf{V}_{\beta}\right).
-$$
-
-## Inputting Data
-The data inputs for `bdplm` are via dataframes `data` and `data0` that must have matching column names. Each dataframe must have a binary column named `treatment` that indicates treatment vs. control. If no covariate columns are present, users should use the `bdpnormal` function. Currently, both `data` and `data0` must be input since only a two-armed clinical trial with historical data has been implemented.
-
-# Examples
-## Two-arm trial
-Throughout this package, we define a two-arm trial as an analysis where a current and/or historical control arm is present. Below we simulate a dataframe and view the estimates of the model fit.
-
-```{r}
+```{r regression-fits}
 set.seed(42)
-### Simulate  data
-# Sample sizes
-n_t <- 30 # Current treatment sample size
-n_c <- 30 # Current control sample size
-n_t0 <- 80 # Historical treatment sample size
-n_c0 <- 80 # Historical control sample size
-
-# Treatment group vectors for current and historical data
-treatment <- c(rep(1, n_t), rep(0, n_c))
-treatment0 <- c(rep(1, n_t0), rep(0, n_c0))
-
-# Simulate a covariate effect for current and historical data
-x <- rnorm(n_t + n_c, 1, 5)
-x0 <- rnorm(n_t0 + n_c0, 1, 5)
-
-# Simulate outcome:
-# - Intercept of 10 for current and historical data
-# - Treatment effect of 31 for current data
-# - Treatment effect of 30 for historical data
-# - Covariate effect of 3 for current and historical data
-Y <- 10 + 31 * treatment + x * 3 + rnorm(n_t + n_c, 0, 5)
-Y0 <- 10 + 30 * treatment0 + x0 * 3 + rnorm(n_t0 + n_c0, 0, 5)
-
-# Place data into separate treatment and control data frames and
-# assign historical = 0 (current) or historical = 1 (historical)
-df_ <- data.frame(Y = Y, treatment = treatment, x = x)
-df0 <- data.frame(Y = Y0, treatment = treatment0, x = x0)
-
-# Fit model using default settings
-fit <- bdplm(
-  formula = Y ~ treatment + x, data = df_, data0 = df0,
-  method = "fixed"
-)
-
-summary(fit)
-print(fit)
-# plot(fit)   <-- Not yet implemented
+current_only <- bdplm(Y ~ treatment + x, data = current, data0 = historical,
+  method = "fixed", fix_alpha = TRUE, alpha_max = 0)
+set.seed(42)
+discounted <- bdplm(Y ~ treatment + x, data = current, data0 = historical,
+  method = "fixed", fix_alpha = FALSE, alpha_max = 1)
+set.seed(42)
+full_borrowing <- bdplm(Y ~ treatment + x, data = current, data0 = historical,
+  method = "fixed", fix_alpha = TRUE, alpha_max = 1)
+fits <- list("Current only" = current_only, "Discounted" = discounted,
+  "Full borrowing" = full_borrowing)
+comparison <- do.call(rbind, lapply(fits, function(fit) {
+  c(alpha_t = median(fit$alpha_discount$treatment),
+    alpha_c = median(fit$alpha_discount$control),
+    median = median(fit$posterior$treatment),
+    lower = unname(quantile(fit$posterior$treatment, 0.025)),
+    upper = unname(quantile(fit$posterior$treatment, 0.975)))
+}))
+knitr::kable(comparison, digits = 4,
+  col.names = c("Treatment weight", "Control weight", "Median effect", "Lower 95% CrI", "Upper 95% CrI"))
 ```
 
+Historical data are still supplied in the current-only sensitivity analysis because the interface requires them. Their arm-mean prior precisions are reduced to a numerical floor rather than exactly zero. Full borrowing uses the historical arm-mean priors described below; it is not a pooled regression of all participants.
+
+The estimated weights are `r round(median(discounted$alpha_discount$treatment), 4)` for treatment and `r round(median(discounted$alpha_discount$control), 4)` for control. They compare current and historical outcomes within each arm after covariate adjustment. They do not compare the current and historical treatment effects directly.
+
+```{r regression-coefficients}
+coefficient_draws <- discounted$posterior[, c("intercept", "treatment", "x")]
+coefficient_summary <- t(vapply(coefficient_draws, function(draws) {
+  c(mean = mean(draws), posterior_sd = sd(draws),
+    lower = unname(quantile(draws, 0.025)),
+    upper = unname(quantile(draws, 0.975)))
+}, numeric(4)))
+knitr::kable(coefficient_summary, digits = 4,
+  col.names = c("Posterior mean", "Posterior SD", "Lower 95% CrI", "Upper 95% CrI"))
+```
+
+The adjusted treatment-effect posterior mean is `r round(mean(discounted$posterior$treatment), 4)` outcome units, and the covariate-slope posterior mean is `r round(mean(discounted$posterior$x), 4)`. The reported intercept refers to control participants at the original covariate value zero. The printed regression coefficient estimates use means and posterior SDs; the sensitivity table above deliberately uses medians and credible intervals.
+
+The residual section of `summary()` currently mixes centered covariates with a back-transformed intercept ([issue 18](https://github.com/graemeleehickey/bayesDP/issues/18)). The coefficient summaries above are calculated directly from the posterior draws. For residual checks, use predictions on the original data scale:
+
+```{r regression-residuals}
+X <- model.matrix(~ treatment + x, current)
+beta_mean <- colMeans(coefficient_draws)
+fitted_mean <- drop(X %*% beta_mean)
+residuals_current <- current$Y - fitted_mean
+summary(residuals_current)
+```
+
+```{r regression-effect, fig.cap="Posterior adjusted treatment effect, with zero marked as a reference. These data simulate a large positive effect.", fig.alt="Posterior adjusted treatment effect, with zero marked as a reference. These data simulate a large positive effect."}
+ggplot(discounted$posterior, aes(treatment)) +
+  geom_density(colour = "#0072B2", linewidth = 0.9) +
+  geom_vline(xintercept = 0, linetype = 2, colour = "#666666") +
+  theme_bw() +
+  labs(x = "Adjusted mean difference (treatment - control)", y = "Density")
+```
+
+# Model and historical comparison
+
+For current participants the scientific model is
+
+$$
+y_i=\beta_0+\beta_1\mathrm{treatment}_i+
+\sum_{j=2}^{m}x_{ji}\beta_j+\varepsilon_i,
+\qquad \varepsilon_i\sim\mathcal N(0,\sigma^2).
+$$
+
+The implementation centers each covariate on its pooled current-plus-historical mean and fits separate arm means. With $z_{ji}=x_{ji}-\bar x_j$,
+
+$$
+y_i=\beta_C^*\mathrm{control}_i+\beta_T^*\mathrm{treatment}_i+
+\sum_{j=2}^{m}z_{ji}\beta_j+\varepsilon_i.
+$$
+
+Here $\mathrm{control}_i=1-\mathrm{treatment}_i$. The reported treatment effect is $\beta_1=\beta_T^*-\beta_C^*$, and the original-scale intercept is $\beta_0=\beta_C^*-\sum_j\beta_j\bar x_j$. Location shifts of covariates leave the treatment effect and slopes unchanged; the intercept changes with the covariate origin. Centering reduces extrapolation when defining historical arm means, but does not generally make all coefficient estimates independent.
+
+Separately within each arm, the comparison model is
+
+$$
+y_i=\tilde\beta_0+\tilde\beta_1\mathrm{historical}_i+
+\sum_{j=2}^{m}z_{ji}\tilde\beta_j+\varepsilon_i.
+$$
+
+Thus $\tilde\beta_1$ measures a historical-versus-current difference within that arm, not a treatment effect. The comparison uses the baseline prior proportional to $1/\sigma^2$ with flat coefficient priors. The fixed method estimates $q=\Pr(\tilde\beta_1>0\mid\text{data})$, transforms it to $p=2\min(q,1-q)$, and applies the discount function separately to each arm.
+
+For `method = "mc"`, draw $s$ uses
+
+$$
+Z_s=\frac{|\tilde\beta_1^{(s)}|}{\sqrt{\sigma_{\tilde\beta_1,s}^2}},
+\qquad p_s=2\{1-\Phi(Z_s)\}.
+$$
+
+The variance is the conditional variance of the historical-indicator coefficient given that draw's residual variance. $\Phi$ is the standard normal CDF.
+
+# Historical priors and posterior calculation
+
+Unless supplied explicitly, the prior arm means and SDs are estimated by a regression of historical outcomes on separate arm indicators and the centered covariates. The SDs are standard errors of those adjusted historical arm means, not residual SDs. The fitted arm means define independent normal priors: the historical regression's off-diagonal covariance is not carried into the current model.
+
+For clarity, order the current coefficient vector as
+
+$$
+\boldsymbol\beta^*=(\beta_C^*,\beta_T^*,\beta_2,\ldots,\beta_m)^T,
+\qquad d=m+1.
+$$
+
+Let $\boldsymbol\mu$ contain the corresponding prior means, and let $\tau_C,\tau_T,\tau_2,\ldots,\tau_m$ be the supplied or estimated prior SDs. Define prior precision
+
+$$
+P=\operatorname{diag}\left(
+\frac{\alpha_C+\epsilon}{\tau_C^2},
+\frac{\alpha_T+\epsilon}{\tau_T^2},
+\frac{\kappa}{\tau_2^2},\ldots,\frac{\kappa}{\tau_m^2}\right),
+\qquad\epsilon=10^{-12}.
+$$
+
+The implementation sets $\kappa=10^{-12}$ for `"fixed"` and $\kappa=0$ for `"mc"`. Consequently, `prior_covariate_sd` is not the effective prior SD: the fixed method multiplies it by $10^6$, while the Monte Carlo method gives covariates zero prior precision. With the default nominal SD of $10^4$, the fixed method's effective SD is $10^{10}$. These arguments should not be used as if they specified ordinary informative covariate priors. `prior_covariate_effect` likewise has no effect under zero precision.
+
+For a fixed weight, independent normal coefficient priors and $p(\sigma^2)\propto1/\sigma^2$ give
+
+$$
+\begin{aligned}
+V(\sigma^2)&=(X^TX/\sigma^2+P)^{-1},\\
+b(\sigma^2)&=V(\sigma^2)(X^Ty/\sigma^2+P\boldsymbol\mu),\\
+\boldsymbol\beta^*\mid\sigma^2,y,\boldsymbol\alpha
+&\sim\mathcal N\{b(\sigma^2),V(\sigma^2)\}.
+\end{aligned}
+$$
+
+This is a conditional posterior mean and covariance, not a marginal normal posterior. Equivalently, normal priors can be represented as extra observations with $y_*=(y^T,\boldsymbol\mu^T)^T$ and $X_*=(X^T,I_d)^T$ [@gelman2013]. There are $d=m+1$ coefficients, so the identity block has dimension $d$.
+
+Writing $b=b(\sigma^2)$, define
+
+$$
+Q(\sigma^2)=\frac{(y-Xb)^T(y-Xb)}{\sigma^2}
++(b-\boldsymbol\mu)^TP(b-\boldsymbol\mu).
+$$
+
+For fixed prior precision, the marginal density evaluated on the variance grid is
+
+$$
+p(\sigma^2\mid y,\boldsymbol\alpha)
+\propto(\sigma^2)^{-n/2-1}|V(\sigma^2)|^{1/2}
+\exp\{-Q(\sigma^2)/2\}.
+$$
+
+The implementation samples variance values using these density weights, then samples coefficients conditionally. This is numerical integration and sampling, not a search for a maximum likelihood estimate. Under `"mc"`, candidate variances are paired with generated weight vectors and resampled before conditional coefficient simulation; it is not simply the fixed fit with its median weight substituted.
+
+# Assumptions and sensitivity
+
+Check linearity, residual spread, influential observations, and whether common covariate slopes are plausible across current and historical studies. Comparability requires overlap in covariate distributions and consistent coding; centering does not resolve confounding or lack of overlap. The independent arm-mean prior is an approximation to the historical regression information.
+
+Compare no borrowing, estimated borrowing, and full borrowing. To examine draw-specific weights, repeat the estimated-borrowing fit with `method = "mc"` and inspect `alpha_discount` alongside the treatment-effect draws. For numerical sensitivity, increase `number_mcmc_alpha`, `number_mcmc_sigmagrid`, `number_mcmc_sigma`, and `number_mcmc_beta`; the Monte Carlo method requires the grid size not to exceed the number of weight draws. More simulation improves numerical precision, not the adequacy of the borrowing assumptions.
+
+The historical-discount construction follows the approach of @haddad2017, with the regression-specific approximations described here.
+
+# References

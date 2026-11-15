@@ -54,7 +54,7 @@ i.e., current+historical, median survival time.}
 Currently supports \code{weibull}, \code{scaledweibull}, and
 \code{identity}. The discount function \code{scaledweibull} scales the
 output of the Weibull CDF to have a max value of 1. The \code{identity}
-discount function uses the posterior probability directly as the discount
+discount function uses the transformed comparison directly as the discount
 weight. Default value is "\code{identity}".}
 
 \item{alpha_max}{scalar. Maximum weight the discount function can apply.
@@ -83,19 +83,20 @@ historical control group.}
 
 \item{method}{character. Analysis method with respect to estimation of the
 weight parameter alpha. Default method "\code{mc}" estimates alpha for each
-Monte Carlo iteration. Under "\code{mc}", the stochastic comparison
-probability is recomputed at each Monte Carlo draw, so the resulting
-\code{alpha_discount} is a random vector and may exhibit substantial
-Monte Carlo variability. Alternate value "\code{fixed}" estimates alpha
+Monte Carlo iteration, giving a distribution of generated weights.
+Increasing the number of draws improves numerical precision but does not
+remove the spread of that distribution. These weights are not draws from
+a separately specified prior/posterior model for alpha.
+Alternate value "\code{fixed}" estimates alpha
 once and holds it fixed throughout the analysis. See the
 \code{bdpsurvival} vignette \cr
 \code{vignette("bdpsurvival-vignette", package = "bayesDP")} for more
 details.}
 
 \item{compare}{logical. Should a comparison object be included in the fit?
-For a one-arm analysis, the comparison object is simply the posterior chain
+For a one-arm analysis, the comparison object is simply the posterior draws
 of the treatment group parameter. For a two-arm analysis, the comparison
-object is the posterior chain of the treatment effect that compares
+object is the posterior draws of the treatment effect that compares
 treatment and control. If \code{compare = TRUE}, the comparison object is
 accessible in the \code{final} slot, else the \code{final} slot is
 \code{NULL}. Default is \code{TRUE}.}
@@ -117,7 +118,7 @@ the following components:
      \item \code{alpha_discount}
        numeric. Alpha value, the weighting parameter of the historical data.
      \item \code{p_hat}
-       numeric. The posterior probability of the stochastic comparison
+       numeric. The current-historical comparison
        between the current and historical data.
      \item \code{posterior_survival}
        vector. If one-arm trial, a vector of length \code{number_mcmc}
@@ -180,22 +181,24 @@ the following components:
   developed in Haddad et al. (2017).
 }
 \details{
-\code{bdpsurvival} uses a two-stage approach for determining the
-  strength of historical data in estimation of a survival probability
-  outcome. In the first stage, a \emph{discount function} is used that that
-  defines the maximum strength of the historical data and discounts based on
-  disagreement with the current data. Disagreement between current and
-  historical data is determined by stochastically comparing the respective
-  posterior distributions under noninformative priors. With a single arm
-  survival data analysis, the comparison is the probability (\code{p}) that
-  the current survival is less than the historical survival. For a two-arm
-  survival data, analysis the comparison is the probability that the hazard
-  ratio comparing treatment and control is different from zero. The
-  comparison metric \code{p} is then input into the discount function and the
-  final strength of the historical data is returned (alpha).
+Historical borrowing is assessed separately within each arm by
+  comparing survival outcomes. With \code{method = "fixed"}, estimate
+  a directional probability q comparing current and historical outcomes within an arm.
+  The discount input is \code{p = 2 * min(q, 1 - q)} and the weight is
+  \code{alpha_max * W(p)} for the selected discount function W. This
+  comparison is not a posterior probability of equality or equivalence.
+  Choosing \code{fix_alpha = TRUE} prespecifies the weight instead.
+
+  For one arm, q compares survival at \code{surv_time}; for two arms it
+  compares current and historical hazards separately within treatment and
+  control. The default Monte Carlo calculation and historical Gamma update
+  have unresolved limitations documented in the survival vignette. The
+  vignette uses the fixed method and describes the implemented prior update.
+  With one arm and \code{fix_alpha = TRUE}, the returned \code{p_hat}
+  is the directional q rather than the transformed p.
 
   In the second stage, posterior estimation is performed where the discount
-  function parameter, \code{alpha}, is used incorporated in all posterior
+  function parameter, \code{alpha}, is incorporated in all posterior
   estimation procedures.
 
   To carry out a single arm (OPC) analysis, data for the current and

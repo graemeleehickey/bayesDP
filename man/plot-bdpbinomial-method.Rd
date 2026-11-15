@@ -12,8 +12,10 @@
 
 \item{type}{character. Optional. Select plot type to print. Supports the
 following: "discount" gives the discount function; "posteriors" gives the
-posterior plots of the event rates; and "density" gives the augmented
-posterior density plot(s). Leave NULL to display all plots in sequence.}
+posterior distributions by information source; "density" gives the
+augmented arm distributions; and "effect" gives the treatment-minus-control
+difference for a two-arm analysis. Leave NULL to display the first three
+plots in sequence.}
 
 \item{print}{logical. Optional. Produce a plot (\code{print = TRUE}; default)
 or return a ggplot object (\code{print = FALSE}). When \code{print =
@@ -25,8 +27,8 @@ appearance.}
 }
 \details{
 The \code{plot} method for \code{bdpbinomial} returns up to three
-  plots: (1) posterior density curves; (2) posterior density of the effect of
-  interest; and (3) the discount function. A call to \code{plot} that omits
+  plots: (1) posterior density curves by information source; (2) augmented
+  arm densities; and (3) the discount function. A call to \code{plot} that omits
   the \code{type} input returns one plot at a time and prompts the user to
   click the plot or press return to proceed to the next plot. Otherwise, the
   user can specify a plot \code{type} to display the requested plot.

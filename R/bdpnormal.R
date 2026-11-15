@@ -21,7 +21,7 @@
 #'   Currently supports \code{weibull}, \code{scaledweibull}, and
 #'   \code{identity}. The discount function \code{scaledweibull} scales the
 #'   output of the Weibull CDF to have a max value of 1. The \code{identity}
-#'   discount function uses the posterior probability directly as the discount
+#'   discount function uses the transformed comparison directly as the discount
 #'   weight. Default value is "\code{identity}".
 #' @param alpha_max scalar. Maximum weight the discount function can apply.
 #'   Default is 1. For a two-arm trial, users may specify a vector of two values
@@ -46,34 +46,31 @@
 #'   10000.
 #' @param method character. Analysis method with respect to estimation of the
 #'   weight parameter alpha. Default method "\code{mc}" estimates alpha for each
-#'   Monte Carlo iteration. Under "\code{mc}", the stochastic comparison
-#'   probability is recomputed at each Monte Carlo draw, so the resulting
-#'   \code{alpha_discount} is a random vector and may exhibit substantial
-#'   Monte Carlo variability. Alternate value "\code{fixed}" estimates alpha
+#'   Monte Carlo iteration, giving a distribution of generated weights.
+#'   Increasing the number of draws improves numerical precision but does not
+#'   remove the spread of that distribution. These weights are not draws from
+#'   a separately specified prior/posterior model for alpha.
+#'   Alternate value "\code{fixed}" estimates alpha
 #'   once and holds it fixed throughout the analysis. See the \code{bdpnormal}
 #'   vignette \cr \code{vignette("bdpnormal-vignette", package = "bayesDP")} for
 #'   more details.
 #' @param compare logical. Should a comparison object be included in the fit?
-#'   For a one-arm analysis, the comparison object is simply the posterior chain
+#'   For a one-arm analysis, the comparison object is simply the posterior draws
 #'   of the treatment group parameter. For a two-arm analysis, the comparison
-#'   object is the posterior chain of the treatment effect that compares
+#'   object is the posterior draws of the treatment effect that compares
 #'   treatment and control. If \code{compare = TRUE}, the comparison object is
 #'   accessible in the \code{final} slot, else the \code{final} slot is
 #'   \code{NULL}. Default is \code{TRUE}.
-#' @details \code{bdpnormal} uses a two-stage approach for determining the
-#'   strength of historical data in estimation of a mean outcome. In the first
-#'   stage, a \emph{discount function} is used that that defines the maximum
-#'   strength of the historical data and discounts based on disagreement with
-#'   the current data. Disagreement between current and historical data is
-#'   determined by stochastically comparing the respective posterior
-#'   distributions under noninformative priors. With Gaussian data, the
-#'   comparison is the proability (\code{p}) that the current mean is less than
-#'   the historical mean. The comparison metric \code{p} is then input into the
-#'   discount function and the final strength of the historical data is returned
-#'   (alpha).
+#' @details Historical borrowing is assessed separately within each arm by
+#'   comparing population means. With \code{method = "fixed"}, estimate
+#'   the probability q that the current mean is below the historical one.
+#'   The discount input is \code{p = 2 * min(q, 1 - q)} and the weight is
+#'   \code{alpha_max * W(p)} for the selected discount function W. This
+#'   comparison is not a posterior probability of equality or equivalence.
+#'   Choosing \code{fix_alpha = TRUE} prespecifies the weight instead.
 #'
 #'   In the second stage, posterior estimation is performed where the discount
-#'   function parameter, \code{alpha}, is used incorporated in all posterior
+#'   function parameter, \code{alpha}, is incorporated in all posterior
 #'   estimation procedures.
 #'
 #'   To carry out a single arm (OPC) analysis, data for the current treatment
@@ -107,16 +104,16 @@
 #'      \item \code{alpha_discount}
 #'        numeric. Alpha value, the weighting parameter of the historical data.
 #'      \item \code{p_hat}
-#'        numeric. The posterior probability of the stochastic comparison
+#'        numeric. The current-historical comparison
 #'        between the current and historical data.
 #'      \item \code{posterior_mu}
 #'        vector. A vector of length \code{number_mcmc} containing the posterior
-#'        mean of the treatment group. If historical treatment data is present,
+#'        draws of the population mean of the treatment group. If historical treatment data is present,
 #'        the posterior incorporates the weighted historical data.
 #'      \item \code{posterior_sigma2}
-#'        vector. A vector of length \code{number_mcmc} containing the posterior
-#'        variance of the treatment group. If historical treatment data is present,
-#'        the posterior incorporates the weighted historical data.
+#'        vector. Conditional variances used to draw the augmented population
+#'        mean, one per simulation. These are not residual-variance draws or
+#'        the marginal posterior variance of the mean.
 #'      \item \code{posterior_flat_mu}
 #'        vector. A vector of length \code{number_mcmc} containing
 #'        Monte Carlo samples of the mean of the current treatment group
@@ -124,7 +121,7 @@
 #'        historical data.
 #'      \item \code{posterior_flat_sigma2}
 #'        vector. A vector of length \code{number_mcmc} containing
-#'        Monte Carlo samples of the standard deviation of the current treatment group
+#'        Monte Carlo samples of the residual variance of the current treatment group
 #'        under a flat/non-informative prior, i.e., no incorporation of the
 #'        historical data.
 #'      \item \code{prior_mu}
@@ -133,7 +130,7 @@
 #'        of the historical treatment group under a flat/non-informative prior.
 #'      \item\code{prior_sigma2}
 #'        vector. If historical treatment data is present, a vector of length
-#'        \code{number_mcmc} containing Monte Carlo samples of the standard deviation
+#'        \code{number_mcmc} containing Monte Carlo samples of the residual variance
 #'        of the historical treatment group under a flat/non-informative prior.
 #'    }
 #'  }
