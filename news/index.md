@@ -6,6 +6,8 @@
 
 - Fixed equation rendering in the pkgdown articles with KaTeX and
   updated the standalone HTML vignettes to MathJax 3.
+- Corrected the diagonal-matrix notation in the linear regression
+  vignette so that it renders correctly on the website.
 
 ### New features
 
