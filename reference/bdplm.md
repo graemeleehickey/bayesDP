@@ -184,6 +184,12 @@ components:
   contains posterior standard deviations, for the intercept, treatment
   effect, covariate effects, and residual SD.
 
+- `args1`:
+
+  list. The original call, the centered analysis data, and the named
+  `covariate_means` used to restore the original covariate scale when
+  calculating residual summaries.
+
 ## Details
 
 `bdplm` uses a two-stage approach for determining the strength of
@@ -284,7 +290,7 @@ summary(fit)
 #> 
 #> Residuals:
 #>     Min     1Q Median    3Q    Max
-#>  -7.096 -0.492  2.569 7.794 15.307
+#>  -9.771 -3.167 -0.106 5.119 12.632
 #> 
 #> Coefficients:
 #>             Estimate Std. Error

@@ -151,10 +151,14 @@ bdplogit(
 
 ## Value
 
-`bdplogit` returns an object of class "bdplogit".
+`bdplogit` returns an object of class "bdplm", reusing its print and
+summary methods. Residual summaries use observed binary outcomes minus
+fitted probabilities from the posterior mean coefficients. The centering
+means are saved in `args1$covariate_means`; older saved fits without
+these means must be refitted before summarising residuals.
 
-An object of class "`bdplogit`" is a list containing at least the
-following components:
+The returned object is a list containing at least the following
+components:
 
 - `posterior`:
 
@@ -263,19 +267,19 @@ summary(fit)
 #>     method = "fixed")
 #> 
 #> Residuals:
-#>     Min    1Q Median    3Q   Max
-#>  -0.116 0.685  1.075 1.332 2.212
+#>     Min     1Q Median    3Q   Max
+#>  -0.591 -0.378 -0.265 0.491 0.723
 #> 
 #> Coefficients:
 #>             Estimate Std. Error
 #> (Intercept)  -1.0822     0.3901
 #> treatment     0.8140     0.4008
+#> x             0.2548     0.2830
 #> 
 #> Discount function value (alpha):
 #>  treatment control
 #>      0.244   0.422
 #> 
-#> Residual standard error: 0.2548
 print(fit)
 #> 
 #> Call:
@@ -284,8 +288,8 @@ print(fit)
 #> 
 #> 
 #> Coefficients:
-#>  (Intercept) treatment
-#>       -1.082     0.814
+#>  (Intercept) treatment     x
+#>       -1.082     0.814 0.255
 #> 
 #> 
 #> Discount function value (alpha):

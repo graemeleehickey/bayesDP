@@ -8,14 +8,11 @@ the estimand is survival probability at a specified time. With two arms,
 the reported effect is an approximate common log hazard ratio, treatment
 relative to control.
 
-Three limitations remain under investigation: the default Monte Carlo
+Two limitations remain under investigation: the default Monte Carlo
 weight calculation ([issue
-16](https://github.com/graemeleehickey/bayesDP/issues/16)), the
+16](https://github.com/graemeleehickey/bayesDP/issues/16)) and the
 baseline-prior contribution during historical augmentation ([issue
-17](https://github.com/graemeleehickey/bayesDP/issues/17)), and
-participant counts/risk sets in
-[`summary()`](https://rdrr.io/r/base/summary.html) ([issue
-18](https://github.com/graemeleehickey/bayesDP/issues/18)). These
+17](https://github.com/graemeleehickey/bayesDP/issues/17)). These
 examples use `method = "fixed"`, describe the implemented prior update,
 and calculate tables directly from posterior draws. They illustrate
 current behaviour; they do not validate the unresolved procedures for
@@ -114,6 +111,29 @@ probability at six months, not median survival time. The full-borrowing
 result includes the extra baseline-prior contribution described below
 and should not be called an ordinary pooled analysis.
 
+[`print()`](https://rdrr.io/r/base/print.html) gives a compact summary
+at the requested horizon. Its sample size and event count refer to
+current participants. The longer
+[`summary()`](https://rdrr.io/r/base/summary.html) table reports risk
+sets immediately before each observed event or censoring time, alongside
+posterior median survival, posterior SDs, and 95% equal-tailed credible
+intervals. Splitting follow-up into hazard intervals does not create
+additional participants or observation times. These risk sets describe
+the observed current cohort; historical borrowing changes the survival
+estimates, not the numbers at risk.
+
+``` r
+
+print(discounted)
+```
+
+    ## 
+    ##     One-armed bdp survival
+    ## 
+    ## 
+    ##   n events surv_time median lower 95% CrI upper 95% CrI
+    ##  60     36         6 0.5016        0.3676        0.6336
+
 ``` r
 
 plot(discounted, type = "survival", print = FALSE) +
@@ -146,6 +166,25 @@ set.seed(42)
 fit_two <- bdpsurvival(Surv(time, status) ~ treatment,
   data = current_two, data0 = historical_two, breaks = c(3, 6, 12),
   a0 = 0.1, b0 = 0.1, method = "fixed", fix_alpha = FALSE, alpha_max = 1)
+summary(fit_two)
+```
+
+    ## 
+    ##     Two-armed bdp survival
+    ## 
+    ## data:
+    ##   Current treatment: n = 60, number of events = 36
+    ##   Current control: n = 60, number of events = 30
+    ## Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.1034
+    ## Stochastic comparison (p_hat) - control (current vs. historical data): 0.8144
+    ## Discount function value (alpha) - treatment: 0.1034
+    ## Discount function value (alpha) - control: 0.8144
+    ## 
+    ##             coef exp(coef) se(coef) lower 95% CI upper 95% CI
+    ## treatment 0.0626    1.0647   0.1975       -0.326       0.4441
+
+``` r
+
 log_hr <- as.numeric(fit_two$final$posterior_loghazard)
 knitr::kable(rbind(
   "Log hazard ratio" = quantile(log_hr, c(0.025, 0.5, 0.975)),
@@ -158,11 +197,13 @@ knitr::kable(rbind(
 | Log hazard ratio | -0.3260 | 0.0633 | 0.4441 |
 | Hazard ratio     |  0.7218 | 1.0653 | 1.5591 |
 
-The treatment and control historical weights are 0.1034 and 0.8144,
-respectively. The median hazard ratio is 1.0653. For an adverse event, a
-hazard ratio below 1 favours treatment; the corresponding no-effect
-value on the log scale is zero. The two rows transform both the
-estimates and credible limits consistently.
+The summary counts 60 current treatment participants and 60 current
+control participants, regardless of how many intervals their follow-up
+spans. The treatment and control historical weights are 0.1034 and
+0.8144, respectively. The median hazard ratio is 1.0653. For an adverse
+event, a hazard ratio below 1 favours treatment; the corresponding
+no-effect value on the log scale is zero. The two rows transform both
+the estimates and credible limits consistently.
 
 ``` r
 

@@ -1,5 +1,37 @@
 # Changelog
 
+## bayesDP 1.3.11
+
+### Bug fixes
+
+- Corrected survival summaries to count participants and calculate risk
+  sets from their observed follow-up, rather than treating split hazard
+  intervals as separate participants
+  ([\#18](https://github.com/graemeleehickey/bayesDP/issues/18)).
+  Artificial interval endpoints no longer appear as observation times in
+  the one-arm summary.
+- Corrected regression residual summaries to use covariates and the
+  reported intercept on the same original scale, including encoded
+  factor covariates
+  ([\#18](https://github.com/graemeleehickey/bayesDP/issues/18)).
+- Applied the correction to logistic regression, which shares the
+  regression summary method. Its residuals now use fitted probabilities,
+  all coefficient rows are retained, and no residual SD is reported for
+  binary outcomes.
+- Survival fits now retain participant-level records, and regression
+  fits retain covariate centering means. Older saved fits must be
+  refitted before using the affected summaries; the functions explain
+  when this is necessary.
+
+### Documentation and tests
+
+- Updated the regression and survival vignettes to demonstrate the
+  corrected summaries, and labelled one-arm survival uncertainty as
+  posterior SDs and equal-tailed credible intervals.
+- Added tests for participant counts, risk sets, tied and censored
+  observations, events at interval boundaries, historical-only controls,
+  and regression residuals with shifted and factor covariates.
+
 ## bayesDP 1.3.10
 
 ### Bug fixes

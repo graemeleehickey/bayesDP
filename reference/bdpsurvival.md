@@ -213,6 +213,11 @@ following components:
   - `arm2` logical. Used internally to indicate one-arm or two-arm
     analysis.
 
+  - `participants` data frame. One record per participant, with observed
+    `time`, event `status`, `treatment`, and `historical` source. Used
+    for reported sample sizes and risk sets; `data` contains the split
+    interval records used for hazard estimation.
+
 ## Details
 
 Historical borrowing is assessed separately within each arm by comparing
@@ -301,8 +306,8 @@ print(fit1)
 #>     One-armed bdp survival
 #> 
 #> 
-#>   n events surv_time median lower 95% CI upper 95% CI
-#>  50     29         5  0.794       0.6771       0.8832
+#>   n events surv_time median lower 95% CrI upper 95% CrI
+#>  50     29         5  0.794        0.6771        0.8832
 if (FALSE) { # \dontrun{
 plot(fit1)
 } # }
@@ -339,8 +344,8 @@ summary(fit2)
 #>     Two-armed bdp survival
 #> 
 #> data:
-#>   Current treatment: n = 181, number of events = 29
-#>   Current control: n = 132, number of events = 40
+#>   Current treatment: n = 50, number of events = 29
+#>   Current control: n = 50, number of events = 40
 #> Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.633
 #> Stochastic comparison (p_hat) - control (current vs. historical data): 0.0018
 #> Discount function value (alpha) - treatment: 0.633
@@ -361,8 +366,8 @@ summary(fit2_1)
 #>     Two-armed bdp survival
 #> 
 #> data:
-#>   Current treatment: n = 181, number of events = 29
-#>   Current control: n = 132, number of events = 40
+#>   Current treatment: n = 50, number of events = 29
+#>   Current control: n = 50, number of events = 40
 #> Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.6106
 #> Stochastic comparison (p_hat) - control (current vs. historical data): 8e-04
 #> Discount function value (alpha) - treatment: 1

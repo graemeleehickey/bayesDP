@@ -25,7 +25,9 @@ conditional on a one- or two-arm survival analysis.
 In the case of a one-arm analysis, a brief summary is displayed,
 including the current data sample size, number of events, user input
 survival time, the augmented median survival probability, and
-corresponding lower and upper 95 percent interval limits.
+corresponding lower and upper 95 percent equal-tailed credible limits.
+Counts use participant-level records. Saved fits without these records
+must be refitted before printing.
 
 When a control arm is present, the output is the same as a call to
 [`summary`](https://graemeleehickey.github.io/bayesDP/reference/summary-bdpsurvival-method.md).

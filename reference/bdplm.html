@@ -17,7 +17,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">bayesDP</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.10</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.11</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -240,6 +240,11 @@ details.</p></dd>
   posterior means, and <code>se</code> contains posterior standard deviations, for
   the intercept, treatment effect, covariate effects, and residual SD.</p></dd>
 
+  <dt><code>args1</code></dt>
+<dd><p>list. The original call, the centered analysis data,
+  and the named <code>covariate_means</code> used to restore the original covariate
+  scale when calculating residual summaries.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -337,7 +342,7 @@ details.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Residuals:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     Min     1Q Median    3Q    Max</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  -7.096 -0.492  2.569 7.794 15.307</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  -9.771 -3.167 -0.106 5.119 12.632</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Coefficients:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             Estimate Std. Error</span>

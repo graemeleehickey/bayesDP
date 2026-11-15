@@ -17,7 +17,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">bayesDP</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.10</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.11</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -212,8 +212,12 @@ holds it fixed throughout the analysis.  See the the <code>bdplm</code> vignette
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p><code>bdplogit</code> returns an object of class "bdplogit".</p>
-<p>An object of class "<code>bdplogit</code>" is a list containing at least
+    <p><code>bdplogit</code> returns an object of class "bdplm", reusing its
+  print and summary methods. Residual summaries use observed binary outcomes
+  minus fitted probabilities from the posterior mean coefficients. The
+  centering means are saved in <code>args1$covariate_means</code>; older saved fits
+  without these means must be refitted before summarising residuals.</p>
+<p>The returned object is a list containing at least
 the following components:</p><dl><dt><code>posterior</code></dt>
 <dd><p>data frame. The posterior draws of the covariates, the intercept, and
     the treatment effect. The grid of sigma values are included.</p></dd>
@@ -318,19 +322,19 @@ the following components:</p><dl><dt><code>posterior</code></dt>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     method = "fixed")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Residuals:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     Min    1Q Median    3Q   Max</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  -0.116 0.685  1.075 1.332 2.212</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     Min     1Q Median    3Q   Max</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  -0.591 -0.378 -0.265 0.491 0.723</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Coefficients:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             Estimate Std. Error</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept)  -1.0822     0.3901</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> treatment     0.8140     0.4008</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> x             0.2548     0.2830</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Discount function value (alpha):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  treatment control</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      0.244   0.422</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Residual standard error: 0.2548</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Call:</span>
@@ -339,8 +343,8 @@ the following components:</p><dl><dt><code>posterior</code></dt>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Coefficients:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept) treatment</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       -1.082     0.814</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept) treatment     x</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       -1.082     0.814 0.255</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Discount function value (alpha):</span>

@@ -108,12 +108,11 @@ printed regression coefficient estimates use means and posterior SDs;
 the sensitivity table above deliberately uses medians and credible
 intervals.
 
-The residual section of
-[`summary()`](https://rdrr.io/r/base/summary.html) currently mixes
-centered covariates with a back-transformed intercept ([issue
-18](https://github.com/graemeleehickey/bayesDP/issues/18)). The
-coefficient summaries above are calculated directly from the posterior
-draws. For residual checks, use predictions on the original data scale:
+[`summary()`](https://rdrr.io/r/base/summary.html) reports residuals for
+current participants, calculated from posterior mean coefficients with
+the covariates and intercept on the original scale. The following
+calculation makes that definition explicit; the summary also reports the
+coefficients and historical weights:
 
 ``` r
 
@@ -121,11 +120,33 @@ X <- model.matrix(~ treatment + x, current)
 beta_mean <- colMeans(coefficient_draws)
 fitted_mean <- drop(X %*% beta_mean)
 residuals_current <- current$Y - fitted_mean
-summary(residuals_current)
+summary(discounted)
 ```
 
-    ##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
-    ## -13.3688  -2.9899   0.3404   0.1443   4.2717  10.0992
+    ## 
+    ## Call:
+    ## bdplm(formula = Y ~ treatment + x, data = current, data0 = historical, 
+    ##     alpha_max = 1, fix_alpha = FALSE, method = "fixed")
+    ## 
+    ## Residuals:
+    ##      Min    1Q Median    3Q    Max
+    ##  -13.369 -2.99   0.34 4.272 10.099
+    ## 
+    ## Coefficients:
+    ##             Estimate Std. Error
+    ## (Intercept)   9.8828     0.4592
+    ## treatment    31.2814     0.9241
+    ## x             3.0118     0.1079
+    ## 
+    ## Discount function value (alpha):
+    ##  treatment control
+    ##       0.07  0.9868
+    ## 
+    ## Residual standard error: 4.761
+
+The median current-participant residual is 0.34, matching the residual
+summary. Centering the covariates internally does not change these
+fitted values after the intercept is transformed back.
 
 ``` r
 
