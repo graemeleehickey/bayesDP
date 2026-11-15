@@ -16,6 +16,8 @@
 
 ### Housekeeping
 
+- Added strict KaTeX validation to the website build so unsupported
+  LaTeX commands and invalid equations prevent deployment.
 - Improved equation spacing and alignment, split long equations across
   lines, and divided dense paragraphs in all four vignettes to make them
   easier to read.
