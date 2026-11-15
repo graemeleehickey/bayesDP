@@ -4,17 +4,18 @@
 
 The purpose of this vignette is to introduce the `bdpnormal` function.
 `bdpnormal` is used for estimating posterior samples from a Gaussian
-mean outcome for clinical trials where an informative prior is used. In
-the parlance of clinical trials, the informative prior is derived from
-historical data. The weight given to the historical data is determined
-using what we refer to as a discount function. There are three steps in
-carrying out estimation:
+mean outcome for clinical trials where an informative prior is used.
 
-1.  Estimation of the historical data weight, denoted $`\hat{\alpha}`$,
-    via the discount function
+In the parlance of clinical trials, the informative prior is derived
+from historical data. The weight given to the historical data is
+determined using what we refer to as a discount function. There are
+three steps in carrying out estimation:
+
+1.  Estimation of the historical data weight, denoted \hat{\alpha}, via
+    the discount function
 
 2.  Estimation of the posterior distribution of the current data,
-    conditional on the historical data weighted by $`\hat{\alpha}`$
+    conditional on the historical data weighted by \hat{\alpha}
 
 3.  If a two-arm clinical trial, estimation of the posterior treatment
     effect, i.e., treatment versus control
@@ -41,83 +42,80 @@ considered a two-arm trial.
 
 ### Estimation of the historical data weight
 
-In the first estimation step, the historical data weight
-$`\hat{\alpha}`$ is estimated. In the case of a two-arm trial, where
-both treatment and control data are available, an $`\hat{\alpha}`$ value
-is estimated separately for each of the treatment and control arms. Of
-course, historical treatment or historical control data must be present,
-otherwise $`\hat{\alpha}`$ is not estimated for the corresponding arm.
+In the first estimation step, the historical data weight \hat{\alpha} is
+estimated. In the case of a two-arm trial, where both treatment and
+control data are available, an \hat{\alpha} value is estimated
+separately for each of the treatment and control arms. Of course,
+historical treatment or historical control data must be present,
+otherwise \hat{\alpha} is not estimated for the corresponding arm.
 
-When historical data are available, estimation of $`\hat{\alpha}`$ is
-carried out as follows. Let $`\bar{y}`$, $`s`$, and $`N`$ denote the
-sample mean, sample standard deviation, and sample size of the current
-data, respectively. Similarly, let $`\bar{y}_0`$, $`s_0`$, and $`N_0`$
-denote the sample mean, sample standard deviation, and sample size of
-the historical data, respectively. Then, the posterior distribution of
-the mean for current data, under vague (flat) priors is
+When historical data are available, estimation of \hat{\alpha} is
+carried out as follows. Let \bar{y}, s, and N denote the sample mean,
+sample standard deviation, and sample size of the current data,
+respectively. Similarly, let \bar{y}\_0, s_0, and N_0 denote the sample
+mean, sample standard deviation, and sample size of the historical data,
+respectively. Then, the posterior distribution of the mean for current
+data, under vague (flat) priors is
 
-``` math
- \begin{array}{rcl}
-\tilde{\sigma}^2\mid\bar{y},s,N & \sim & InverseGamma\left(\frac{N-1}{2},\,\frac{N-1}{2}s^2 \right),\\
-\\
-\tilde{\mu}\mid\bar{y},N,\tilde{\sigma}^2 & \sim & \mathcal{N}ormal\left(\bar{y},\, \frac{1}{N}\tilde{\sigma}^2  \right).
-\end{array}
-```
+\begin{aligned} \tilde{\sigma}^2\mid\bar{y},s,N &\sim
+\operatorname{InverseGamma}\left(\frac{N-1}{2},\\\frac{N-1}{2}s^2
+\right),\\ \tilde{\mu}\mid\bar{y},N,\tilde{\sigma}^2 &\sim
+\mathcal{N}\left(\bar{y},\\ \frac{1}{N}\tilde{\sigma}^2 \right).
+\end{aligned}
 
 Similarly, the posterior distribution of the mean for historical data,
 under vague (flat) priors is
-``` math
- \begin{array}{rcl}
-\sigma^2_0 & \sim & InverseGamma\left(\frac{N_0-1}{2},\,\frac{N_0-1}{2}s_0^2 \right),\\
-\\
-\mu_0 \mid \bar{y}_0, N_0, \sigma^2_0 &  \sim  & \mathcal{N}ormal\left(\bar{y}_0,\, \frac{1}{N_0}\sigma^2_0  \right).
-\end{array}
-```
 
-We next compute the posterior probability
-$`p = Pr\left(\tilde{\mu} < \mu_0\mid\bar{y},s,N,\bar{y}_0,s_0,N_0\right)`$.
-Finally, for a discount function, denoted $`W`$, $`\hat{\alpha}`$ is
-computed as
-``` math
-\hat{\alpha} = \alpha_{max}\cdot W\left(p, \,w\right),\,0\le p\le1,
-```
-where $`w`$ may be one or more parameters associated with the discount
-function and $`\alpha_{max}`$ scales the weight $`\hat{\alpha}`$ by a
+\begin{aligned} \sigma^2_0 &\sim
+\operatorname{InverseGamma}\left(\frac{N_0-1}{2},\\\frac{N_0-1}{2}s_0^2
+\right),\\ \mu_0 \mid \bar{y}\_0, N_0, \sigma^2_0 &\sim
+\mathcal{N}\left(\bar{y}\_0,\\ \frac{1}{N_0}\sigma^2_0 \right).
+\end{aligned}
+
+We next compute the posterior probability p = \Pr\left(\tilde{\mu} \<
+\mu_0\mid\bar{y},s,N,\bar{y}\_0,s_0,N_0\right). Finally, for a discount
+function, denoted W, \hat{\alpha} is computed as
+
+\hat{\alpha} = \alpha\_{\max}\cdot W\left(p, \\w\right),\\0\le p\le1,
+
+where w may be one or more parameters associated with the discount
+function and \alpha\_{\max} scales the weight \hat{\alpha} by a
 user-input maximum value. More details on the discount functions are
 given in the discount function section below.
 
 There are several model inputs at this first stage. First, the user can
 select the discount function type via the `discount_function` input (see
 below). Next, choosing `fix_alpha = TRUE` forces a fixed value of
-$`\hat{\alpha}`$ (at the `alpha_max` input), as opposed to estimation
-via the discount function. In the next modeling stage, a Monte Carlo
-estimation approach is used, requiring several samples from the
-posterior distributions. Thus, the user can input a sample size greater
-than or less than the default value of `number_mcmc = 10000`.
+\hat{\alpha} (at the `alpha_max` input), as opposed to estimation via
+the discount function.
 
-An alternate Monte Carlo-based estimation scheme of $`\hat{\alpha}`$ has
+In the next modeling stage, a Monte Carlo estimation approach is used,
+requiring several samples from the posterior distributions. Thus, the
+user can input a sample size greater than or less than the default value
+of `number_mcmc = 10000`.
+
+An alternate Monte Carlo-based estimation scheme of \hat{\alpha} has
 been implemented, controlled by the function input `method = "mc"`.
-Here, instead of treating $`\hat{\alpha}`$ as a fixed quantity,
-$`\hat{\alpha}`$ is treated as random. Because $`p`$ is recomputed at
-each Monte Carlo draw using a single pair of posterior samples, the
-resulting sequence of $`\hat{\alpha}`$ values can exhibit noticeable
-Monte Carlo variability. First, $`p`$, is computed as
+Here, instead of treating \hat{\alpha} as a fixed quantity, \hat{\alpha}
+is treated as random. Because p is recomputed at each Monte Carlo draw
+using a single pair of posterior samples, the resulting sequence of
+\hat{\alpha} values can exhibit noticeable Monte Carlo variability.
 
-``` math
- \begin{array}{rcl}
-Z & = & \displaystyle{\frac{\left|\tilde{\mu}-\mu_0\right|}{\sqrt{v^2 + v^2_0}}} ,\\
-\\
-p &  =  & 2\left(1-\Phi\left(Z\right)\right),
-\end{array}
-```
-where $`\Phi\left(x\right)`$ is the $`x`$th quantile of a standard
-normal (i.e., the `pnorm` R function). Here, $`v^2`$ and $`v^2_0`$ are
-the variances of $`\tilde{\mu}`$ and $`\mu_0`$, respectively. Next,
-$`p`$ is used to construct $`\hat{\alpha}`$ via the discount function.
-Since the values $`Z`$ and $`p`$ are computed at each iteration of the
-Monte Carlo estimation scheme, $`\hat{\alpha}`$ is computed at each
-iteration of the Monte Carlo estimation scheme, resulting in a
-distribution of $`\hat{\alpha}`$ values.
+First, p, is computed as
+
+\begin{aligned} Z &=
+{\frac{\left\|\tilde{\mu}-\mu_0\right\|}{\sqrt{v^2 + v^2_0}}} ,\\ p &=
+2\left(1-\Phi\left(Z\right)\right), \end{aligned}
+
+where \Phi\left(x\right) is the xth quantile of a standard normal (i.e.,
+the `pnorm` R function). Here, v^2 and v^2_0 are the variances of
+\tilde{\mu} and \mu_0, respectively.
+
+Next, p is used to construct \hat{\alpha} via the discount function.
+Since the values Z and p are computed at each iteration of the Monte
+Carlo estimation scheme, \hat{\alpha} is computed at each iteration of
+the Monte Carlo estimation scheme, resulting in a distribution of
+\hat{\alpha} values.
 
 #### Discount function
 
@@ -132,23 +130,23 @@ There are currently three discount functions implemented throughout the
 3.  `scaledweibull`: Scaled Weibull CDF;
 
 First, the identity discount function (default) sets the discount weight
-$`\hat{\alpha}=p`$.
+\hat{\alpha}=p.
 
 Second, the Weibull CDF has two user-specified parameters associated
 with it, the shape and scale. The default shape is 3 and the default
 scale is 0.135, each of which are controlled by the function inputs
 `weibull_shape` and `weibull_scale`, respectively. The form of the
 Weibull CDF is
-``` math
-W(x) = 1 - \exp\left\{- (x/w_{scale})^{w_{shape}}\right\}.
-```
+
+W(x) = 1 - \exp\left\\-
+(x/w\_{\mathrm{scale}})^{w\_{\mathrm{shape}}}\right\\.
 
 The third discount function option is the Scaled Weibull CDF. The Scaled
 Weibull CDF is the Weibull CDF divided by the value of the Weibull CDF
 evaluated at 1, i.e.,
-``` math
+
 W^{\ast}(x) = W(x)/W(1).
-```
+
 Similar to the Weibull CDF, the Scaled Weibull CDF has two
 user-specified parameters associated with it, the shape and scale, again
 controlled by the function inputs `weibull_shape` and `weibull_scale`,
@@ -161,9 +159,9 @@ are shown below.
 ![](bdpnormal-vignette_files/figure-html/unnamed-chunk-2-1.png)
 
 In each of the above plots, the x-axis is the stochastic comparison
-between current and historical data, which we’ve denoted $`p`$. The
-y-axis is the discount value $`\hat{\alpha}`$ that corresponds to a
-given value of $`p`$.
+between current and historical data, which we’ve denoted p. The y-axis
+is the discount value \hat{\alpha} that corresponds to a given value of
+p.
 
 An advanced input for the plot function is `print`. The default value is
 `print = TRUE`, which simply returns the graphics. Alternately, users
@@ -180,28 +178,31 @@ p1 + ggtitle("Discount Function Plot :-)")
 
 ### Estimation of the posterior distribution of the current data, conditional on the historical data
 
-With $`\hat{\alpha}`$ in hand, we can now estimate the posterior
+With \hat{\alpha} in hand, we can now estimate the posterior
 distribution of the mean of the current data. Using the notation of the
 previous section, the posterior distribution is
-``` math
-\mu \sim \mathcal{N}ormal\left( \frac{\sigma^2_0N\bar{y} + \tilde{\sigma}^2N_0\bar{y}_0\hat{\alpha}}{N\sigma^2_0 + \tilde{\sigma}^2N_0\hat{\alpha}},\,\frac{\tilde{\sigma}^2\sigma^2_0}{N\sigma^2_0 + \tilde{\sigma}^2N_0\hat{\alpha}}      \right).
-```
+
+\mu \sim \mathcal{N}\left( \frac{\sigma^2_0N\bar{y} +
+\tilde{\sigma}^2N_0\bar{y}\_0\hat{\alpha}}{N\sigma^2_0 +
+\tilde{\sigma}^2N_0\hat{\alpha}},\\\frac{\tilde{\sigma}^2\sigma^2_0}{N\sigma^2_0 +
+\tilde{\sigma}^2N_0\hat{\alpha}} \right).
+
 At this model stage, we have in hand `number_mcmc` simulations from the
 augmented mean distribution. If there are no control data, i.e., a
 one-arm trial, then the modeling stops and we generate summaries of the
-posterior distribution of $`\mu`$. Otherwise, if there are control data,
-we proceed to a third step and compute a comparison between treatment
-and control data.
+posterior distribution of \mu. Otherwise, if there are control data, we
+proceed to a third step and compute a comparison between treatment and
+control data.
 
 ### Estimation of the posterior treatment effect: treatment versus control
 
 This step of the model is carried out on-the-fly using the `summary` or
-`print` methods. Let $`\mu_T`$ and $`\mu_C`$ denote posterior mean
-estimates of the treatment and control arms, respectively. Currently,
-the implemented comparison between treatment and control is the
-difference, i.e., summary statistics related to the posterior
-difference: $`\mu_T - \mu_C`$. In a future release, we may consider
-implementing additional comparison types.
+`print` methods. Let \mu_T and \mu_C denote posterior mean estimates of
+the treatment and control arms, respectively. Currently, the implemented
+comparison between treatment and control is the difference, i.e.,
+summary statistics related to the posterior difference: \mu_T - \mu_C.
+In a future release, we may consider implementing additional comparison
+types.
 
 ### Inputting Data
 
@@ -314,12 +315,14 @@ When `alpha` is not constrained to one, it is estimated based on a
 comparison between the current and historical data. We see that the
 stochastic comparison, `p_hat`, between current historical and control
 is 0.0134. Here, `p_hat` is the posterior probability of the comparison
-between the current and historical data. With the present example, the
-low value of `p_hat` implies that the current and historical sample
-means are different. The result is that the weight given to the
-historical data is shrunk towards zero. Thus, the estimate of `alpha`
-from the discount function is 0.0134 and the augmented posterior
-estimate of the mean is approximately the mean of the current data.
+between the current and historical data.
+
+With the present example, the low value of `p_hat` implies that the
+current and historical sample means are different. The result is that
+the weight given to the historical data is shrunk towards zero. Thus,
+the estimate of `alpha` from the discount function is 0.0134 and the
+augmented posterior estimate of the mean is approximately the mean of
+the current data.
 
 Many of the the values presented in the `summary` method are accessible
 from the fit object. For instance, `alpha` is found in

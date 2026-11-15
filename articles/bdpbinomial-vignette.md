@@ -5,16 +5,18 @@
 The purpose of this vignette is to introduce the `bdpbinomial` function.
 `bdpbinomial` is used for estimating posterior samples from a Binomial
 event rate outcome for clinical trials where an informative prior is
-used. In the parlance of clinical trials, the informative prior is
-derived from historical data. The weight given to the historical data is
+used.
+
+In the parlance of clinical trials, the informative prior is derived
+from historical data. The weight given to the historical data is
 determined using what we refer to as a discount function. There are
 three steps in carrying out estimation:
 
-1.  Estimation of the historical data weight, denoted $`\hat{\alpha}`$,
-    via the discount function
+1.  Estimation of the historical data weight, denoted \hat{\alpha}, via
+    the discount function
 
 2.  Estimation of the posterior distribution of the current data,
-    conditional on the historical data weighted by $`\hat{\alpha}`$
+    conditional on the historical data weighted by \hat{\alpha}
 
 3.  If a two-arm clinical trial, estimation of the posterior treatment
     effect, i.e., treatment versus control
@@ -41,80 +43,75 @@ considered a two-arm trial.
 
 ### Estimation of the historical data weight
 
-In the first estimation step, the historical data weight
-$`\hat{\alpha}`$ is estimated. In the case of a two-arm trial, where
-both treatment and control data are available, an $`\hat{\alpha}`$ value
-is estimated separately for each of the treatment and control arms. Of
-course, historical treatment or historical control data must be present,
-otherwise $`\hat{\alpha}`$ is not estimated for the corresponding arm.
+In the first estimation step, the historical data weight \hat{\alpha} is
+estimated. In the case of a two-arm trial, where both treatment and
+control data are available, an \hat{\alpha} value is estimated
+separately for each of the treatment and control arms. Of course,
+historical treatment or historical control data must be present,
+otherwise \hat{\alpha} is not estimated for the corresponding arm.
 
-When historical data are available, estimation of $`\hat{\alpha}`$ is
-carried out as follows. Let $`y`$ and $`N`$ denote the number of events
-and sample size of the current data, respectively. Similarly, let
-$`y_0`$ and $`N_0`$ denote the number of events and sample size of the
-historical data, respectively. Let $`a_0`$ and $`b_0`$ denote the rate
-parameters of a Beta distribution. Then, the posterior distributions of
-the event rates for current and historical data, under vague (flat)
-priors are
+When historical data are available, estimation of \hat{\alpha} is
+carried out as follows. Let y and N denote the number of events and
+sample size of the current data, respectively. Similarly, let y_0 and
+N_0 denote the number of events and sample size of the historical data,
+respectively. Let a_0 and b_0 denote the rate parameters of a Beta
+distribution. Then, the posterior distributions of the event rates for
+current and historical data, under vague (flat) priors are
 
-``` math
- \tilde{\theta}\mid y,N \sim \mathcal{B}eta\left(y+a_0,\,N-y+b_0 \right)
-```
+\tilde{\theta}\mid y,N \sim \operatorname{Beta}\left(y+a_0,\\N-y+b_0
+\right)
+
 and
 
-``` math
- \theta_0\mid y_0,N_0 \sim \mathcal{B}eta\left(y_0+a_0,\,N_0-y_0+b_0 \right),
-```
-respectively. We next compute the posterior probability
-$`p = Pr\left(\tilde{\theta} \lt \theta_0\mid y, N, y_0, N_0\right)`$.
-Finally, for a discount function, denoted $`W`$, $`\hat{\alpha}`$ is
-computed as
-``` math
-\hat{\alpha} = \alpha_{max}\cdot W\left(p, \,w\right),\,0\le p\le1,
-```
-where $`w`$ may be one or more parameters associated with the discount
-function and $`\alpha_{max}`$ scales the weight $`\hat{\alpha}`$ by a
+\theta_0\mid y_0,N_0 \sim \operatorname{Beta}\left(y_0+a_0,\\N_0-y_0+b_0
+\right),
+
+respectively. We next compute the posterior probability p =
+\Pr\left(\tilde{\theta} \< \theta_0\mid y, N, y_0, N_0\right). Finally,
+for a discount function, denoted W, \hat{\alpha} is computed as
+
+\hat{\alpha} = \alpha\_{\max}\cdot W\left(p, \\w\right),\\0\le p\le1,
+
+where w may be one or more parameters associated with the discount
+function and \alpha\_{\max} scales the weight \hat{\alpha} by a
 user-input maximum value. More details on the discount functions are
 given in the discount function section below.
 
 There are several model inputs at this first stage. First, the user can
 select the discount function type via the `discount_function` input (see
 below). Next, choosing `fix_alpha = TRUE` forces a fixed value of
-$`\hat{\alpha}`$ (at the `alpha_max` input), as opposed to estimation
-via the discount function. In the next modeling stage, a Monte Carlo
-estimation approach is used, requiring several samples from the
-posterior distributions. Thus, the user can input a sample size greater
-than or less than the default value of `number_mcmc = 10000`. Finally,
-the Beta rate parameters can be changed from the defaults of
-$`a_0=b_0=1`$ (`a0` and `b0` inputs).
+\hat{\alpha} (at the `alpha_max` input), as opposed to estimation via
+the discount function.
 
-An alternate Monte Carlo-based estimation scheme of $`\hat{\alpha}`$ has
+In the next modeling stage, a Monte Carlo estimation approach is used,
+requiring several samples from the posterior distributions. Thus, the
+user can input a sample size greater than or less than the default value
+of `number_mcmc = 10000`. Finally, the Beta rate parameters can be
+changed from the defaults of a_0=b_0=1 (`a0` and `b0` inputs).
+
+An alternate Monte Carlo-based estimation scheme of \hat{\alpha} has
 been implemented, controlled by the function input `method = "mc"`.
-Here, instead of treating $`\hat{\alpha}`$ as a fixed quantity,
-$`\hat{\alpha}`$ is treated as random. Because $`p`$ is recomputed at
-each Monte Carlo draw using a single pair of posterior samples, the
-resulting sequence of $`\hat{\alpha}`$ values can exhibit noticeable
-Monte Carlo variability. First, $`p`$, is computed as
+Here, instead of treating \hat{\alpha} as a fixed quantity, \hat{\alpha}
+is treated as random. Because p is recomputed at each Monte Carlo draw
+using a single pair of posterior samples, the resulting sequence of
+\hat{\alpha} values can exhibit noticeable Monte Carlo variability.
 
-``` math
- \begin{array}{rcl}
-v^2 & = & \displaystyle{\tilde{\theta}\left(1-\tilde{\theta}\right)/N} ,\\
-\\
-v^2_0 & = & \displaystyle{\theta_0\left(1-\theta_0\right)/N_0} ,\\
-\\
-Z & = & \displaystyle{\frac{\left|\tilde{\theta}-\theta_0\right|}{\sqrt{v^2 + v^2_0}}} ,\\
-\\
-p &  =  & 2\left(1-\Phi\left(Z\right)\right),
-\end{array}
-```
-where $`\Phi\left(x\right)`$ is the $`x`$th quantile of a standard
-normal (i.e, the `pnorm` R function). Here, $`v^2`$ and $`v^2_0`$ are
-estimates of the variances of $`\tilde{\theta}`$ and $`\theta_0`$,
-respectively. Next, $`p`$ is used to construct $`\hat{\alpha}`$ via the
-discount function. Since the values $`Z`$ and $`p`$ are computed at each
-iteration of the Monte Carlo estimation scheme, $`\hat{\alpha}`$ is
-computed at each iteration of the Monte Carlo estimation scheme,
-resulting in a distribution of $`\hat{\alpha}`$ values.
+First, p, is computed as
+
+\begin{aligned} v^2 &= {\tilde{\theta}\left(1-\tilde{\theta}\right)/N}
+,\\ v^2_0 &= {\theta_0\left(1-\theta_0\right)/N_0} ,\\ Z &=
+{\frac{\left\|\tilde{\theta}-\theta_0\right\|}{\sqrt{v^2 + v^2_0}}} ,\\
+p &= 2\left(1-\Phi\left(Z\right)\right), \end{aligned}
+
+where \Phi\left(x\right) is the xth quantile of a standard normal (i.e,
+the `pnorm` R function). Here, v^2 and v^2_0 are estimates of the
+variances of \tilde{\theta} and \theta_0, respectively.
+
+Next, p is used to construct \hat{\alpha} via the discount function.
+Since the values Z and p are computed at each iteration of the Monte
+Carlo estimation scheme, \hat{\alpha} is computed at each iteration of
+the Monte Carlo estimation scheme, resulting in a distribution of
+\hat{\alpha} values.
 
 #### Discount function
 
@@ -129,23 +126,23 @@ There are currently three discount functions implemented throughout the
 3.  `scaledweibull`: Scaled Weibull CDF;
 
 First, the identity discount function (default) sets the discount weight
-$`\hat{\alpha}=p`$.
+\hat{\alpha}=p.
 
 Second, the Weibull CDF has two user-specified parameters associated
 with it, the shape and scale. The default shape is 3 and the default
 scale is 0.135, each of which are controlled by the function inputs
 `weibull_shape` and `weibull_scale`, respectively. The form of the
 Weibull CDF is
-``` math
-W(x) = 1 - \exp\left\{- (x/w_{scale})^{w_{shape}}\right\}.
-```
+
+W(x) = 1 - \exp\left\\-
+(x/w\_{\mathrm{scale}})^{w\_{\mathrm{shape}}}\right\\.
 
 The third discount function option is the Scaled Weibull CDF. The Scaled
 Weibull CDF is the Weibull CDF divided by the value of the Weibull CDF
 evaluated at 1, i.e.,
-``` math
+
 W^{\ast}(x) = W(x)/W(1).
-```
+
 Similar to the Weibull CDF, the Scaled Weibull CDF has two
 user-specified parameters associated with it, the shape and scale, again
 controlled by the function inputs `weibull_shape` and `weibull_scale`,
@@ -158,9 +155,9 @@ are shown below.
 ![](bdpbinomial-vignette_files/figure-html/unnamed-chunk-2-1.png)
 
 In each of the above plots, the x-axis is the stochastic comparison
-between current and historical data, which we’ve denoted $`p`$. The
-y-axis is the discount value $`\hat{\alpha}`$ that corresponds to a
-given value of $`p`$.
+between current and historical data, which we’ve denoted p. The y-axis
+is the discount value \hat{\alpha} that corresponds to a given value of
+p.
 
 An advanced input for the plot function is `print`. The default value is
 `print = TRUE`, which simply returns the graphics. Alternately, users
@@ -177,28 +174,29 @@ p1 + ggtitle("Discount Function Plot :-)")
 
 ### Estimation of the posterior distribution of the current data, conditional on the historical data
 
-With $`\hat{\alpha}`$ in hand, we can now estimate the posterior
+With \hat{\alpha} in hand, we can now estimate the posterior
 distribution of the current data event rate. Using the notation of the
 previous section, the posterior distribution is
-``` math
-\theta \sim \mathcal{B}eta\left(y+y_0\hat{\alpha}+a_0,\, N-y+\hat{\alpha}(N_0-y_0)+b_0 \right).
-```
+
+\theta \sim \operatorname{Beta}\left(y+y_0\hat{\alpha}+a_0,\\
+N-y+\hat{\alpha}(N_0-y_0)+b_0 \right).
+
 At this model stage, we have in hand `number_mcmc` simulations from the
 augmented event rate distribution. If there are no control data, i.e., a
 one-arm trial, then the modeling stops and we generate summaries of the
-posterior distribution of $`\theta`$. Otherwise, if there are control
-data, we proceed to a third step and compute a comparison between
-treatment and control data.
+posterior distribution of \theta. Otherwise, if there are control data,
+we proceed to a third step and compute a comparison between treatment
+and control data.
 
 ### Estimation of the posterior treatment effect: treatment versus control
 
 This step of the model is carried out on-the-fly using the `summary` or
-`print` methods. Let $`\theta_T`$ and $`\theta_C`$ denote posterior
-event rate estimates of the treatment and control arms, respectively.
-Currently, the implemented comparison between treatment and control is
-the difference, i.e., summary statistics related to the posterior
-difference: $`\theta_T - \theta_C`$. In a future release, we may
-consider implementing additional comparison types.
+`print` methods. Let \theta_T and \theta_C denote posterior event rate
+estimates of the treatment and control arms, respectively. Currently,
+the implemented comparison between treatment and control is the
+difference, i.e., summary statistics related to the posterior
+difference: \theta_T - \theta_C. In a future release, we may consider
+implementing additional comparison types.
 
 ### Inputting Data
 
@@ -302,13 +300,14 @@ When `alpha` is not constrained to one, it is estimated based on a
 comparison between the current and historical data. We see that the
 stochastic comparison, `p_hat`, between historical and control is
 0.3664. Here, `p_hat` is the posterior probability of the comparison
-between current and historical data. With the present example,
-`p_hat = 0.3664` implies that the current and historical event rates are
-moderately different. The result is that the weight given to the
-historical data is shrunk towards zero. Thus, the estimate of `alpha`
-from the discount function is 0.3664, and the augmented posterior
-estimate of the event rate moves up from 0.075 observed in the current
-data to a value closer to 0.089.
+between current and historical data.
+
+With the present example, `p_hat = 0.3664` implies that the current and
+historical event rates are moderately different. The result is that the
+weight given to the historical data is shrunk towards zero. Thus, the
+estimate of `alpha` from the discount function is 0.3664, and the
+augmented posterior estimate of the event rate moves up from 0.075
+observed in the current data to a value closer to 0.089.
 
 Many of the the values presented in the `summary` method are accessible
 from the fit object. For instance, `alpha` is found in
@@ -426,9 +425,10 @@ control data. In the present analysis, the current and historical
 control data have event rates that are very close, thus the historical
 control data is given full weight. This implies that the (augmented)
 posterior control event rate is approximately
-`(20 + 20) / (250 + 250) = 0.08`. Again, moderate weight is given to the
-historical treatment data, so we have an (augmented) posterior treatment
-event rate of 0.08.
+`(20 + 20) / (250 + 250) = 0.08`.
+
+Again, moderate weight is given to the historical treatment data, so we
+have an (augmented) posterior treatment event rate of 0.08.
 
 The CI is computed at run time and is the interval estimate of the
 difference between the posterior treatment and control event rates. With

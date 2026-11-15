@@ -5,21 +5,23 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Linear Regression Estimation with bayesDP • bayesDP</title>
-<script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<!-- katex math --><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script><script src="../katex-auto.js"></script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Linear Regression Estimation with bayesDP">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
+<meta property="og:title" content="Linear Regression Estimation with bayesDP">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
-    <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
+    <nav class="navbar navbar-expand-lg fixed-top " aria-label="Site navigation"><div class="container">
 
     <a class="navbar-brand me-2" href="../index.html">bayesDP</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.8</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.9</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -45,6 +47,14 @@
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/graemeleehickey/bayesDP/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-lightswitch" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true" aria-label="Light switch"><span class="fa fa-sun"></span></button>
+  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown-lightswitch">
+<li><button class="dropdown-item" data-bs-theme-value="light"><span class="fa fa-sun"></span> Light</button></li>
+    <li><button class="dropdown-item" data-bs-theme-value="dark"><span class="fa fa-moon"></span> Dark</button></li>
+    <li><button class="dropdown-item" data-bs-theme-value="auto"><span class="fa fa-adjust"></span> Auto</button></li>
+  </ul>
+</li>
       </ul>
 </div>
 
@@ -61,6 +71,8 @@
       <h1>Linear Regression Estimation with bayesDP</h1>
                         <h4 data-toc-skip class="author">Donnie
 Musgrove</h4>
+                        <h4 data-toc-skip class="author">Graeme L.
+Hickey</h4>
             
             <h4 data-toc-skip class="date">2026-11-15</h4>
       
@@ -76,17 +88,16 @@ Musgrove</h4>
 <p>The purpose of this vignette is to introduce the <code>bdplm</code>
 function. <code>bdplm</code> is used for estimating posterior samples in
 the context of linear regression for clinical trials where an
-informative prior is used. In the parlance of clinical trials, the
-informative prior is derived from historical data. The weight given to
-the historical data is determined using what we refer to as a discount
-function. There are three steps in carrying out estimation:</p>
+informative prior is used.</p>
+<p>In the parlance of clinical trials, the informative prior is derived
+from historical data. The weight given to the historical data is
+determined using what we refer to as a discount function. There are
+three steps in carrying out estimation:</p>
 <ol style="list-style-type: decimal">
-<li><p>Estimation of the historical data weight, denoted
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>α</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\alpha}</annotation></semantics></math>,
-via the discount function</p></li>
+<li><p>Estimation of the historical data weight, denoted <span class="math inline">\hat{\alpha}</span>, via the discount
+function</p></li>
 <li><p>Estimation of the posterior distribution of the current data,
-conditional on the historical data weighted by
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>α</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\alpha}</annotation></semantics></math></p></li>
+conditional on the historical data weighted by <span class="math inline">\hat{\alpha}</span></p></li>
 <li><p>Estimation of the posterior treatment effect, i.e., treatment
 versus control</p></li>
 </ol>
@@ -114,7 +125,7 @@ support for a two-arm clinical trial where current and historical
 treatment and current and historical control data are all
 present.</strong></p>
 <div class="section level3">
-<h3 id="linear-regresion-model-background">Linear Regresion Model Background<a class="anchor" aria-label="anchor" href="#linear-regresion-model-background"></a>
+<h3 id="linear-regression-model-background">Linear Regression Model Background<a class="anchor" aria-label="anchor" href="#linear-regression-model-background"></a>
 </h3>
 <p>Before we get into our estimation scheme, we will briefly describe
 our implementation of the linear regression model. The linear regression
@@ -122,179 +133,138 @@ model implementation, via <code>bdplm</code>, serves as an advanced
 companion to the <code>bdpnormal</code> model. With the
 <code>bdpnormal</code> model, we are interested in comparing mean
 outcomes via the probability that the mean values from treatment and
-control arms are not equivalent. When covariate adjustments are needed,
-<code>bdpnormal</code> is no longer a viable solution. Thus,
-<code>bdplm</code> allows analysts to adjust the treatment and control
-arm comparison for covariate effects.</p>
-<p>The analysis model of interest has the form
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>y</mi><mi>i</mi></msub><mo>=</mo><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><mi>I</mi><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mi>r</mi><mi>e</mi><mi>a</mi><mi>t</mi><mi>m</mi><mi>e</mi><mi>n</mi><msub><mi>t</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">)</mo><mo>+</mo><msub><mi>x</mi><mrow><mn>2</mn><mi>i</mi></mrow></msub><msub><mi>β</mi><mn>2</mn></msub><mo>+</mo><mi>⋯</mi><mo>+</mo><msub><mi>x</mi><mrow><mi>m</mi><mi>i</mi></mrow></msub><msub><mi>β</mi><mi>m</mi></msub><mo>+</mo><msub><mi>ε</mi><mi>i</mi></msub><mo>,</mo><msub><mi>ε</mi><mi>i</mi></msub><mo>∼</mo><mi>𝒩</mi><mi>o</mi><mi>r</mi><mi>m</mi><mi>a</mi><mi>l</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>0</mn><mo>,</mo><mspace width="0.167em"></mspace><msup><mi>σ</mi><mn>2</mn></msup><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo><mspace width="0.167em"></mspace><mspace width="0.167em"></mspace><mspace width="0.167em"></mspace><mi>i</mi><mo>=</mo><mn>1</mn><mo>,</mo><mi>…</mi><mo>,</mo><mi>n</mi><mo>,</mo></mrow><annotation encoding="application/x-tex">y_i = \beta_0 + \beta_1I(treatment_i) + x_{2i}\beta_2 + \cdots+x_{mi}\beta_m + \varepsilon_i, \varepsilon_i \sim \mathcal{N}ormal\left(0,\,\sigma^2\right),\,\,\,i=1,\dots,n,</annotation></semantics></math>
-where
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>I</mi><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mi>r</mi><mi>e</mi><mi>a</mi><mi>t</mi><mi>m</mi><mi>e</mi><mi>n</mi><msub><mi>t</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">I(treatment_i)</annotation></semantics></math>
-indicates whether observation
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math>
-is in the treatment arm,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>β</mi><mn>0</mn></msub><annotation encoding="application/x-tex">\beta_0</annotation></semantics></math>
-is the intercept,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>β</mi><mn>1</mn></msub><annotation encoding="application/x-tex">\beta_1</annotation></semantics></math>
-is the treatment effect,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>x</mi><mrow><mi>j</mi><mi>i</mi></mrow></msub><annotation encoding="application/x-tex">x_{ji}</annotation></semantics></math>
-is the
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>j</mi><annotation encoding="application/x-tex">j</annotation></semantics></math>th
-covariate with corresponding
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>β</mi><mi>j</mi></msub><annotation encoding="application/x-tex">\beta_j</annotation></semantics></math>
-covariate effect,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>j</mi><mo>=</mo><mn>2</mn><mo>,</mo><mi>…</mi><mo>,</mo><mi>m</mi></mrow><annotation encoding="application/x-tex">j=2,\dots,m</annotation></semantics></math>,
-and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>σ</mi><mn>2</mn></msup><annotation encoding="application/x-tex">\sigma^2</annotation></semantics></math>
-is the unknown error variance.</p>
-<p>Let
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>𝐱</mi><mi>i</mi><mi>T</mi></msubsup><msub><mi>𝛃</mi><mrow><mi>−</mi><mo stretchy="false" form="prefix">(</mo><mn>0</mn><mo>,</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo></mrow></msub><mo>=</mo><msub><mi>x</mi><mrow><mn>2</mn><mi>i</mi></mrow></msub><msub><mi>β</mi><mn>2</mn></msub><mo>+</mo><mi>⋯</mi><mo>+</mo><msub><mi>x</mi><mrow><mi>m</mi><mi>i</mi></mrow></msub><msub><mi>β</mi><mi>m</mi></msub></mrow><annotation encoding="application/x-tex">\boldsymbol{x}_i^T\boldsymbol{\beta}_{-(0,1)} = x_{2i}\beta_2 + \cdots+x_{mi}\beta_m</annotation></semantics></math>.
-Then, in order to place prior values on the treatment effect, we
-reparameterize the linear regression model as
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>y</mi><mi>i</mi></msub><mo>=</mo><msubsup><mi>β</mi><mn>0</mn><mo>*</mo></msubsup><mi>I</mi><mo stretchy="false" form="prefix">(</mo><mi>c</mi><mi>o</mi><mi>n</mi><mi>t</mi><mi>r</mi><mi>o</mi><msub><mi>l</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">)</mo><mo>+</mo><msubsup><mi>β</mi><mn>1</mn><mo>*</mo></msubsup><mi>I</mi><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mi>r</mi><mi>e</mi><mi>a</mi><mi>t</mi><mi>m</mi><mi>e</mi><mi>n</mi><msub><mi>t</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">)</mo><mo>+</mo><msubsup><mi>𝐱</mi><mi>i</mi><mi>T</mi></msubsup><msub><mi>β</mi><mrow><mi>−</mi><mo stretchy="false" form="prefix">(</mo><mn>0</mn><mo>,</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo></mrow></msub><mo>+</mo><msub><mi>ε</mi><mi>i</mi></msub><mo>,</mo><msub><mi>ε</mi><mi>i</mi></msub><mo>∼</mo><mi>𝒩</mi><mi>o</mi><mi>r</mi><mi>m</mi><mi>a</mi><mi>l</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>0</mn><mo>,</mo><mspace width="0.167em"></mspace><msup><mi>σ</mi><mn>2</mn></msup><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo><mspace width="0.167em"></mspace><mspace width="0.167em"></mspace><mspace width="0.167em"></mspace><mi>i</mi><mo>=</mo><mn>1</mn><mo>,</mo><mi>…</mi><mo>,</mo><mi>n</mi><mo>,</mo></mrow><annotation encoding="application/x-tex">y_i = \beta_0^{\ast}I(control_i) + \beta_1^{\ast}I(treatment_i) + \boldsymbol{x}_i^T\beta_{-(0,1)} + \varepsilon_i, \varepsilon_i \sim \mathcal{N}ormal\left(0,\,\sigma^2\right),\,\,\,i=1,\dots,n,</annotation></semantics></math>
-where now
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>I</mi><mo stretchy="false" form="prefix">(</mo><mi>c</mi><mi>o</mi><mi>n</mi><mi>t</mi><mi>r</mi><mi>o</mi><msub><mi>l</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">I(control_i)</annotation></semantics></math>
-indicates whether observation
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math>
-is in the control arm, i.e.,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>I</mi><mo stretchy="false" form="prefix">(</mo><mi>c</mi><mi>o</mi><mi>n</mi><mi>t</mi><mi>r</mi><mi>o</mi><msub><mi>l</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mn>1</mn><mo>−</mo><mi>I</mi><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mi>r</mi><mi>e</mi><mi>a</mi><mi>t</mi><mi>m</mi><mi>e</mi><mi>n</mi><msub><mi>t</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">I(control_i) = 1 - I(treatment_i)</annotation></semantics></math>.
-It is then straightforward to show that
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>β</mi><mn>0</mn></msub><mo>=</mo><msubsup><mi>β</mi><mn>0</mn><mo>*</mo></msubsup></mrow><annotation encoding="application/x-tex">\beta_0 = \beta^{\ast}_0</annotation></semantics></math>
-and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>β</mi><mn>1</mn></msub><mo>=</mo><msubsup><mi>β</mi><mn>1</mn><mo>*</mo></msubsup><mo>−</mo><msubsup><mi>β</mi><mn>0</mn><mo>*</mo></msubsup></mrow><annotation encoding="application/x-tex">\beta_1 = \beta_1^{\ast} - \beta^{\ast}_0</annotation></semantics></math>.</p>
-<p>In this reparameterization,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>β</mi><mn>0</mn><mo>*</mo></msubsup><annotation encoding="application/x-tex">\beta_0^{\ast}</annotation></semantics></math>
-and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>β</mi><mn>1</mn><mo>*</mo></msubsup><annotation encoding="application/x-tex">\beta_1^{\ast}</annotation></semantics></math>
-are the control and treatment arm means evaluated at covariate
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">= 0</annotation></semantics></math>.
+control arms are not equivalent.</p>
+<p>When covariate adjustments are needed, <code>bdpnormal</code> is no
+longer a viable solution. Thus, <code>bdplm</code> allows analysts to
+adjust the treatment and control arm comparison for covariate
+effects.</p>
+<p>The analysis model of interest has the form</p>
+<p><span class="math display">
+\begin{aligned}
+y_i &amp;= \beta_0 + \beta_1I(\mathrm{treatment}_i) + x_{2i}\beta_2 +
+\cdots+x_{mi}\beta_m + \varepsilon_i,\\
+\varepsilon_i &amp;\sim \mathcal{N}\left(0,\,\sigma^2\right),\qquad
+i=1,\dots,n.
+\end{aligned}
+</span></p>
+<p>where <span class="math inline">I(\mathrm{treatment}_i)</span>
+indicates whether observation <span class="math inline">i</span> is in
+the treatment arm, <span class="math inline">\beta_0</span> is the
+intercept, <span class="math inline">\beta_1</span> is the treatment
+effect, <span class="math inline">x_{ji}</span> is the <span class="math inline">j</span>th covariate with corresponding <span class="math inline">\beta_j</span> covariate effect, <span class="math inline">j=2,\dots,m</span>, and <span class="math inline">\sigma^2</span> is the unknown error variance.</p>
+<p>Let <span class="math inline">\boldsymbol{x}_i^T\boldsymbol{\beta}_{-(0,1)} =
+x_{2i}\beta_2 + \cdots+x_{mi}\beta_m</span>. Then, in order to place
+prior values on the treatment effect, we reparameterize the linear
+regression model as</p>
+<p><span class="math display">
+\begin{aligned}
+y_i &amp;= \beta_0^{\ast}I(\mathrm{control}_i) +
+\beta_1^{\ast}I(\mathrm{treatment}_i) + \boldsymbol{x}_i^T\beta_{-(0,1)}
++ \varepsilon_i,\\
+\varepsilon_i &amp;\sim \mathcal{N}\left(0,\,\sigma^2\right),\qquad
+i=1,\dots,n,
+\end{aligned}
+</span></p>
+<p>where now <span class="math inline">I(\mathrm{control}_i)</span>
+indicates whether observation <span class="math inline">i</span> is in
+the control arm, i.e., <span class="math inline">I(\mathrm{control}_i) =
+1 - I(\mathrm{treatment}_i)</span>. It is then straightforward to show
+that <span class="math inline">\beta_0 = \beta^{\ast}_0</span> and <span class="math inline">\beta_1 = \beta_1^{\ast} -
+\beta^{\ast}_0</span>.</p>
+<p>In this reparameterization, <span class="math inline">\beta_0^{\ast}</span> and <span class="math inline">\beta_1^{\ast}</span> are the control and treatment
+arm means evaluated at covariate <span class="math inline">= 0</span>.
 When the covariates are not centered, these arm-mean parameters become
 strongly correlated and their (historical) standard errors are
-extrapolation errors at covariate
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">= 0</annotation></semantics></math>.
+extrapolation errors at covariate <span class="math inline">= 0</span>.
 Because the historical information is incorporated through an
 independent (diagonal) prior on each arm mean, this correlation and the
-inflated standard errors distort the borrowing of historical data. To
-avoid this, <code>bdplm</code> automatically mean-centers each covariate
-on its pooled (current plus historical) mean before fitting, so that
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>β</mi><mn>0</mn><mo>*</mo></msubsup><annotation encoding="application/x-tex">\beta_0^{\ast}</annotation></semantics></math>
-and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>β</mi><mn>1</mn><mo>*</mo></msubsup><annotation encoding="application/x-tex">\beta_1^{\ast}</annotation></semantics></math>
-are the arm means at the average covariate value. The intercept is then
-back-transformed onto the original covariate scale: with pooled
-covariate means
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>x</mi><mo accent="true">‾</mo></mover><mi>j</mi></msub><annotation encoding="application/x-tex">\bar{x}_j</annotation></semantics></math>
-and estimated covariate effects
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>β</mi><mi>j</mi></msub><annotation encoding="application/x-tex">\beta_j</annotation></semantics></math>,
-the reported intercept is
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>β</mi><mn>0</mn></msub><mo>=</mo><msubsup><mi>β</mi><mn>0</mn><mo>*</mo></msubsup><mo>−</mo><msub><mo>∑</mo><mi>j</mi></msub><msub><mi>β</mi><mi>j</mi></msub><msub><mover><mi>x</mi><mo accent="true">‾</mo></mover><mi>j</mi></msub></mrow><annotation encoding="application/x-tex">\beta_0 = \beta_0^{\ast} - \sum_j \beta_j\bar{x}_j</annotation></semantics></math>,
-so
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>β</mi><mn>0</mn></msub><annotation encoding="application/x-tex">\beta_0</annotation></semantics></math>
-is still the control mean at covariate
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">= 0</annotation></semantics></math>
-on the original scale. The treatment effect
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>β</mi><mn>1</mn></msub><annotation encoding="application/x-tex">\beta_1</annotation></semantics></math>
-and the covariate effects are unchanged by centering, and the estimates
-are invariant to a location shift of any covariate. Users therefore do
-not need to center covariates themselves.</p>
+inflated standard errors distort the borrowing of historical data.</p>
+<p>To avoid this, <code>bdplm</code> automatically mean-centers each
+covariate on its pooled (current plus historical) mean before fitting,
+so that <span class="math inline">\beta_0^{\ast}</span> and <span class="math inline">\beta_1^{\ast}</span> are the arm means at the
+average covariate value.</p>
+<p>The intercept is then back-transformed onto the original covariate
+scale: with pooled covariate means <span class="math inline">\bar{x}_j</span> and estimated covariate effects
+<span class="math inline">\beta_j</span>, the reported intercept is
+<span class="math inline">\beta_0 = \beta_0^{\ast} - \sum_j
+\beta_j\bar{x}_j</span>, so <span class="math inline">\beta_0</span> is
+still the control mean at covariate <span class="math inline">= 0</span>
+on the original scale. The treatment effect <span class="math inline">\beta_1</span> and the covariate effects are
+unchanged by centering, and the estimates are invariant to a location
+shift of any covariate. Users therefore do not need to center covariates
+themselves.</p>
 </div>
 <div class="section level3">
 <h3 id="estimation-of-the-historical-data-weight">Estimation of the historical data weight<a class="anchor" aria-label="anchor" href="#estimation-of-the-historical-data-weight"></a>
 </h3>
-<p>In the first estimation step, the historical data weight
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>α</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\alpha}</annotation></semantics></math>
-is estimated. In the case of a two-arm trial, where both treatment and
-control data are available, an
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>α</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\alpha}</annotation></semantics></math>
-value is estimated separately for each of the treatment and control
-arms. Of course, historical treatment or historical control data must be
-present, otherwise
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>α</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\alpha}</annotation></semantics></math>
-is not estimated for the corresponding arm.</p>
-<p>When historical data are available, estimation of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>α</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\alpha}</annotation></semantics></math>
-is carried out as follows. Let
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>𝐲</mi><annotation encoding="application/x-tex">\boldsymbol{y}</annotation></semantics></math>
-and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>𝐲</mi><mn>0</mn></msub><annotation encoding="application/x-tex">\boldsymbol{y}_0</annotation></semantics></math>
-denote the current and historical data, respectively. The following
-linear regression model is then fit to the data:
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>y</mi><mi>i</mi></msub><mo>=</mo><msub><mover><mi>β</mi><mo accent="true">̃</mo></mover><mn>0</mn></msub><mo>+</mo><msub><mover><mi>β</mi><mo accent="true">̃</mo></mover><mn>1</mn></msub><mi>I</mi><mo stretchy="false" form="prefix">(</mo><mi>h</mi><mi>i</mi><mi>s</mi><mi>t</mi><mi>o</mi><mi>r</mi><mi>i</mi><mi>c</mi><mi>a</mi><msub><mi>l</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">)</mo><mo>+</mo><msub><mi>x</mi><mrow><mn>2</mn><mi>i</mi></mrow></msub><msub><mover><mi>β</mi><mo accent="true">̃</mo></mover><mn>2</mn></msub><mo>+</mo><mi>⋯</mi><mo>+</mo><msub><mi>x</mi><mrow><mi>m</mi><mi>i</mi></mrow></msub><msub><mover><mi>β</mi><mo accent="true">̃</mo></mover><mi>m</mi></msub><mo>+</mo><msub><mi>ε</mi><mi>i</mi></msub><mo>,</mo><msub><mi>ε</mi><mi>i</mi></msub><mo>∼</mo><mi>𝒩</mi><mi>o</mi><mi>r</mi><mi>m</mi><mi>a</mi><mi>l</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>0</mn><mo>,</mo><mspace width="0.167em"></mspace><msup><mi>σ</mi><mn>2</mn></msup><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo><mspace width="0.167em"></mspace><mspace width="0.167em"></mspace><mspace width="0.167em"></mspace><mi>i</mi><mo>=</mo><mn>1</mn><mo>,</mo><mi>…</mi><mo>,</mo><mi>n</mi><mo>,</mo></mrow><annotation encoding="application/x-tex">y_i = \tilde{\beta}_0 + \tilde{\beta}_1I(historical_i) + x_{2i}\tilde{\beta}_2 + \cdots+x_{mi}\tilde{\beta}_m + \varepsilon_i, \varepsilon_i \sim \mathcal{N}ormal\left(0,\,\sigma^2\right),\,\,\,i=1,\dots,n,</annotation></semantics></math>
-where
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>I</mi><mo stretchy="false" form="prefix">(</mo><mi>h</mi><mi>i</mi><mi>s</mi><mi>t</mi><mi>o</mi><mi>r</mi><mi>i</mi><mi>c</mi><mi>a</mi><msub><mi>l</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">I(historical_i)</annotation></semantics></math>
-indicates whether observation
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math>
-is historical. With vague priors on each parameter, we estimate the
-posterior probability that
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mover><mi>β</mi><mo accent="true">̃</mo></mover><mn>1</mn></msub><mo>&gt;</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\tilde{\beta}_1 &gt; 0</annotation></semantics></math>
-by first computing
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>p</mi><mn>1</mn></msub><mo>=</mo><mi>P</mi><mi>r</mi><mrow><mo stretchy="true" form="prefix">(</mo><mover><msub><mi>β</mi><mn>1</mn></msub><mo accent="true">̃</mo></mover><mo>&gt;</mo><mn>0</mn><mo>∣</mo><mi>𝐲</mi><mo>,</mo><msub><mi>𝐲</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">p_1 = Pr\left(\tilde{\beta_1} &gt; 0 \mid \boldsymbol{y}, \boldsymbol{y}_0\right)</annotation></semantics></math>.
-Then, we calculate the posterior probability
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>p</mi><annotation encoding="application/x-tex">p</annotation></semantics></math>
-as</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mo>=</mo><mrow><mo stretchy="true" form="prefix">{</mo><mtable><mtr><mtd columnalign="left" style="text-align: left"><mn>2</mn><msub><mi>p</mi><mn>1</mn></msub><mo>,</mo></mtd><mtd columnalign="left" style="text-align: left"><msub><mi>p</mi><mn>1</mn></msub><mo>≤</mo><mn>0.5</mn></mtd></mtr><mtr><mtd columnalign="left" style="text-align: left"><mn>2</mn><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>−</mo><msub><mi>p</mi><mn>1</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo></mtd><mtd columnalign="left" style="text-align: left"><msub><mi>p</mi><mn>1</mn></msub><mo>&gt;</mo><mn>0.5</mn><mi>.</mi></mtd></mtr></mtable></mrow></mrow><annotation encoding="application/x-tex">
+<p>In the first estimation step, the historical data weight <span class="math inline">\hat{\alpha}</span> is estimated. In the case of a
+two-arm trial, where both treatment and control data are available, an
+<span class="math inline">\hat{\alpha}</span> value is estimated
+separately for each of the treatment and control arms. Of course,
+historical treatment or historical control data must be present,
+otherwise <span class="math inline">\hat{\alpha}</span> is not estimated
+for the corresponding arm.</p>
+<p>When historical data are available, estimation of <span class="math inline">\hat{\alpha}</span> is carried out as follows. Let
+<span class="math inline">\boldsymbol{y}</span> and <span class="math inline">\boldsymbol{y}_0</span> denote the current and
+historical data, respectively. The following linear regression model is
+then fit to the data:</p>
+<p><span class="math display">
+\begin{aligned}
+y_i &amp;= \tilde{\beta}_0 + \tilde{\beta}_1I(\mathrm{historical}_i) +
+x_{2i}\tilde{\beta}_2 + \cdots+x_{mi}\tilde{\beta}_m + \varepsilon_i,\\
+\varepsilon_i &amp;\sim \mathcal{N}\left(0,\,\sigma^2\right),\qquad
+i=1,\dots,n,
+\end{aligned}
+</span></p>
+<p>where <span class="math inline">I(\mathrm{historical}_i)</span>
+indicates whether observation <span class="math inline">i</span> is
+historical.</p>
+<p>With vague priors on each parameter, we estimate the posterior
+probability that <span class="math inline">\tilde{\beta}_1 &gt; 0</span>
+by first computing <span class="math inline">p_1 =
+\Pr\left(\tilde{\beta_1} &gt; 0 \mid \boldsymbol{y},
+\boldsymbol{y}_0\right)</span>. Then, we calculate the posterior
+probability <span class="math inline">p</span> as</p>
+<p><span class="math display">
 p=\begin{cases}
-2p_{1}, &amp; p_{1}\le0.5\\
+2p_{1}, &amp; p_{1}\le0.5,\\
 2\left(1-p_{1}\right), &amp; p_{1}&gt;0.5.
 \end{cases}
-</annotation></semantics></math></p>
-<p>Finally, for a discount function, denoted
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>W</mi><annotation encoding="application/x-tex">W</annotation></semantics></math>,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>α</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\alpha}</annotation></semantics></math>
-is computed as
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover><mi>α</mi><mo accent="true">̂</mo></mover><mo>=</mo><msub><mi>α</mi><mrow><mi>m</mi><mi>a</mi><mi>x</mi></mrow></msub><mo>⋅</mo><mi>W</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>p</mi><mo>,</mo><mspace width="0.167em"></mspace><mi>w</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo><mspace width="0.167em"></mspace><mn>0</mn><mo>≤</mo><mi>p</mi><mo>≤</mo><mn>1</mn><mo>,</mo></mrow><annotation encoding="application/x-tex">
-\hat{\alpha} = \alpha_{max}\cdot W\left(p, \,w\right),\,0\le p\le1,
-</annotation></semantics></math> where
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>w</mi><annotation encoding="application/x-tex">w</annotation></semantics></math>
-may be one or more parameters associated with the discount function and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>α</mi><mrow><mi>m</mi><mi>a</mi><mi>x</mi></mrow></msub><annotation encoding="application/x-tex">\alpha_{max}</annotation></semantics></math>
-scales the weight
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>α</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\alpha}</annotation></semantics></math>
-by a user-input maximum value. More details on the discount functions
-are given in the discount function section below.</p>
+</span></p>
+<p>Finally, for a discount function, denoted <span class="math inline">W</span>, <span class="math inline">\hat{\alpha}</span> is computed as</p>
+<p><span class="math display">
+\hat{\alpha} = \alpha_{\max}\cdot W\left(p, \,w\right),\,0\le p\le1,
+</span></p>
+<p>where <span class="math inline">w</span> may be one or more
+parameters associated with the discount function and <span class="math inline">\alpha_{\max}</span> scales the weight <span class="math inline">\hat{\alpha}</span> by a user-input maximum value.
+More details on the discount functions are given in the discount
+function section below.</p>
 <p>There are several model inputs at this first stage. First, the user
 can select <code>fix_alpha = TRUE</code> and force a fixed value of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>α</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\alpha}</annotation></semantics></math>
-(at the <code>alpha_max</code> input), as opposed to estimation via the
-discount function.</p>
-<p>An alternate Monte Carlo-based estimation scheme of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>α</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\alpha}</annotation></semantics></math>
-has been implemented, controlled by the function input
-<code>method = "mc"</code>. Here, instead of treating
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>α</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\alpha}</annotation></semantics></math>
-as a fixed quantity,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>α</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\alpha}</annotation></semantics></math>
-is treated as random. First,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>p</mi><annotation encoding="application/x-tex">p</annotation></semantics></math>,
-is computed as</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtable><mtr><mtd columnalign="right" style="text-align: right"><mi>Z</mi></mtd><mtd columnalign="center" style="text-align: center"><mo>=</mo></mtd><mtd columnalign="left" style="text-align: left"><mfrac><mrow><mo stretchy="true" form="prefix">|</mo><msub><mi>β</mi><mn>1</mn></msub><mo stretchy="true" form="postfix">|</mo></mrow><msub><mi>σ</mi><mi>β</mi></msub></mfrac><mo>,</mo></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right"></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right"><mi>p</mi></mtd><mtd columnalign="center" style="text-align: center"><mo>=</mo></mtd><mtd columnalign="left" style="text-align: left"><mn>2</mn><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>−</mo><mi mathvariant="normal">Φ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>Z</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo></mtd></mtr></mtable><annotation encoding="application/x-tex"> \begin{array}{rcl}
-Z &amp; = &amp; \displaystyle{\frac{\left|\beta_1\right|}{\sigma_{\beta}}},\\
-\\
-p &amp;  =  &amp; 2\left(1-\Phi\left(Z\right)\right),
-\end{array}
-</annotation></semantics></math> where
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>σ</mi><mi>β</mi></msub><annotation encoding="application/x-tex">\sigma_{\beta}</annotation></semantics></math>
-is an estimate of the standard deviation of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>β</mi><mn>1</mn></msub><annotation encoding="application/x-tex">\beta_1</annotation></semantics></math>
-and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">Φ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\Phi\left(x\right)</annotation></semantics></math>
-is the
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>x</mi><annotation encoding="application/x-tex">x</annotation></semantics></math>th
-quantile of a standard normal (i.e., the <code>pnorm</code> R function).
-Next,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>p</mi><annotation encoding="application/x-tex">p</annotation></semantics></math>
-is used to construct
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>α</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\alpha}</annotation></semantics></math>
-via the discount function. Since the values
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Z</mi><annotation encoding="application/x-tex">Z</annotation></semantics></math>
-and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>p</mi><annotation encoding="application/x-tex">p</annotation></semantics></math>
-are computed at each iteration of the Monte Carlo estimation scheme,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>α</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\alpha}</annotation></semantics></math>
+<span class="math inline">\hat{\alpha}</span> (at the
+<code>alpha_max</code> input), as opposed to estimation via the discount
+function.</p>
+<p>An alternate Monte Carlo-based estimation scheme of <span class="math inline">\hat{\alpha}</span> has been implemented, controlled
+by the function input <code>method = "mc"</code>. Here, instead of
+treating <span class="math inline">\hat{\alpha}</span> as a fixed
+quantity, <span class="math inline">\hat{\alpha}</span> is treated as
+random.</p>
+<p>First, <span class="math inline">p</span>, is computed as</p>
+<p><span class="math display">
+\begin{aligned}
+Z &amp;= {\frac{\left|\beta_1\right|}{\sigma_{\beta}}},\\
+p &amp;= 2\left(1-\Phi\left(Z\right)\right),
+\end{aligned}
+</span></p>
+<p>where <span class="math inline">\sigma_{\beta}</span> is an estimate
+of the standard deviation of <span class="math inline">\beta_1</span>
+and <span class="math inline">\Phi\left(x\right)</span> is the <span class="math inline">x</span>th quantile of a standard normal (i.e., the
+<code>pnorm</code> R function).</p>
+<p>Next, <span class="math inline">p</span> is used to construct <span class="math inline">\hat{\alpha}</span> via the discount function. Since
+the values <span class="math inline">Z</span> and <span class="math inline">p</span> are computed at each iteration of the Monte
+Carlo estimation scheme, <span class="math inline">\hat{\alpha}</span>
 is computed at each iteration of the Monte Carlo estimation scheme,
-resulting in a distribution of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>α</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\alpha}</annotation></semantics></math>
-values.</p>
+resulting in a distribution of <span class="math inline">\hat{\alpha}</span> values.</p>
 <div class="section level4">
 <h4 id="discount-function">Discount function<a class="anchor" aria-label="anchor" href="#discount-function"></a>
 </h4>
@@ -309,19 +279,23 @@ choices available:</p>
 <li><p><code>scaledweibull</code>: Scaled Weibull CDF;</p></li>
 </ol>
 <p>First, the identity discount function (default) sets the discount
-weight
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover><mi>α</mi><mo accent="true">̂</mo></mover><mo>=</mo><mi>p</mi></mrow><annotation encoding="application/x-tex">\hat{\alpha}=p</annotation></semantics></math>.</p>
+weight <span class="math inline">\hat{\alpha}=p</span>.</p>
 <p>Second, the Weibull CDF has two user-specified parameters associated
 with it, the shape and scale. The default shape is 3 and the default
 scale is 0.135, each of which are controlled by the function inputs
 <code>weibull_shape</code> and <code>weibull_scale</code>, respectively.
-The form of the Weibull CDF is
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>W</mi><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mn>1</mn><mo>−</mo><mrow><mi mathvariant="normal">exp</mi><mo>⁡</mo></mrow><mrow><mo stretchy="true" form="prefix">{</mo><mi>−</mi><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mi>/</mi><msub><mi>w</mi><mrow><mi>s</mi><mi>c</mi><mi>a</mi><mi>l</mi><mi>e</mi></mrow></msub><msup><mo stretchy="false" form="postfix">)</mo><msub><mi>w</mi><mrow><mi>s</mi><mi>h</mi><mi>a</mi><mi>p</mi><mi>e</mi></mrow></msub></msup><mo stretchy="true" form="postfix">}</mo></mrow><mi>.</mi></mrow><annotation encoding="application/x-tex">W(x) = 1 - \exp\left\{- (x/w_{scale})^{w_{shape}}\right\}.</annotation></semantics></math></p>
+The form of the Weibull CDF is</p>
+<p><span class="math display">
+W(x) = 1 - \exp\left\{-
+(x/w_{\mathrm{scale}})^{w_{\mathrm{shape}}}\right\}.
+</span></p>
 <p>The third discount function option is the Scaled Weibull CDF. The
 Scaled Weibull CDF is the Weibull CDF divided by the value of the
-Weibull CDF evaluated at 1, i.e.,
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>W</mi><mo>*</mo></msup><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mi>W</mi><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo><mi>/</mi><mi>W</mi><mo stretchy="false" form="prefix">(</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo><mi>.</mi></mrow><annotation encoding="application/x-tex">W^{\ast}(x) = W(x)/W(1).</annotation></semantics></math>
-Similar to the Weibull CDF, the Scaled Weibull CDF has two
+Weibull CDF evaluated at 1, i.e.,</p>
+<p><span class="math display">
+W^{\ast}(x) = W(x)/W(1).
+</span></p>
+<p>Similar to the Weibull CDF, the Scaled Weibull CDF has two
 user-specified parameters associated with it, the shape and scale, again
 controlled by the function inputs <code>weibull_shape</code> and
 <code>weibull_scale</code>, respectively.</p>
@@ -330,12 +304,8 @@ functions are shown below.
 <img src="bdplm-vignette_files/figure-html/unnamed-chunk-1-1.png" class="r-plt" alt="" width="60%" style="display: block; margin: auto;"></p>
 <p><img src="bdplm-vignette_files/figure-html/unnamed-chunk-2-1.png" class="r-plt" alt="" width="60%" style="display: block; margin: auto;"></p>
 <p>In each of the above plots, the x-axis is the stochastic comparison
-between current and historical data, which we’ve denoted
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>p</mi><annotation encoding="application/x-tex">p</annotation></semantics></math>.
-The y-axis is the discount value
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>α</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\alpha}</annotation></semantics></math>
-that corresponds to a given value of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>p</mi><annotation encoding="application/x-tex">p</annotation></semantics></math>.</p>
+between current and historical data, which we’ve denoted <span class="math inline">p</span>. The y-axis is the discount value <span class="math inline">\hat{\alpha}</span> that corresponds to a given
+value of <span class="math inline">p</span>.</p>
 <p>An advanced input for the plot function is <code>print</code>. The
 default value is <code>print = TRUE</code>, which simply returns the
 graphics. Alternately, users can specify <code>print = FALSE</code>,
@@ -353,97 +323,89 @@ conditional on the historical data<a class="anchor" aria-label="anchor" href="#e
 </h3>
 <p>This section details the modeling scheme used to estimate the
 parameters of the linear regression model. In vector notation the model
-can be written <span class="math display">$$
-\begin{array}{rcl}
-\mathbf{y} &amp; \sim &amp;
-\mathcal{N}\left(\mathbf{X}\boldsymbol{\beta},\thinspace\boldsymbol{\Sigma}_{y}\right),\\
-\\
-\boldsymbol{\beta} &amp; \sim &amp;
-\mathcal{N}\left(\boldsymbol{\mu}_{\beta},\thinspace\boldsymbol{\Sigma}_{\beta}\right),
-\end{array}
-$$</span> where
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>𝛍</mi><mi>β</mi></msub><mo>=</mo><msup><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>μ</mi><mn>0</mn></msub><mo>,</mo><mspace width="0.167em"></mspace><msub><mi>μ</mi><mn>1</mn></msub><mo>,</mo><mspace width="0.167em"></mspace><msub><mi>μ</mi><mn>2</mn></msub><mo>,</mo><mi>…</mi><mo>,</mo><mspace width="0.167em"></mspace><msub><mi>μ</mi><mi>m</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow><mi>T</mi></msup></mrow><annotation encoding="application/x-tex">\boldsymbol{\mu}_{\beta}=\left(\mu_0,\,\mu_1,\,\mu_2,\dots,\,\mu_m\right)^T</annotation></semantics></math>
-and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>𝚺</mi><mi>β</mi></msub><mo>=</mo><mtext mathvariant="normal">diag</mtext><mrow><mo stretchy="true" form="prefix">(</mo><msubsup><mi>τ</mi><mn>0</mn><mn>2</mn></msubsup><mi>/</mi><msub><mi>α</mi><mn>00</mn></msub><mo>,</mo><mspace width="0.167em"></mspace><msubsup><mi>τ</mi><mn>1</mn><mn>2</mn></msubsup><mi>/</mi><msub><mi>α</mi><mn>01</mn></msub><mo>,</mo><mspace width="0.167em"></mspace><msubsup><mi>τ</mi><mn>2</mn><mn>2</mn></msubsup><mo>,</mo><mi>…</mi><mo>,</mo><msubsup><mi>τ</mi><mi>m</mi><mn>2</mn></msubsup><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\boldsymbol{\Sigma}_{\beta}=\mbox{diag}\left(\tau^2_0/\alpha_{00},\,\tau^2_1/\alpha_{01},\,\tau^2_2,\dots,\tau^2_m\right)</annotation></semantics></math>
-are known and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>𝚺</mi><mi>y</mi></msub><mo>=</mo><msup><mi>σ</mi><mn>2</mn></msup><msub><mi>𝐈</mi><mi>n</mi></msub></mrow><annotation encoding="application/x-tex">\boldsymbol{\Sigma}_y=\sigma^2\mathbf{I}_n</annotation></semantics></math>.
-Here,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>μ</mi><mn>0</mn></msub><annotation encoding="application/x-tex">\mu_0</annotation></semantics></math>
-and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>μ</mi><mn>1</mn></msub><annotation encoding="application/x-tex">\mu_1</annotation></semantics></math>
-are the prior means of the control and treatment effects, respectively,
-while
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>μ</mi><mn>2</mn></msub><mo>,</mo><mi>…</mi><mo>,</mo><mspace width="0.167em"></mspace><msub><mi>μ</mi><mi>m</mi></msub></mrow><annotation encoding="application/x-tex">\mu_2,\dots,\,\mu_m</annotation></semantics></math>
-are the prior means of the covariate effects. Likewise,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>τ</mi><mn>0</mn><mn>2</mn></msubsup><mi>/</mi><msub><mi>α</mi><mn>00</mn></msub></mrow><annotation encoding="application/x-tex">\tau^2_0/\alpha_{00}</annotation></semantics></math>
-and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>τ</mi><mn>1</mn><mn>2</mn></msubsup><mi>/</mi><msub><mi>α</mi><mn>01</mn></msub></mrow><annotation encoding="application/x-tex">\tau^2_1/\alpha_{01}</annotation></semantics></math>
-are the prior variances of the control and treatment effects (weighted
-by the discount function result
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>α</mi><annotation encoding="application/x-tex">\alpha</annotation></semantics></math>),
-respectively, while
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>τ</mi><mn>2</mn><mn>2</mn></msubsup><mo>,</mo><mi>…</mi><mo>,</mo><msubsup><mi>τ</mi><mi>m</mi><mn>2</mn></msubsup></mrow><annotation encoding="application/x-tex">\tau^2_2,\dots,\tau^2_m</annotation></semantics></math>
-are the prior variances of the remaining covariate effects.</p>
+can be written</p>
+<p><span class="math display">
+\begin{aligned}
+\mathbf{y} &amp;\sim
+\mathcal{N}\left(\mathbf{X}\boldsymbol{\beta},\,\boldsymbol{\Sigma}_{y}\right),\\
+\boldsymbol{\beta} &amp;\sim
+\mathcal{N}\left(\boldsymbol{\mu}_{\beta},\,\boldsymbol{\Sigma}_{\beta}\right),
+\end{aligned}
+</span></p>
+<p>where <span class="math inline">\boldsymbol{\mu}_{\beta}=\left(\mu_0,\,\mu_1,\,\mu_2,\dots,\,\mu_m\right)^T</span>
+and <span class="math inline">\boldsymbol{\Sigma}_{\beta}=\mbox{diag}\left(\tau^2_0/\alpha_{00},\,\tau^2_1/\alpha_{01},\,\tau^2_2,\dots,\tau^2_m\right)</span>
+are known and <span class="math inline">\boldsymbol{\Sigma}_y=\sigma^2\mathbf{I}_n</span>.</p>
+<p>Here, <span class="math inline">\mu_0</span> and <span class="math inline">\mu_1</span> are the prior means of the control and
+treatment effects, respectively, while <span class="math inline">\mu_2,\dots,\,\mu_m</span> are the prior means of
+the covariate effects.</p>
+<p>Likewise, <span class="math inline">\tau^2_0/\alpha_{00}</span> and
+<span class="math inline">\tau^2_1/\alpha_{01}</span> are the prior
+variances of the control and treatment effects (weighted by the discount
+function result <span class="math inline">\alpha</span>), respectively,
+while <span class="math inline">\tau^2_2,\dots,\tau^2_m</span> are the
+prior variances of the remaining covariate effects.</p>
 <p>Using what we refer to as the Gelman parameterization (see Gelman’s
 Bayesian Data Analysis, 3rd edition, chapter 14, for more information),
 the model can be reparameterized to improve computational efficiency.
-First, write <span class="math display">$$
-\mathbf{y}_{\ast}=\left(\begin{array}{c}
+First, write</p>
+<p><span class="math display">
+\begin{aligned}
+\mathbf{y}_{\ast} &amp;= \begin{pmatrix}
 \mathbf{y}\\
 \boldsymbol{\mu}_{\beta}
-\end{array}\right),\thinspace\mathbf{X}_{\ast}=\left(\begin{array}{c}
+\end{pmatrix},\qquad
+\mathbf{X}_{\ast} = \begin{pmatrix}
 \mathbf{X}\\
 \mathbf{I}_m
-\end{array}\right),\thinspace\boldsymbol{\Sigma}_{\ast}=\left(\begin{array}{cc}
+\end{pmatrix},\\
+\boldsymbol{\Sigma}_{\ast} &amp;= \begin{pmatrix}
 \boldsymbol{\Sigma}_y &amp; 0\\
 0 &amp; \boldsymbol{\Sigma}_{\beta}
-\end{array}\right).
-$$</span> Then, the Gelman parameterization has the form
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>𝐲</mi><mo>*</mo></msub><mo>=</mo><msub><mi>𝐗</mi><mo>*</mo></msub><mi>𝛃</mi><mo>+</mo><mi>𝛆</mi><mo>,</mo><mspace width="0.167em"></mspace><mspace width="0.167em"></mspace><mspace width="0.167em"></mspace><mi>𝛆</mi><mo>∼</mo><mi>𝒩</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>𝟎</mn><mo>,</mo><mspace width="0.167em"></mspace><msub><mi>𝚺</mi><mo>*</mo></msub><mo stretchy="true" form="postfix">)</mo></mrow><mi>.</mi></mrow><annotation encoding="application/x-tex">
-\mathbf{y}_{\ast}=\mathbf{X}_{\ast}\boldsymbol{\beta}+\boldsymbol{\varepsilon},\,\,\,\boldsymbol{\varepsilon}\sim\mathcal{N}\left(\mathbf{0},\,\boldsymbol{\Sigma}_{\ast}\right).
-</annotation></semantics></math> The estimate of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>𝛃</mi><annotation encoding="application/x-tex">\boldsymbol{\beta}</annotation></semantics></math>
-is computed as
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover><mi>𝛃</mi><mo accent="true">̂</mo></mover><mo>=</mo><msub><mi>𝐕</mi><mi>β</mi></msub><msubsup><mi>𝐗</mi><mo>*</mo><mi>T</mi></msubsup><msubsup><mi>𝚺</mi><mo>*</mo><mrow><mi>−</mi><mn>1</mn></mrow></msubsup><msub><mi>𝐲</mi><mo>*</mo></msub><mo>,</mo></mrow><annotation encoding="application/x-tex">
+\end{pmatrix}.
+\end{aligned}
+</span></p>
+<p>Then, the Gelman parameterization has the form</p>
+<p><span class="math display">
+\begin{aligned}
+\mathbf{y}_{\ast} &amp;=
+\mathbf{X}_{\ast}\boldsymbol{\beta}+\boldsymbol{\varepsilon},\\
+\boldsymbol{\varepsilon} &amp;\sim
+\mathcal{N}\left(\mathbf{0},\,\boldsymbol{\Sigma}_{\ast}\right).
+\end{aligned}
+</span></p>
+<p>The estimate of <span class="math inline">\boldsymbol{\beta}</span>
+is computed as</p>
+<p><span class="math display">
 \hat{\boldsymbol{\beta}}=\mathbf{V}_{\beta}\mathbf{X}_{\ast}^T\boldsymbol{\Sigma}_{\ast}^{-1}\mathbf{y}_{\ast},
-</annotation></semantics></math> where
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>𝐕</mi><mi>β</mi></msub><mo>=</mo><msup><mrow><mo stretchy="true" form="prefix">(</mo><msubsup><mi>𝐗</mi><mo>*</mo><mi>T</mi></msubsup><msubsup><mi>𝚺</mi><mo>*</mo><mrow><mi>−</mi><mn>1</mn></mrow></msubsup><msub><mi>𝐗</mi><mo>*</mo></msub><mo stretchy="true" form="postfix">)</mo></mrow><mrow><mi>−</mi><mn>1</mn></mrow></msup><mi>.</mi></mrow><annotation encoding="application/x-tex">
+</span></p>
+<p>where</p>
+<p><span class="math display">
 \mathbf{V}_{\beta}=\left(\mathbf{X}_{\ast}^T\boldsymbol{\Sigma}_{\ast}^{-1}\mathbf{X}_{\ast}\right)^{-1}.
-</annotation></semantics></math> This estimate of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>𝛃</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\boldsymbol{\beta}}</annotation></semantics></math>
-is the posterior mean and relies on an unknown parameter,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>σ</mi><mn>2</mn></msup><annotation encoding="application/x-tex">\sigma^2</annotation></semantics></math>.
-The marginal posterior distribution of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>σ</mi><mn>2</mn></msup><annotation encoding="application/x-tex">\sigma^2</annotation></semantics></math>
-is found as
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtable><mtr><mtd columnalign="right" style="text-align: right"><mi>π</mi><mrow><mo stretchy="true" form="prefix">(</mo><msup><mi>σ</mi><mn>2</mn></msup><mo>∣</mo><mi>𝐲</mi><mo stretchy="true" form="postfix">)</mo></mrow></mtd><mtd columnalign="center" style="text-align: center"><mo>∝</mo></mtd><mtd columnalign="left" style="text-align: left"><mrow><msup><mrow><mo stretchy="true" form="prefix">(</mo><mfrac><mn>1</mn><msup><mi>σ</mi><mn>2</mn></msup></mfrac><mo stretchy="true" form="postfix">)</mo></mrow><mrow><mi>n</mi><mi>/</mi><mn>2</mn><mo>+</mo><mn>1</mn></mrow></msup><msup><mrow><mo stretchy="true" form="prefix">|</mo><msub><mi>𝐕</mi><mi>β</mi></msub><mo stretchy="true" form="postfix">|</mo></mrow><mrow><mn>1</mn><mi>/</mi><mn>2</mn></mrow></msup><mrow><mi mathvariant="normal">exp</mi><mo>⁡</mo></mrow><mrow><mo stretchy="true" form="prefix">{</mo><mi>−</mi><mfrac><mn>1</mn><mn>2</mn></mfrac><msup><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>𝐲</mi><mo>*</mo></msub><mo>−</mo><msub><mi>𝐗</mi><mo>*</mo></msub><mover><mi>𝛃</mi><mo accent="true">̂</mo></mover><mo stretchy="true" form="postfix">)</mo></mrow><mi>T</mi></msup><msubsup><mi>𝚺</mi><mo>*</mo><mrow><mi>−</mi><mn>1</mn></mrow></msubsup><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>𝐲</mi><mo>*</mo></msub><mo>−</mo><msub><mi>𝐗</mi><mo>*</mo></msub><mover><mi>𝛃</mi><mo accent="true">̂</mo></mover><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">}</mo></mrow></mrow><mi>.</mi></mtd></mtr></mtable><annotation encoding="application/x-tex">
-\begin{array}{rcl}
-\pi\left(\sigma^2\mid\mathbf{y}\right) &amp; \propto &amp; {\displaystyle \left(\frac{1}{\sigma^2}\right)^{n/2+1}\left|\mathbf{V}_{\beta}\right|^{1/2}\exp\left\{ -\frac{1}{2}\left(\mathbf{y}_{\ast}-\mathbf{X}_{\ast}\hat{\boldsymbol{\beta}}\right)^T\boldsymbol{\Sigma}_{\ast}^{-1}\left(\mathbf{y}_{\ast}-\mathbf{X}_{\ast}\hat{\boldsymbol{\beta}}\right)\right\} }.
-\end{array}
-</annotation></semantics></math> Notice that both
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>𝐕</mi><mi>β</mi></msub><annotation encoding="application/x-tex">\mathbf{V}_{\beta}</annotation></semantics></math>
-and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi mathvariant="normal">Σ</mi><mo>*</mo></msub><annotation encoding="application/x-tex">\Sigma_{\ast}</annotation></semantics></math>
-contain
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>σ</mi><mn>2</mn></msup><annotation encoding="application/x-tex">\sigma^2</annotation></semantics></math>.
-Thus, this marginal posterior of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>σ</mi><mn>2</mn></msup><annotation encoding="application/x-tex">\sigma^2</annotation></semantics></math>
-does not have a known distribution. We resort to a grid search of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>σ</mi><mn>2</mn></msup><annotation encoding="application/x-tex">\sigma^2</annotation></semantics></math>
-where 100s or 1000s of values of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>σ</mi><mn>2</mn></msup><annotation encoding="application/x-tex">\sigma^2</annotation></semantics></math>
-are proposed, on a grid, and the proposed values are sampled with
-probability proportional to the likelihood evaluated at the
-proposal.</p>
-<p>Finally, values of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>σ</mi><mn>2</mn></msup><annotation encoding="application/x-tex">\sigma^2</annotation></semantics></math>
-sampled from the posterior distribution are then used to sample values
-of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>𝛃</mi><annotation encoding="application/x-tex">\boldsymbol{\beta}</annotation></semantics></math>
-from
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>𝛃</mi><mo>∼</mo><mi>𝒩</mi><mrow><mo stretchy="true" form="prefix">(</mo><mover><mi>𝛃</mi><mo accent="true">̂</mo></mover><mo>,</mo><mspace width="0.167em"></mspace><msub><mi>𝐕</mi><mi>β</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow><mi>.</mi></mrow><annotation encoding="application/x-tex">
-\boldsymbol{\beta} \sim \mathcal{N}\left(\hat{\boldsymbol{\beta}},\, \mathbf{V}_{\beta}\right).
-</annotation></semantics></math></p>
+</span></p>
+<p>This estimate of <span class="math inline">\hat{\boldsymbol{\beta}}</span> is the posterior
+mean and relies on an unknown parameter, <span class="math inline">\sigma^2</span>. The marginal posterior distribution
+of <span class="math inline">\sigma^2</span> is found as</p>
+<p><span class="math display">
+\begin{aligned}
+\pi\left(\sigma^2\mid\mathbf{y}\right) &amp;\propto
+\left(\frac{1}{\sigma^2}\right)^{n/2+1}\left|\mathbf{V}_{\beta}\right|^{1/2}\\
+&amp;\quad\times\exp\left\{
+-\frac{1}{2}\left(\mathbf{y}_{\ast}-\mathbf{X}_{\ast}\hat{\boldsymbol{\beta}}\right)^T\boldsymbol{\Sigma}_{\ast}^{-1}\left(\mathbf{y}_{\ast}-\mathbf{X}_{\ast}\hat{\boldsymbol{\beta}}\right)\right\}.
+\end{aligned}
+</span></p>
+<p>Notice that both <span class="math inline">\mathbf{V}_{\beta}</span>
+and <span class="math inline">\Sigma_{\ast}</span> contain <span class="math inline">\sigma^2</span>. Thus, this marginal posterior of
+<span class="math inline">\sigma^2</span> does not have a known
+distribution. We resort to a grid search of <span class="math inline">\sigma^2</span> where 100s or 1000s of values of
+<span class="math inline">\sigma^2</span> are proposed, on a grid, and
+the proposed values are sampled with probability proportional to the
+likelihood evaluated at the proposal.</p>
+<p>Finally, values of <span class="math inline">\sigma^2</span> sampled
+from the posterior distribution are then used to sample values of <span class="math inline">\boldsymbol{\beta}</span> from</p>
+<p><span class="math display">
+\boldsymbol{\beta} \sim \mathcal{N}\left(\hat{\boldsymbol{\beta}},\,
+\mathbf{V}_{\beta}\right).
+</span></p>
 </div>
 <div class="section level3">
 <h3 id="inputting-data">Inputting Data<a class="anchor" aria-label="anchor" href="#inputting-data"></a>

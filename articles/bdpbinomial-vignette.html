@@ -5,21 +5,23 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Binomial Count Estimation with bayesDP • bayesDP</title>
-<script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<!-- katex math --><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script><script src="../katex-auto.js"></script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Binomial Count Estimation with bayesDP">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
+<meta property="og:title" content="Binomial Count Estimation with bayesDP">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
-    <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
+    <nav class="navbar navbar-expand-lg fixed-top " aria-label="Site navigation"><div class="container">
 
     <a class="navbar-brand me-2" href="../index.html">bayesDP</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.8</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.9</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -45,6 +47,14 @@
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/graemeleehickey/bayesDP/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-lightswitch" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true" aria-label="Light switch"><span class="fa fa-sun"></span></button>
+  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown-lightswitch">
+<li><button class="dropdown-item" data-bs-theme-value="light"><span class="fa fa-sun"></span> Light</button></li>
+    <li><button class="dropdown-item" data-bs-theme-value="dark"><span class="fa fa-moon"></span> Dark</button></li>
+    <li><button class="dropdown-item" data-bs-theme-value="auto"><span class="fa fa-adjust"></span> Auto</button></li>
+  </ul>
+</li>
       </ul>
 </div>
 
@@ -61,6 +71,8 @@
       <h1>Binomial Count Estimation with bayesDP</h1>
                         <h4 data-toc-skip class="author">Donnie
 Musgrove</h4>
+                        <h4 data-toc-skip class="author">Graeme L.
+Hickey</h4>
             
             <h4 data-toc-skip class="date">2026-11-15</h4>
       
@@ -76,18 +88,16 @@ Musgrove</h4>
 <p>The purpose of this vignette is to introduce the
 <code>bdpbinomial</code> function. <code>bdpbinomial</code> is used for
 estimating posterior samples from a Binomial event rate outcome for
-clinical trials where an informative prior is used. In the parlance of
-clinical trials, the informative prior is derived from historical data.
-The weight given to the historical data is determined using what we
-refer to as a discount function. There are three steps in carrying out
-estimation:</p>
+clinical trials where an informative prior is used.</p>
+<p>In the parlance of clinical trials, the informative prior is derived
+from historical data. The weight given to the historical data is
+determined using what we refer to as a discount function. There are
+three steps in carrying out estimation:</p>
 <ol style="list-style-type: decimal">
-<li><p>Estimation of the historical data weight, denoted
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>α</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\alpha}</annotation></semantics></math>,
-via the discount function</p></li>
+<li><p>Estimation of the historical data weight, denoted <span class="math inline">\hat{\alpha}</span>, via the discount
+function</p></li>
 <li><p>Estimation of the posterior distribution of the current data,
-conditional on the historical data weighted by
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>α</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\alpha}</annotation></semantics></math></p></li>
+conditional on the historical data weighted by <span class="math inline">\hat{\alpha}</span></p></li>
 <li><p>If a two-arm clinical trial, estimation of the posterior
 treatment effect, i.e., treatment versus control</p></li>
 </ol>
@@ -113,118 +123,75 @@ considered a two-arm trial.</p>
 <div class="section level3">
 <h3 id="estimation-of-the-historical-data-weight">Estimation of the historical data weight<a class="anchor" aria-label="anchor" href="#estimation-of-the-historical-data-weight"></a>
 </h3>
-<p>In the first estimation step, the historical data weight
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>α</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\alpha}</annotation></semantics></math>
-is estimated. In the case of a two-arm trial, where both treatment and
-control data are available, an
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>α</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\alpha}</annotation></semantics></math>
-value is estimated separately for each of the treatment and control
-arms. Of course, historical treatment or historical control data must be
-present, otherwise
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>α</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\alpha}</annotation></semantics></math>
-is not estimated for the corresponding arm.</p>
-<p>When historical data are available, estimation of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>α</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\alpha}</annotation></semantics></math>
-is carried out as follows. Let
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>y</mi><annotation encoding="application/x-tex">y</annotation></semantics></math>
-and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>N</mi><annotation encoding="application/x-tex">N</annotation></semantics></math>
-denote the number of events and sample size of the current data,
-respectively. Similarly, let
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>y</mi><mn>0</mn></msub><annotation encoding="application/x-tex">y_0</annotation></semantics></math>
-and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>N</mi><mn>0</mn></msub><annotation encoding="application/x-tex">N_0</annotation></semantics></math>
+<p>In the first estimation step, the historical data weight <span class="math inline">\hat{\alpha}</span> is estimated. In the case of a
+two-arm trial, where both treatment and control data are available, an
+<span class="math inline">\hat{\alpha}</span> value is estimated
+separately for each of the treatment and control arms. Of course,
+historical treatment or historical control data must be present,
+otherwise <span class="math inline">\hat{\alpha}</span> is not estimated
+for the corresponding arm.</p>
+<p>When historical data are available, estimation of <span class="math inline">\hat{\alpha}</span> is carried out as follows. Let
+<span class="math inline">y</span> and <span class="math inline">N</span> denote the number of events and sample size
+of the current data, respectively. Similarly, let <span class="math inline">y_0</span> and <span class="math inline">N_0</span>
 denote the number of events and sample size of the historical data,
-respectively. Let
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>a</mi><mn>0</mn></msub><annotation encoding="application/x-tex">a_0</annotation></semantics></math>
-and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>b</mi><mn>0</mn></msub><annotation encoding="application/x-tex">b_0</annotation></semantics></math>
-denote the rate parameters of a Beta distribution. Then, the posterior
-distributions of the event rates for current and historical data, under
-vague (flat) priors are</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover><mi>θ</mi><mo accent="true">̃</mo></mover><mo>∣</mo><mi>y</mi><mo>,</mo><mi>N</mi><mo>∼</mo><mi>ℬ</mi><mi>e</mi><mi>t</mi><mi>a</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>y</mi><mo>+</mo><msub><mi>a</mi><mn>0</mn></msub><mo>,</mo><mspace width="0.167em"></mspace><mi>N</mi><mo>−</mo><mi>y</mi><mo>+</mo><msub><mi>b</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex"> \tilde{\theta}\mid y,N \sim \mathcal{B}eta\left(y+a_0,\,N-y+b_0 \right)</annotation></semantics></math>
-and</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>θ</mi><mn>0</mn></msub><mo>∣</mo><msub><mi>y</mi><mn>0</mn></msub><mo>,</mo><msub><mi>N</mi><mn>0</mn></msub><mo>∼</mo><mi>ℬ</mi><mi>e</mi><mi>t</mi><mi>a</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>y</mi><mn>0</mn></msub><mo>+</mo><msub><mi>a</mi><mn>0</mn></msub><mo>,</mo><mspace width="0.167em"></mspace><msub><mi>N</mi><mn>0</mn></msub><mo>−</mo><msub><mi>y</mi><mn>0</mn></msub><mo>+</mo><msub><mi>b</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo></mrow><annotation encoding="application/x-tex"> \theta_0\mid y_0,N_0 \sim \mathcal{B}eta\left(y_0+a_0,\,N_0-y_0+b_0 \right),</annotation></semantics></math>
-respectively. We next compute the posterior probability
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mo>=</mo><mi>P</mi><mi>r</mi><mrow><mo stretchy="true" form="prefix">(</mo><mover><mi>θ</mi><mo accent="true">̃</mo></mover><mo>&lt;</mo><msub><mi>θ</mi><mn>0</mn></msub><mo>∣</mo><mi>y</mi><mo>,</mo><mi>N</mi><mo>,</mo><msub><mi>y</mi><mn>0</mn></msub><mo>,</mo><msub><mi>N</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">p = Pr\left(\tilde{\theta} \lt \theta_0\mid y, N, y_0, N_0\right)</annotation></semantics></math>.
-Finally, for a discount function, denoted
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>W</mi><annotation encoding="application/x-tex">W</annotation></semantics></math>,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>α</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\alpha}</annotation></semantics></math>
-is computed as
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover><mi>α</mi><mo accent="true">̂</mo></mover><mo>=</mo><msub><mi>α</mi><mrow><mi>m</mi><mi>a</mi><mi>x</mi></mrow></msub><mo>⋅</mo><mi>W</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>p</mi><mo>,</mo><mspace width="0.167em"></mspace><mi>w</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo><mspace width="0.167em"></mspace><mn>0</mn><mo>≤</mo><mi>p</mi><mo>≤</mo><mn>1</mn><mo>,</mo></mrow><annotation encoding="application/x-tex">
-\hat{\alpha} = \alpha_{max}\cdot W\left(p, \,w\right),\,0\le p\le1,
-</annotation></semantics></math> where
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>w</mi><annotation encoding="application/x-tex">w</annotation></semantics></math>
-may be one or more parameters associated with the discount function and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>α</mi><mrow><mi>m</mi><mi>a</mi><mi>x</mi></mrow></msub><annotation encoding="application/x-tex">\alpha_{max}</annotation></semantics></math>
-scales the weight
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>α</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\alpha}</annotation></semantics></math>
-by a user-input maximum value. More details on the discount functions
-are given in the discount function section below.</p>
+respectively. Let <span class="math inline">a_0</span> and <span class="math inline">b_0</span> denote the rate parameters of a Beta
+distribution. Then, the posterior distributions of the event rates for
+current and historical data, under vague (flat) priors are</p>
+<p><span class="math display">
+\tilde{\theta}\mid y,N \sim \operatorname{Beta}\left(y+a_0,\,N-y+b_0
+\right)
+</span></p>
+<p>and</p>
+<p><span class="math display">
+\theta_0\mid y_0,N_0 \sim \operatorname{Beta}\left(y_0+a_0,\,N_0-y_0+b_0
+\right),
+</span></p>
+<p>respectively. We next compute the posterior probability <span class="math inline">p = \Pr\left(\tilde{\theta} &lt; \theta_0\mid y, N,
+y_0, N_0\right)</span>. Finally, for a discount function, denoted <span class="math inline">W</span>, <span class="math inline">\hat{\alpha}</span> is computed as</p>
+<p><span class="math display">
+\hat{\alpha} = \alpha_{\max}\cdot W\left(p, \,w\right),\,0\le p\le1,
+</span></p>
+<p>where <span class="math inline">w</span> may be one or more
+parameters associated with the discount function and <span class="math inline">\alpha_{\max}</span> scales the weight <span class="math inline">\hat{\alpha}</span> by a user-input maximum value.
+More details on the discount functions are given in the discount
+function section below.</p>
 <p>There are several model inputs at this first stage. First, the user
 can select the discount function type via the
 <code>discount_function</code> input (see below). Next, choosing
-<code>fix_alpha = TRUE</code> forces a fixed value of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>α</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\alpha}</annotation></semantics></math>
-(at the <code>alpha_max</code> input), as opposed to estimation via the
-discount function. In the next modeling stage, a Monte Carlo estimation
-approach is used, requiring several samples from the posterior
-distributions. Thus, the user can input a sample size greater than or
-less than the default value of <code>number_mcmc = 10000</code>.
-Finally, the Beta rate parameters can be changed from the defaults of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>a</mi><mn>0</mn></msub><mo>=</mo><msub><mi>b</mi><mn>0</mn></msub><mo>=</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">a_0=b_0=1</annotation></semantics></math>
-(<code>a0</code> and <code>b0</code> inputs).</p>
-<p>An alternate Monte Carlo-based estimation scheme of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>α</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\alpha}</annotation></semantics></math>
-has been implemented, controlled by the function input
-<code>method = "mc"</code>. Here, instead of treating
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>α</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\alpha}</annotation></semantics></math>
-as a fixed quantity,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>α</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\alpha}</annotation></semantics></math>
-is treated as random. Because
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>p</mi><annotation encoding="application/x-tex">p</annotation></semantics></math>
-is recomputed at each Monte Carlo draw using a single pair of posterior
-samples, the resulting sequence of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>α</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\alpha}</annotation></semantics></math>
-values can exhibit noticeable Monte Carlo variability. First,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>p</mi><annotation encoding="application/x-tex">p</annotation></semantics></math>,
-is computed as</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtable><mtr><mtd columnalign="right" style="text-align: right"><msup><mi>v</mi><mn>2</mn></msup></mtd><mtd columnalign="center" style="text-align: center"><mo>=</mo></mtd><mtd columnalign="left" style="text-align: left"><mrow><mover><mi>θ</mi><mo accent="true">̃</mo></mover><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>−</mo><mover><mi>θ</mi><mo accent="true">̃</mo></mover><mo stretchy="true" form="postfix">)</mo></mrow><mi>/</mi><mi>N</mi></mrow><mo>,</mo></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right"></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right"><msubsup><mi>v</mi><mn>0</mn><mn>2</mn></msubsup></mtd><mtd columnalign="center" style="text-align: center"><mo>=</mo></mtd><mtd columnalign="left" style="text-align: left"><mrow><msub><mi>θ</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>−</mo><msub><mi>θ</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mi>/</mi><msub><mi>N</mi><mn>0</mn></msub></mrow><mo>,</mo></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right"></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right"><mi>Z</mi></mtd><mtd columnalign="center" style="text-align: center"><mo>=</mo></mtd><mtd columnalign="left" style="text-align: left"><mfrac><mrow><mo stretchy="true" form="prefix">|</mo><mover><mi>θ</mi><mo accent="true">̃</mo></mover><mo>−</mo><msub><mi>θ</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">|</mo></mrow><msqrt><mrow><msup><mi>v</mi><mn>2</mn></msup><mo>+</mo><msubsup><mi>v</mi><mn>0</mn><mn>2</mn></msubsup></mrow></msqrt></mfrac><mo>,</mo></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right"></mtd></mtr><mtr><mtd columnalign="right" style="text-align: right"><mi>p</mi></mtd><mtd columnalign="center" style="text-align: center"><mo>=</mo></mtd><mtd columnalign="left" style="text-align: left"><mn>2</mn><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>−</mo><mi mathvariant="normal">Φ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>Z</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo></mtd></mtr></mtable><annotation encoding="application/x-tex"> \begin{array}{rcl}
-v^2 &amp; = &amp; \displaystyle{\tilde{\theta}\left(1-\tilde{\theta}\right)/N} ,\\
-\\
-v^2_0 &amp; = &amp; \displaystyle{\theta_0\left(1-\theta_0\right)/N_0} ,\\
-\\
-Z &amp; = &amp; \displaystyle{\frac{\left|\tilde{\theta}-\theta_0\right|}{\sqrt{v^2 + v^2_0}}} ,\\
-\\
-p &amp;  =  &amp; 2\left(1-\Phi\left(Z\right)\right),
-\end{array}
-</annotation></semantics></math> where
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">Φ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\Phi\left(x\right)</annotation></semantics></math>
-is the
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>x</mi><annotation encoding="application/x-tex">x</annotation></semantics></math>th
-quantile of a standard normal (i.e, the <code>pnorm</code> R function).
-Here,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>v</mi><mn>2</mn></msup><annotation encoding="application/x-tex">v^2</annotation></semantics></math>
-and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>v</mi><mn>0</mn><mn>2</mn></msubsup><annotation encoding="application/x-tex">v^2_0</annotation></semantics></math>
-are estimates of the variances of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>θ</mi><mo accent="true">̃</mo></mover><annotation encoding="application/x-tex">\tilde{\theta}</annotation></semantics></math>
-and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>θ</mi><mn>0</mn></msub><annotation encoding="application/x-tex">\theta_0</annotation></semantics></math>,
-respectively. Next,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>p</mi><annotation encoding="application/x-tex">p</annotation></semantics></math>
-is used to construct
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>α</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\alpha}</annotation></semantics></math>
-via the discount function. Since the values
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Z</mi><annotation encoding="application/x-tex">Z</annotation></semantics></math>
-and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>p</mi><annotation encoding="application/x-tex">p</annotation></semantics></math>
-are computed at each iteration of the Monte Carlo estimation scheme,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>α</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\alpha}</annotation></semantics></math>
+<code>fix_alpha = TRUE</code> forces a fixed value of <span class="math inline">\hat{\alpha}</span> (at the <code>alpha_max</code>
+input), as opposed to estimation via the discount function.</p>
+<p>In the next modeling stage, a Monte Carlo estimation approach is
+used, requiring several samples from the posterior distributions. Thus,
+the user can input a sample size greater than or less than the default
+value of <code>number_mcmc = 10000</code>. Finally, the Beta rate
+parameters can be changed from the defaults of <span class="math inline">a_0=b_0=1</span> (<code>a0</code> and
+<code>b0</code> inputs).</p>
+<p>An alternate Monte Carlo-based estimation scheme of <span class="math inline">\hat{\alpha}</span> has been implemented, controlled
+by the function input <code>method = "mc"</code>. Here, instead of
+treating <span class="math inline">\hat{\alpha}</span> as a fixed
+quantity, <span class="math inline">\hat{\alpha}</span> is treated as
+random. Because <span class="math inline">p</span> is recomputed at each
+Monte Carlo draw using a single pair of posterior samples, the resulting
+sequence of <span class="math inline">\hat{\alpha}</span> values can
+exhibit noticeable Monte Carlo variability.</p>
+<p>First, <span class="math inline">p</span>, is computed as</p>
+<p><span class="math display">
+\begin{aligned}
+v^2 &amp;= {\tilde{\theta}\left(1-\tilde{\theta}\right)/N} ,\\
+v^2_0 &amp;= {\theta_0\left(1-\theta_0\right)/N_0} ,\\
+Z &amp;= {\frac{\left|\tilde{\theta}-\theta_0\right|}{\sqrt{v^2 +
+v^2_0}}} ,\\
+p &amp;= 2\left(1-\Phi\left(Z\right)\right),
+\end{aligned}
+</span></p>
+<p>where <span class="math inline">\Phi\left(x\right)</span> is the
+<span class="math inline">x</span>th quantile of a standard normal (i.e,
+the <code>pnorm</code> R function). Here, <span class="math inline">v^2</span> and <span class="math inline">v^2_0</span> are estimates of the variances of <span class="math inline">\tilde{\theta}</span> and <span class="math inline">\theta_0</span>, respectively.</p>
+<p>Next, <span class="math inline">p</span> is used to construct <span class="math inline">\hat{\alpha}</span> via the discount function. Since
+the values <span class="math inline">Z</span> and <span class="math inline">p</span> are computed at each iteration of the Monte
+Carlo estimation scheme, <span class="math inline">\hat{\alpha}</span>
 is computed at each iteration of the Monte Carlo estimation scheme,
-resulting in a distribution of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>α</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\alpha}</annotation></semantics></math>
-values.</p>
+resulting in a distribution of <span class="math inline">\hat{\alpha}</span> values.</p>
 <div class="section level4">
 <h4 id="discount-function">Discount function<a class="anchor" aria-label="anchor" href="#discount-function"></a>
 </h4>
@@ -239,19 +206,23 @@ choices available:</p>
 <li><p><code>scaledweibull</code>: Scaled Weibull CDF;</p></li>
 </ol>
 <p>First, the identity discount function (default) sets the discount
-weight
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover><mi>α</mi><mo accent="true">̂</mo></mover><mo>=</mo><mi>p</mi></mrow><annotation encoding="application/x-tex">\hat{\alpha}=p</annotation></semantics></math>.</p>
+weight <span class="math inline">\hat{\alpha}=p</span>.</p>
 <p>Second, the Weibull CDF has two user-specified parameters associated
 with it, the shape and scale. The default shape is 3 and the default
 scale is 0.135, each of which are controlled by the function inputs
 <code>weibull_shape</code> and <code>weibull_scale</code>, respectively.
-The form of the Weibull CDF is
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>W</mi><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mn>1</mn><mo>−</mo><mrow><mi mathvariant="normal">exp</mi><mo>⁡</mo></mrow><mrow><mo stretchy="true" form="prefix">{</mo><mi>−</mi><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mi>/</mi><msub><mi>w</mi><mrow><mi>s</mi><mi>c</mi><mi>a</mi><mi>l</mi><mi>e</mi></mrow></msub><msup><mo stretchy="false" form="postfix">)</mo><msub><mi>w</mi><mrow><mi>s</mi><mi>h</mi><mi>a</mi><mi>p</mi><mi>e</mi></mrow></msub></msup><mo stretchy="true" form="postfix">}</mo></mrow><mi>.</mi></mrow><annotation encoding="application/x-tex">W(x) = 1 - \exp\left\{- (x/w_{scale})^{w_{shape}}\right\}.</annotation></semantics></math></p>
+The form of the Weibull CDF is</p>
+<p><span class="math display">
+W(x) = 1 - \exp\left\{-
+(x/w_{\mathrm{scale}})^{w_{\mathrm{shape}}}\right\}.
+</span></p>
 <p>The third discount function option is the Scaled Weibull CDF. The
 Scaled Weibull CDF is the Weibull CDF divided by the value of the
-Weibull CDF evaluated at 1, i.e.,
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>W</mi><mo>*</mo></msup><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mi>W</mi><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo><mi>/</mi><mi>W</mi><mo stretchy="false" form="prefix">(</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo><mi>.</mi></mrow><annotation encoding="application/x-tex">W^{\ast}(x) = W(x)/W(1).</annotation></semantics></math>
-Similar to the Weibull CDF, the Scaled Weibull CDF has two
+Weibull CDF evaluated at 1, i.e.,</p>
+<p><span class="math display">
+W^{\ast}(x) = W(x)/W(1).
+</span></p>
+<p>Similar to the Weibull CDF, the Scaled Weibull CDF has two
 user-specified parameters associated with it, the shape and scale, again
 controlled by the function inputs <code>weibull_shape</code> and
 <code>weibull_scale</code>, respectively.</p>
@@ -260,12 +231,8 @@ functions are shown below.
 <img src="bdpbinomial-vignette_files/figure-html/unnamed-chunk-1-1.png" class="r-plt" alt="" width="60%" style="display: block; margin: auto;"></p>
 <p><img src="bdpbinomial-vignette_files/figure-html/unnamed-chunk-2-1.png" class="r-plt" alt="" width="60%" style="display: block; margin: auto;"></p>
 <p>In each of the above plots, the x-axis is the stochastic comparison
-between current and historical data, which we’ve denoted
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>p</mi><annotation encoding="application/x-tex">p</annotation></semantics></math>.
-The y-axis is the discount value
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>α</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\alpha}</annotation></semantics></math>
-that corresponds to a given value of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>p</mi><annotation encoding="application/x-tex">p</annotation></semantics></math>.</p>
+between current and historical data, which we’ve denoted <span class="math inline">p</span>. The y-axis is the discount value <span class="math inline">\hat{\alpha}</span> that corresponds to a given
+value of <span class="math inline">p</span>.</p>
 <p>An advanced input for the plot function is <code>print</code>. The
 default value is <code>print = TRUE</code>, which simply returns the
 graphics. Alternately, users can specify <code>print = FALSE</code>,
@@ -281,35 +248,32 @@ the discount function plot:</p>
 <h3 id="estimation-of-the-posterior-distribution-of-the-current-data-conditional-on-the-historical-data">Estimation of the posterior distribution of the current data,
 conditional on the historical data<a class="anchor" aria-label="anchor" href="#estimation-of-the-posterior-distribution-of-the-current-data-conditional-on-the-historical-data"></a>
 </h3>
-<p>With
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi>α</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{\alpha}</annotation></semantics></math>
-in hand, we can now estimate the posterior distribution of the current
-data event rate. Using the notation of the previous section, the
-posterior distribution is
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>θ</mi><mo>∼</mo><mi>ℬ</mi><mi>e</mi><mi>t</mi><mi>a</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>y</mi><mo>+</mo><msub><mi>y</mi><mn>0</mn></msub><mover><mi>α</mi><mo accent="true">̂</mo></mover><mo>+</mo><msub><mi>a</mi><mn>0</mn></msub><mo>,</mo><mspace width="0.167em"></mspace><mi>N</mi><mo>−</mo><mi>y</mi><mo>+</mo><mover><mi>α</mi><mo accent="true">̂</mo></mover><mo stretchy="false" form="prefix">(</mo><msub><mi>N</mi><mn>0</mn></msub><mo>−</mo><msub><mi>y</mi><mn>0</mn></msub><mo stretchy="false" form="postfix">)</mo><mo>+</mo><msub><mi>b</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mi>.</mi></mrow><annotation encoding="application/x-tex">\theta \sim \mathcal{B}eta\left(y+y_0\hat{\alpha}+a_0,\, N-y+\hat{\alpha}(N_0-y_0)+b_0 \right).</annotation></semantics></math>
-At this model stage, we have in hand <code>number_mcmc</code>
+<p>With <span class="math inline">\hat{\alpha}</span> in hand, we can
+now estimate the posterior distribution of the current data event rate.
+Using the notation of the previous section, the posterior distribution
+is</p>
+<p><span class="math display">
+\theta \sim \operatorname{Beta}\left(y+y_0\hat{\alpha}+a_0,\,
+N-y+\hat{\alpha}(N_0-y_0)+b_0 \right).
+</span></p>
+<p>At this model stage, we have in hand <code>number_mcmc</code>
 simulations from the augmented event rate distribution. If there are no
 control data, i.e., a one-arm trial, then the modeling stops and we
-generate summaries of the posterior distribution of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>θ</mi><annotation encoding="application/x-tex">\theta</annotation></semantics></math>.
-Otherwise, if there are control data, we proceed to a third step and
-compute a comparison between treatment and control data.</p>
+generate summaries of the posterior distribution of <span class="math inline">\theta</span>. Otherwise, if there are control data,
+we proceed to a third step and compute a comparison between treatment
+and control data.</p>
 </div>
 <div class="section level3">
 <h3 id="estimation-of-the-posterior-treatment-effect-treatment-versus-control">Estimation of the posterior treatment effect: treatment versus
 control<a class="anchor" aria-label="anchor" href="#estimation-of-the-posterior-treatment-effect-treatment-versus-control"></a>
 </h3>
 <p>This step of the model is carried out on-the-fly using the
-<code>summary</code> or <code>print</code> methods. Let
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>θ</mi><mi>T</mi></msub><annotation encoding="application/x-tex">\theta_T</annotation></semantics></math>
-and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>θ</mi><mi>C</mi></msub><annotation encoding="application/x-tex">\theta_C</annotation></semantics></math>
-denote posterior event rate estimates of the treatment and control arms,
-respectively. Currently, the implemented comparison between treatment
-and control is the difference, i.e., summary statistics related to the
-posterior difference:
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>θ</mi><mi>T</mi></msub><mo>−</mo><msub><mi>θ</mi><mi>C</mi></msub></mrow><annotation encoding="application/x-tex">\theta_T - \theta_C</annotation></semantics></math>.
-In a future release, we may consider implementing additional comparison
+<code>summary</code> or <code>print</code> methods. Let <span class="math inline">\theta_T</span> and <span class="math inline">\theta_C</span> denote posterior event rate
+estimates of the treatment and control arms, respectively. Currently,
+the implemented comparison between treatment and control is the
+difference, i.e., summary statistics related to the posterior
+difference: <span class="math inline">\theta_T - \theta_C</span>. In a
+future release, we may consider implementing additional comparison
 types.</p>
 </div>
 <div class="section level3">
@@ -423,13 +387,14 @@ method.</p>
 based on a comparison between the current and historical data. We see
 that the stochastic comparison, <code>p_hat</code>, between historical
 and control is 0.3664. Here, <code>p_hat</code> is the posterior
-probability of the comparison between current and historical data. With
-the present example, <code>p_hat = 0.3664</code> implies that the
-current and historical event rates are moderately different. The result
-is that the weight given to the historical data is shrunk towards zero.
-Thus, the estimate of <code>alpha</code> from the discount function is
-0.3664, and the augmented posterior estimate of the event rate moves up
-from 0.075 observed in the current data to a value closer to 0.089.</p>
+probability of the comparison between current and historical data.</p>
+<p>With the present example, <code>p_hat = 0.3664</code> implies that
+the current and historical event rates are moderately different. The
+result is that the weight given to the historical data is shrunk towards
+zero. Thus, the estimate of <code>alpha</code> from the discount
+function is 0.3664, and the augmented posterior estimate of the event
+rate moves up from 0.075 observed in the current data to a value closer
+to 0.089.</p>
 <p>Many of the the values presented in the <code>summary</code> method
 are accessible from the fit object. For instance, <code>alpha</code> is
 found in <code>fit1a$posterior_treatment$alpha_discount</code> and
@@ -521,9 +486,9 @@ different than a one-arm analysis. First, we see <code>p_hat</code> and
 analysis, the current and historical control data have event rates that
 are very close, thus the historical control data is given full weight.
 This implies that the (augmented) posterior control event rate is
-approximately <code>(20 + 20) / (250 + 250) = 0.08</code>. Again,
-moderate weight is given to the historical treatment data, so we have an
-(augmented) posterior treatment event rate of 0.08.</p>
+approximately <code>(20 + 20) / (250 + 250) = 0.08</code>.</p>
+<p>Again, moderate weight is given to the historical treatment data, so
+we have an (augmented) posterior treatment event rate of 0.08.</p>
 <p>The CI is computed at run time and is the interval estimate of the
 difference between the posterior treatment and control event rates. With
 a 95% CI of <code>(-0.0347, 0.0453)</code>, we would conclude that the

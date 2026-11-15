@@ -7,16 +7,18 @@ The purpose of this vignette is to introduce the `bdpsurvival` function.
 right-censored data for clinical trials where an informative prior is
 used. The underlying model is a piecewise exponential model that assumes
 a constant hazard rate for each of several sub-intervals of the time to
-follow-up. In the parlance of clinical trials, the informative prior is
-derived from historical data. The weight given to the historical data is
+follow-up.
+
+In the parlance of clinical trials, the informative prior is derived
+from historical data. The weight given to the historical data is
 determined using what we refer to as a discount function. There are
 three steps in carrying out estimation:
 
-1.  Estimation of the historical data weight, denoted $`\hat{\alpha}`$,
-    via the discount function
+1.  Estimation of the historical data weight, denoted \hat{\alpha}, via
+    the discount function
 
 2.  Estimation of the posterior distribution of the current data,
-    conditional on the historical data weighted by $`\hat{\alpha}`$
+    conditional on the historical data weighted by \hat{\alpha}
 
 3.  If a two-arm clinical trial, estimation of the posterior treatment
     effect, i.e., treatment versus control
@@ -45,215 +47,211 @@ considered a two-arm trial.
 
 Before we get into our estimation scheme, we will briefly describe the
 piecewise exponential model. First, we partition the time duration into
-$`J`$ intervals with cutpoints (or breaks)
-$`0=\tau_0<\tau_1<\dots<\tau_J=\infty`$. The $`j`$th interval is defined
-as $`[\tau_{j-1},\,\tau_j)`$. Then, we let $`\lambda_j`$ denote the
-hazard rate of the $`j`$th interval. That is, we assume that the hazard
-rate is piecewise constant.
+J intervals with cutpoints (or breaks)
+0=\tau_0\<\tau_1\<\dots\<\tau_J=\infty. The jth interval is defined as
+\[\tau\_{j-1},\\\tau_j). Then, we let \lambda_j denote the hazard rate
+of the jth interval. That is, we assume that the hazard rate is
+piecewise constant.
 
-Now, let $`d_{ij}`$ be an event indicator for the $`i`$th subject in the
-$`j`$th interval. That is, $`d_{ij}=1`$ if the endpoint occurred in the
-$`j`$th interval, otherwise $`d_{ij}=0`$. Let $`t_{ij}`$ denote the
-exposure time of the $`i`$th subject in the $`j`$th interval.
+Now, let d\_{ij} be an event indicator for the ith subject in the jth
+interval. That is, d\_{ij}=1 if the endpoint occurred in the jth
+interval, otherwise d\_{ij}=0. Let t\_{ij} denote the exposure time of
+the ith subject in the jth interval.
 
-Let $`D_j=\sum_id_{ij}`$ be the number of episodes that occurred in
-interval $`j`$, and let $`T_j=\sum_it_{ij}`$ be the total exposure time
-within interval $`j`$. Then, the $`j`$th hazard rate is estimated as
-``` math
-\lambda_j\mid D_j, \sim \mathcal{G}amma\left(a_0+D_j,\,b_0+T_j\right),
-```
-where $`a_0`$ and $`b_0`$ are the prior shape and rate parameters of a
-gamma distribution. The survival probability can be estimated as
-``` math
-p_S = 1-F_p\left(q,\,\lambda_1,\dots,\,\lambda_J,\,\tau_0,\,\dots\,\,\tau_J\right),
-```
-where $`F_p`$ is the piecewise exponential cumulative distribution
-function.
+Let D_j=\sum_id\_{ij} be the number of episodes that occurred in
+interval j, and let T_j=\sum_it\_{ij} be the total exposure time within
+interval j. Then, the jth hazard rate is estimated as
+
+\lambda_j\mid D_j, \sim
+\operatorname{Gamma}\left(a_0+D_j,\\b_0+T_j\right),
+
+where a_0 and b_0 are the prior shape and rate parameters of a gamma
+distribution. The survival probability can be estimated as
+
+p_S =
+1-F_p\left(q,\\\lambda_1,\dots,\\\lambda_J,\\\tau_0,\\\dots\\\\\tau_J\right),
+
+where F_p is the piecewise exponential cumulative distribution function.
 
 In the case where a covariate effect is present, a slightly different
 approach is used. In the `bdpsurvival` function, a covariate effect
 arises in the context of a two-arm trial where the covariate of interest
 is the treatment indicator, i.e., treatment vs. control. In that case,
 we assume a Poisson glm model of the form
-``` math
-\log\mathbb{E}\left(d_{ij}\mid\lambda_j,\,\beta\right)=\log t_{ij} + \log\lambda_j + \beta I(treatment_i),\,\,\,i=1,\dots,\,N,\,\,j=1,\dots,\,J,
-```
-where $`I(treatment_i)`$ is a treatment indicator for the $`i`$th
-subject. In this context, $`\beta`$ is the $`\log`$ hazard rate between
-the treatment and control arms. With the Poisson glm, we use an
-approximation to estimate $`\beta`$ conditional on each $`\lambda_j`$.
-Suppose we estimate hazard rates for the treatment and controls arms
-independently, denoted $`\lambda_{jT}`$ and $`\lambda_{jC}`$,
-respectively. That is
-``` math
-\lambda_{jT} \sim \mathcal{G}amma\left(a_0+D_{jT},\,b_0+T_{jT}\right)
-```
+
+\begin{aligned} \log\mathbb{E}\left(d\_{ij}\mid\lambda_j,\\\beta\right)
+&= \log t\_{ij} + \log\lambda_j + \beta I(\mathrm{treatment}\_i),\\
+&\qquad i=1,\dots,N,\quad j=1,\dots,J, \end{aligned}
+
+where I(\mathrm{treatment}\_i) is a treatment indicator for the ith
+subject. In this context, \beta is the \log hazard rate between the
+treatment and control arms.
+
+With the Poisson glm, we use an approximation to estimate \beta
+conditional on each \lambda_j. Suppose we estimate hazard rates for the
+treatment and controls arms independently, denoted \lambda\_{jT} and
+\lambda\_{jC}, respectively. That is
+
+\lambda\_{jT} \sim
+\operatorname{Gamma}\left(a_0+D\_{jT},\\b_0+T\_{jT}\right)
+
 and
-``` math
-\lambda_{jC} \sim \mathcal{G}amma\left(a_0+D_{jC},\,b_0+T_{jC}\right),
-```
-where $`D_{jT}`$ and $`D_{jC}`$ denote the number of events occurring in
-interval $`j`$ for the treatment and control arms, respectively, and
-$`T_{jT}`$ and $`T_{jC}`$ denote the total exposures times in interval
-$`j`$ for the treatment and control arms, respectively. Then, an
-approximation of the log-hazard rate $`\beta`$ is carried out as
+
+\lambda\_{jC} \sim
+\operatorname{Gamma}\left(a_0+D\_{jC},\\b_0+T\_{jC}\right),
+
+where D\_{jT} and D\_{jC} denote the number of events occurring in
+interval j for the treatment and control arms, respectively, and T\_{jT}
+and T\_{jC} denote the total exposures times in interval j for the
+treatment and control arms, respectively.
+
+Then, an approximation of the log-hazard rate \beta is carried out as
 follows:
-``` math
-\begin{array}{rcl}
-R_j & = & \log\lambda_{jT}-\log\lambda_{jC},\,\,\,j=1,\dots,\,J,\\
-\\
-V_j & = & \mathbb{V}ar(R_j),\,\,\,j=1,\dots,\,J,\\
-\\
-\beta & = & \displaystyle{\frac{\sum_jR_j/V_j}{\sum_j1/V_j}}.\\
-\end{array}
-```
-This estimate of $`\beta`$ is a normal approximation to the estimate
-under a Poisson glm. Currently, the variance term $`V_j`$ is estimated
-empirically by calculating the variance of the posterior draws. The
-empirical variance approximates the theoretical variance under a normal
+
+\begin{aligned} R_j &=
+\log\lambda\_{jT}-\log\lambda\_{jC},\\\\\\j=1,\dots,\\J,\\ V_j &=
+\operatorname{Var}(R_j),\\\\\\j=1,\dots,\\J,\\ \beta &=
+{\frac{\sum_jR_j/V_j}{\sum_j1/V_j}}. \end{aligned}
+
+This estimate of \beta is a normal approximation to the estimate under a
+Poisson glm. Currently, the variance term V_j is estimated empirically
+by calculating the variance of the posterior draws. The empirical
+variance approximates the theoretical variance under a normal
 approximation of
-``` math
-\begin{array}{rcl}
-\tilde{V}_j & = & V_{jT} + V_{jC},\\
-\\
-V_{jT} & = & 1/D_{jT},\\
-\\
-V_{jC} & = & 1/D_{jC}.\\
-\end{array}
-```
+
+\begin{aligned} \tilde{V}\_j &= V\_{jT} + V\_{jC},\\ V\_{jT} &=
+1/D\_{jT},\\ V\_{jC} &= 1/D\_{jC}. \end{aligned}
 
 ### Estimation of the historical data weight
 
-In the first estimation step, the historical data weight
-$`\hat{\alpha}`$ is estimated. In the case of a two-arm trial, where
-both treatment and control data are available, an $`\hat{\alpha}`$ value
-is estimated separately for each of the treatment and control arms. Of
-course, historical treatment or historical control data must be present,
-otherwise $`\hat{\alpha}`$ is not estimated for the corresponding arm.
+In the first estimation step, the historical data weight \hat{\alpha} is
+estimated. In the case of a two-arm trial, where both treatment and
+control data are available, an \hat{\alpha} value is estimated
+separately for each of the treatment and control arms. Of course,
+historical treatment or historical control data must be present,
+otherwise \hat{\alpha} is not estimated for the corresponding arm.
 
-When historical data are available, estimation of $`\hat{\alpha}`$ is
-carried out as follows. Let $`d_{ij}`$ and $`t_{ij}`$ denote the the
-event indicator and event time or censoring time for the $`i`$th subject
-in the $`j`$th interval of the current data, respectively. Similarly,
-let $`d_{0ij}`$ and $`t_{0ij}`$ denote the the event indicator and event
-time or censoring time for the $`i`$th subject in the $`j`$th interval
-of the historical data, respectively. Let $`a_0`$ and $`b_0`$ denote the
-shape and rate parameters of a gamma distribution, respectively. Then,
-the posterior distributions of the $`j`$th piecewise hazard rates for
-current and historical data, under vague (flat) priors are
+When historical data are available, estimation of \hat{\alpha} is
+carried out as follows. Let d\_{ij} and t\_{ij} denote the the event
+indicator and event time or censoring time for the ith subject in the
+jth interval of the current data, respectively. Similarly, let d\_{0ij}
+and t\_{0ij} denote the the event indicator and event time or censoring
+time for the ith subject in the jth interval of the historical data,
+respectively.
 
-``` math
-\lambda_{j} \sim \mathcal{G}amma\left(a_0+D_j,\,b_0+T_j\right),
-```
+Let a_0 and b_0 denote the shape and rate parameters of a gamma
+distribution, respectively. Then, the posterior distributions of the jth
+piecewise hazard rates for current and historical data, under vague
+(flat) priors are
 
-``` math
-\lambda_{0j} \sim \mathcal{G}amma\left(a_0+D_{0j},\,b_0+T_{0j}\right)
-```
-respectively, where $`D_j=\sum_id_{ij}`$, $`T_j=\sum_it_{ij}`$,
-$`D_{0j}=\sum_id_{0ij}`$, and $`T_{j0}=\sum_it_{0ij}`$. The next steps
-are dependent on whether a one-arm or two-arm analysis is requested.
+\lambda\_{j} \sim \operatorname{Gamma}\left(a_0+D_j,\\b_0+T_j\right),
+
+\lambda\_{0j} \sim
+\operatorname{Gamma}\left(a_0+D\_{0j},\\b_0+T\_{0j}\right)
+
+respectively, where D_j=\sum_id\_{ij}, T_j=\sum_it\_{ij},
+D\_{0j}=\sum_id\_{0ij}, and T\_{j0}=\sum_it\_{0ij}. The next steps are
+dependent on whether a one-arm or two-arm analysis is requested.
 
 #### Estimation under a one-arm analysis
 
 Under a one-arm analysis, the comparison of interest is the survival
-probability at user-specified time $`t^\ast`$. Let
-``` math
-\tilde{\theta} = 1-F_p\left(t^\ast,\,\lambda_1,\dots,\,\lambda_J,\,\tau_0,\,\dots\,\,\tau_J\right),
-```
+probability at user-specified time t^\ast. Let
+
+\tilde{\theta} =
+1-F_p\left(t^\ast,\\\lambda_1,\dots,\\\lambda_J,\\\tau_0,\\\dots\\\\\tau_J\right),
+
 and
-``` math
-\theta_0 = 1-F_p\left(t^\ast,\,\lambda_{01},\dots,\,\lambda_{0J},\,\tau_0,\,\dots\,\,\tau_J\right),
-```
+
+\theta_0 =
+1-F_p\left(t^\ast,\\\lambda\_{01},\dots,\\\lambda\_{0J},\\\tau_0,\\\dots\\\\\tau_J\right),
+
 be the posterior survival probabilities for the current and historical
 data, respectively. Then, we compute the posterior probability that the
-current survival is greater than the historical survival
-$`p = Pr\left(\tilde{\theta} \ne \theta_0 \mid D, T, D_0,T_0 \right)`$,
-where $`D`$ and $`T`$ collect $`D_1,\dots,D_J`$ and $`T_1,\dots,T_J`$,
-respectively.
+current survival is greater than the historical survival p =
+\Pr\left(\tilde{\theta} \ne \theta_0 \mid D, T, D_0,T_0 \right), where D
+and T collect D_1,\dots,D_J and T_1,\dots,T_J, respectively.
 
 #### Estimation under a two-arm analysis
 
 Under a two-arm analysis, the comparison of interest is the hazard ratio
-of current vs. historical data. We estimate the log hazard ratio
-$`\beta`$ as described previously and compute the posterior probability
-that $`\beta \ne 0`$ as
-$`p = Pr\left(\beta \ne 0\mid D, T, D_0, T_0\right)`$.
+of current vs. historical data. We estimate the log hazard ratio \beta
+as described previously and compute the posterior probability that \beta
+\ne 0 as p = \Pr\left(\beta \ne 0\mid D, T, D_0, T_0\right).
 
 ------------------------------------------------------------------------
 
-Finally, for a discount function, denoted $`W`$, $`\hat{\alpha}`$ is
-computed as
-``` math
-\hat{\alpha} = \alpha_{max}\cdot W\left(p, \,w\right),\,0\le p\le1,
-```
-where $`w`$ may be one or more parameters associated with the discount
-function and $`\alpha_{max}`$ scales the weight $`\hat{\alpha}`$ by a
+Finally, for a discount function, denoted W, \hat{\alpha} is computed as
+
+\hat{\alpha} = \alpha\_{\max}\cdot W\left(p, \\w\right),\\0\le p\le1,
+
+where w may be one or more parameters associated with the discount
+function and \alpha\_{\max} scales the weight \hat{\alpha} by a
 user-input maximum value. More details on the discount functions are
 given in the discount function section below.
 
 There are several model inputs at this first stage. First, the user can
-select `fix_alpha = TRUE` and force a fixed value of $`\hat{\alpha}`$
-(at the `alpha_max` input), as opposed to estimation via the discount
-function. Next, a Monte Carlo estimation approach is used, requiring
-several samples from the posterior distributions. Thus, the user can
-input a sample size greater than or less than the default value of
+select `fix_alpha = TRUE` and force a fixed value of \hat{\alpha} (at
+the `alpha_max` input), as opposed to estimation via the discount
+function.
+
+Next, a Monte Carlo estimation approach is used, requiring several
+samples from the posterior distributions. Thus, the user can input a
+sample size greater than or less than the default value of
 `number_mcmc = 10000`. Next, the Beta rate parameters can be changed
-from the defaults of $`a_0=b_0=1`$ (`a0` and `b0` inputs).
+from the defaults of a_0=b_0=1 (`a0` and `b0` inputs).
 
-An alternate Monte Carlo-based estimation scheme of $`\hat{\alpha}`$ has
+An alternate Monte Carlo-based estimation scheme of \hat{\alpha} has
 been implemented, controlled by the function input `method = "mc"`.
-Here, instead of treating $`\hat{\alpha}`$ as a fixed quantity,
-$`\hat{\alpha}`$ is treated as random. Because each Monte Carlo
-iteration recomputes the comparison probability from that iteration’s
-posterior draws, the resulting sequence of $`\hat{\alpha}`$ values can
-exhibit noticeable Monte Carlo variability. For a one-arm analysis, let
-$`p_1`$ denote the posterior probability. Then, $`p_1`$ is computed as
+Here, instead of treating \hat{\alpha} as a fixed quantity, \hat{\alpha}
+is treated as random. Because each Monte Carlo iteration recomputes the
+comparison probability from that iteration’s posterior draws, the
+resulting sequence of \hat{\alpha} values can exhibit noticeable Monte
+Carlo variability.
 
-``` math
- \begin{array}{rcl}
-v^2_1 & = & \displaystyle{t^{\ast2}\sum_{j=1}^{J\left(t^\ast\right)}\frac{\lambda_{j}^{2}}{D_{j}}} ,\\
-\\
-v^2_{01} & = & \displaystyle{t^{\ast2}\sum_{j=1}^{J\left(t^\ast\right)}\frac{\lambda_{0j}^{2}}{D_{0j}}} ,\\
-\\
-Z_1 & = & \displaystyle{\frac{\left|\tilde{\theta}-\theta_0\right|}{\sqrt{v^2_1 + v^2_{01}}}} ,\\
-\\
-p_1 &  =  & 2\left(1-\Phi\left(Z_1\right)\right),
-\end{array}
-```
+For a one-arm analysis, let p_1 denote the posterior probability. Then,
+p_1 is computed as
 
-where $`\Phi\left(x\right)`$ is the $`x`$th quantile of a standard
-normal (i.e., the `pnorm` R function). Here, $`v_1^2`$ and $`v^2_{01}`$
-are estimates of the variances of $`\tilde{\theta}`$ and $`\theta_0`$,
-respectively. Next, $`p_1`$ is used to construct $`\hat{\alpha}`$ via
-the discount function. Since the values $`Z_1`$ and $`p_1`$ are computed
-at each iteration of the Monte Carlo estimation scheme, $`\hat{\alpha}`$
-is computed at each iteration of the Monte Carlo estimation scheme,
-resulting in a distribution of $`\hat{\alpha}`$ values.
+\begin{aligned} v^2_1 &=
+{t^{\ast2}\sum\_{j=1}^{J\left(t^\ast\right)}\frac{\lambda\_{j}^{2}}{D\_{j}}}
+,\\ v^2\_{01} &=
+{t^{\ast2}\sum\_{j=1}^{J\left(t^\ast\right)}\frac{\lambda\_{0j}^{2}}{D\_{0j}}}
+,\\ Z_1 &= {\frac{\left\|\tilde{\theta}-\theta_0\right\|}{\sqrt{v^2_1 +
+v^2\_{01}}}} ,\\ p_1 &= 2\left(1-\Phi\left(Z_1\right)\right),
+\end{aligned}
 
-For a two-arm analysis, let $`p_2`$ denote the posterior probability.
-Then, $`p_2`$ is computed as
+where \Phi\left(x\right) is the xth quantile of a standard normal (i.e.,
+the `pnorm` R function). Here, v_1^2 and v^2\_{01} are estimates of the
+variances of \tilde{\theta} and \theta_0, respectively.
 
-``` math
- \begin{array}{rcl}
-v^2_{2j} & = & \left(a_0 + D_j\right)^{-1},\, j=1,\dots,J,\\
-\\
-v^2_{02j} & = & \left(a_0 + D_{0j}\right)^{-1},\, j=1,\dots,J,\\
-\\
-\tilde{R} & = & \displaystyle{   \left(\sum_{j=1}^J\frac{\log\lambda_j-\log\lambda_{0j} }{1/v^2_{2j} + 1/v^2_{02j}}\right)  \left(\sum_{j=1}^J\frac{1}{1/v^2_{2j} + 1/v^2_{02j}}\right)^{-1}   } ,\\
-\\
-Z_2 & = & \displaystyle{\left|\tilde{R}\right|\left(\sum_{j=1}^J\frac{1}{1/v^2_{2j} + 1/v^2_{02j}}\right)^{-1/2}  } ,\\
-\\
-p_2 &  =  & 2\left(1-\Phi\left(Z_2\right)\right),
-\end{array}
-```
-where $`\Phi\left(x\right)`$ is the $`x`$th quantile of a standard
-normal. Here, $`v^2_{2j}`$ and $`v^2_{02j}`$ are estimates of the
-variances of $`\log\lambda_j`$ and $`\log\lambda_{0j}`$, respectively.
-Next, $`p_2`$ is used to construct $`\hat{\alpha}`$ via the discount
-function. Since the values $`Z_2`$ and $`p_2`$ are computed at each
-iteration of the Monte Carlo estimation scheme, $`\hat{\alpha}`$ is
-computed at each iteration of the Monte Carlo estimation scheme,
-resulting in a distribution of $`\hat{\alpha}`$ values.
+Next, p_1 is used to construct \hat{\alpha} via the discount function.
+Since the values Z_1 and p_1 are computed at each iteration of the Monte
+Carlo estimation scheme, \hat{\alpha} is computed at each iteration of
+the Monte Carlo estimation scheme, resulting in a distribution of
+\hat{\alpha} values.
+
+For a two-arm analysis, let p_2 denote the posterior probability. Then,
+p_2 is computed as
+
+\begin{aligned} v^2\_{2j} &= \left(a_0 + D_j\right)^{-1},\\
+j=1,\dots,J,\\ v^2\_{02j} &= \left(a_0 + D\_{0j}\right)^{-1},\\
+j=1,\dots,J,\\ \tilde{R} &= {
+\left(\sum\_{j=1}^J\frac{\log\lambda_j-\log\lambda\_{0j} }{1/v^2\_{2j} +
+1/v^2\_{02j}}\right) \left(\sum\_{j=1}^J\frac{1}{1/v^2\_{2j} +
+1/v^2\_{02j}}\right)^{-1} } ,\\ Z_2 &=
+{\left\|\tilde{R}\right\|\left(\sum\_{j=1}^J\frac{1}{1/v^2\_{2j} +
+1/v^2\_{02j}}\right)^{-1/2} } ,\\ p_2 &=
+2\left(1-\Phi\left(Z_2\right)\right), \end{aligned}
+
+where \Phi\left(x\right) is the xth quantile of a standard normal. Here,
+v^2\_{2j} and v^2\_{02j} are estimates of the variances of \log\lambda_j
+and \log\lambda\_{0j}, respectively.
+
+Next, p_2 is used to construct \hat{\alpha} via the discount function.
+Since the values Z_2 and p_2 are computed at each iteration of the Monte
+Carlo estimation scheme, \hat{\alpha} is computed at each iteration of
+the Monte Carlo estimation scheme, resulting in a distribution of
+\hat{\alpha} values.
 
 #### Discount function
 
@@ -268,23 +266,23 @@ There are currently three discount functions implemented throughout the
 3.  `scaledweibull`: Scaled Weibull CDF;
 
 First, the identity discount function (default) sets the discount weight
-$`\hat{\alpha}=p`$.
+\hat{\alpha}=p.
 
 Second, the Weibull CDF has two user-specified parameters associated
 with it, the shape and scale. The default shape is 3 and the default
 scale is 0.135, each of which are controlled by the function inputs
 `weibull_shape` and `weibull_scale`, respectively. The form of the
 Weibull CDF is
-``` math
-W(x) = 1 - \exp\left\{- (x/w_{scale})^{w_{shape}}\right\}.
-```
+
+W(x) = 1 - \exp\left\\-
+(x/w\_{\mathrm{scale}})^{w\_{\mathrm{shape}}}\right\\.
 
 The third discount function option is the Scaled Weibull CDF. The Scaled
 Weibull CDF is the Weibull CDF divided by the value of the Weibull CDF
 evaluated at 1, i.e.,
-``` math
+
 W^{\ast}(x) = W(x)/W(1).
-```
+
 Similar to the Weibull CDF, the Scaled Weibull CDF has two
 user-specified parameters associated with it, the shape and scale, again
 controlled by the function inputs `weibull_shape` and `weibull_scale`,
@@ -297,9 +295,9 @@ are shown below.
 ![](bdpsurvival-vignette_files/figure-html/unnamed-chunk-2-1.png)
 
 In each of the above plots, the x-axis is the stochastic comparison
-between current and historical data, which we’ve denoted $`p`$. The
-y-axis is the discount value $`\hat{\alpha}`$ that corresponds to a
-given value of $`p`$.
+between current and historical data, which we’ve denoted p. The y-axis
+is the discount value \hat{\alpha} that corresponds to a given value of
+p.
 
 An advanced input for the plot function is `print`. The default value is
 `print = TRUE`, which simply returns the graphics. Alternately, users
@@ -321,44 +319,45 @@ two-arm analysis.
 
 #### Estimation under a one-arm analysis
 
-With $`\hat{\alpha}`$ in hand, we can now estimate the posterior
+With \hat{\alpha} in hand, we can now estimate the posterior
 distributions of the hazards so that we can estimate the survival
 probability as described previously. Using the notation of the previous
 sections, the posterior distribution is
-``` math
-\begin{array}{rcl}
-p_S & = & 1-F_p\left(t^\ast,\,\lambda_1,\dots,\,\lambda_J,\,\tau_0,\,\dots\,\,\tau_J\right),\\
-\\
-\lambda_j & \sim & \mathcal{G}amma\left(a_0+\sum_id_{ij} + \hat{\alpha}\sum_id_{0ij},\,b_0+\sum_it_{ij} + \hat{\alpha}\sum_it_{0ij}\right),\,j=1,\dots,J\\
-\end{array}
-```
+
+\begin{aligned} p_S &=
+1-F_p\left(t^\ast,\\\lambda_1,\dots,\\\lambda_J,\\\tau_0,\\\dots\\\\\tau_J\right),\\
+\lambda_j &\sim \operatorname{Gamma}\left(a_0+\sum_id\_{ij} +
+\hat{\alpha}\sum_id\_{0ij},\\b_0+\sum_it\_{ij} +
+\hat{\alpha}\sum_it\_{0ij}\right),\\j=1,\dots,J \end{aligned}
+
 At this model stage, we have in hand `number_mcmc` simulations from the
 augmented posterior distribution and we then generate posterior
 summaries.
 
 #### Estimation under a two-arm analysis
 
-Again, under a two-arm analysis, and with $`\hat{\alpha}`$ in hand, we
-can now estimate the posterior distribution of the log hazard rate
-comparing treatment and control. Let $`\lambda_{jT}`$ and
-$`\lambda_{jC}`$ denote the hazard associated with the treatment and
-control data for the $`j`$th interval, respectively. Then we augment
-each of the treatment and control data by the weighted historical data
-as
-``` math
-\begin{array}{rcl}
-\lambda_{jT} & \sim & \mathcal{G}amma\left(a_0+\sum_id_{ijT} + \hat{\alpha}_T\sum_id_{0ijT},\,b_0+\sum_it_{ijT} + \hat{\alpha}_T\sum_it_{0ijT}\right),\,j=1,\dots,J\\
-\end{array}
-```
+Again, under a two-arm analysis, and with \hat{\alpha} in hand, we can
+now estimate the posterior distribution of the log hazard rate comparing
+treatment and control. Let \lambda\_{jT} and \lambda\_{jC} denote the
+hazard associated with the treatment and control data for the jth
+interval, respectively. Then we augment each of the treatment and
+control data by the weighted historical data as
+
+\begin{aligned} \lambda\_{jT} &\sim
+\operatorname{Gamma}\left(a_0+\sum_id\_{ijT} +
+\hat{\alpha}\_T\sum_id\_{0ijT},\\b_0+\sum_it\_{ijT} +
+\hat{\alpha}\_T\sum_it\_{0ijT}\right),\\j=1,\dots,J \end{aligned}
+
 and
-``` math
-\begin{array}{rcl}
-\lambda_{jC} & \sim & \mathcal{G}amma\left(a_0+\sum_id_{ijC} + \hat{\alpha}_C\sum_id_{0ijC},\,b_0+\sum_it_{ijC} + \hat{\alpha}_C\sum_it_{0ijC}\right),\,j=1,\dots,J\\
-\end{array}
-```
-respectively. We then construct the log hazard ratio $`\beta`$ using the
-estimates of $`\lambda_{jT}`$ and $`\lambda_{jC}`$, $`j=1,\dots,\,J`$ as
-described previously. At this model stage, we have in hand `number_mcmc`
+
+\begin{aligned} \lambda\_{jC} &\sim
+\operatorname{Gamma}\left(a_0+\sum_id\_{ijC} +
+\hat{\alpha}\_C\sum_id\_{0ijC},\\b_0+\sum_it\_{ijC} +
+\hat{\alpha}\_C\sum_it\_{0ijC}\right),\\j=1,\dots,J \end{aligned}
+
+respectively. We then construct the log hazard ratio \beta using the
+estimates of \lambda\_{jT} and \lambda\_{jC}, j=1,\dots,\\J as described
+previously. At this model stage, we have in hand `number_mcmc`
 simulations from the augmented posterior distribution and we then
 generate posterior summaries.
 
@@ -628,9 +627,12 @@ identical to `print`). First, we see the stochastic comparisons reported
 for both the treatment and control arms. As seen previously, the
 stochastic comparison between the current and historical data for the
 treatment data is relatively small at `0.1264`, giving a low historical
-data weight of `0.1264`. Similarly, the stochastic comparison between
-the current and historical data for the control data is relatively low
-at `0.0618`, giving a low historical data weight of `0.0618`. Finally,
-the presented `coef` value (and associated interval limits) is the log
-hazard ratio between the augmented treatment data and the augmented
-control data computed as `log(treatment) - log(control)`.
+data weight of `0.1264`.
+
+Similarly, the stochastic comparison between the current and historical
+data for the control data is relatively low at `0.0618`, giving a low
+historical data weight of `0.0618`.
+
+Finally, the presented `coef` value (and associated interval limits) is
+the log hazard ratio between the augmented treatment data and the
+augmented control data computed as `log(treatment) - log(control)`.

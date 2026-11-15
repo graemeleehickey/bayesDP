@@ -5,16 +5,18 @@
 The purpose of this vignette is to introduce the `bdplm` function.
 `bdplm` is used for estimating posterior samples in the context of
 linear regression for clinical trials where an informative prior is
-used. In the parlance of clinical trials, the informative prior is
-derived from historical data. The weight given to the historical data is
+used.
+
+In the parlance of clinical trials, the informative prior is derived
+from historical data. The weight given to the historical data is
 determined using what we refer to as a discount function. There are
 three steps in carrying out estimation:
 
-1.  Estimation of the historical data weight, denoted $`\hat{\alpha}`$,
-    via the discount function
+1.  Estimation of the historical data weight, denoted \hat{\alpha}, via
+    the discount function
 
 2.  Estimation of the posterior distribution of the current data,
-    conditional on the historical data weighted by $`\hat{\alpha}`$
+    conditional on the historical data weighted by \hat{\alpha}
 
 3.  Estimation of the posterior treatment effect, i.e., treatment versus
     control
@@ -43,122 +45,135 @@ considered a two-arm trial.
 two-arm clinical trial where current and historical treatment and
 current and historical control data are all present.**
 
-### Linear Regresion Model Background
+### Linear Regression Model Background
 
 Before we get into our estimation scheme, we will briefly describe our
 implementation of the linear regression model. The linear regression
 model implementation, via `bdplm`, serves as an advanced companion to
 the `bdpnormal` model. With the `bdpnormal` model, we are interested in
 comparing mean outcomes via the probability that the mean values from
-treatment and control arms are not equivalent. When covariate
-adjustments are needed, `bdpnormal` is no longer a viable solution.
-Thus, `bdplm` allows analysts to adjust the treatment and control arm
-comparison for covariate effects.
+treatment and control arms are not equivalent.
+
+When covariate adjustments are needed, `bdpnormal` is no longer a viable
+solution. Thus, `bdplm` allows analysts to adjust the treatment and
+control arm comparison for covariate effects.
 
 The analysis model of interest has the form
-``` math
-y_i = \beta_0 + \beta_1I(treatment_i) + x_{2i}\beta_2 + \cdots+x_{mi}\beta_m + \varepsilon_i, \varepsilon_i \sim \mathcal{N}ormal\left(0,\,\sigma^2\right),\,\,\,i=1,\dots,n,
-```
-where $`I(treatment_i)`$ indicates whether observation $`i`$ is in the
-treatment arm, $`\beta_0`$ is the intercept, $`\beta_1`$ is the
-treatment effect, $`x_{ji}`$ is the $`j`$th covariate with corresponding
-$`\beta_j`$ covariate effect, $`j=2,\dots,m`$, and $`\sigma^2`$ is the
-unknown error variance.
 
-Let
-$`\boldsymbol{x}_i^T\boldsymbol{\beta}_{-(0,1)} = x_{2i}\beta_2 + \cdots+x_{mi}\beta_m`$.
-Then, in order to place prior values on the treatment effect, we
-reparameterize the linear regression model as
-$`y_i = \beta_0^{\ast}I(control_i) + \beta_1^{\ast}I(treatment_i) + \boldsymbol{x}_i^T\beta_{-(0,1)} + \varepsilon_i, \varepsilon_i \sim \mathcal{N}ormal\left(0,\,\sigma^2\right),\,\,\,i=1,\dots,n,`$
-where now $`I(control_i)`$ indicates whether observation $`i`$ is in the
-control arm, i.e., $`I(control_i) = 1 - I(treatment_i)`$. It is then
-straightforward to show that $`\beta_0 = \beta^{\ast}_0`$ and
-$`\beta_1 = \beta_1^{\ast} - \beta^{\ast}_0`$.
+\begin{aligned} y_i &= \beta_0 + \beta_1I(\mathrm{treatment}\_i) +
+x\_{2i}\beta_2 + \cdots+x\_{mi}\beta_m + \varepsilon_i,\\ \varepsilon_i
+&\sim \mathcal{N}\left(0,\\\sigma^2\right),\qquad i=1,\dots,n.
+\end{aligned}
 
-In this reparameterization, $`\beta_0^{\ast}`$ and $`\beta_1^{\ast}`$
-are the control and treatment arm means evaluated at covariate $`= 0`$.
-When the covariates are not centered, these arm-mean parameters become
-strongly correlated and their (historical) standard errors are
-extrapolation errors at covariate $`= 0`$. Because the historical
-information is incorporated through an independent (diagonal) prior on
-each arm mean, this correlation and the inflated standard errors distort
-the borrowing of historical data. To avoid this, `bdplm` automatically
-mean-centers each covariate on its pooled (current plus historical) mean
-before fitting, so that $`\beta_0^{\ast}`$ and $`\beta_1^{\ast}`$ are
-the arm means at the average covariate value. The intercept is then
-back-transformed onto the original covariate scale: with pooled
-covariate means $`\bar{x}_j`$ and estimated covariate effects
-$`\beta_j`$, the reported intercept is
-$`\beta_0 = \beta_0^{\ast} - \sum_j \beta_j\bar{x}_j`$, so $`\beta_0`$
-is still the control mean at covariate $`= 0`$ on the original scale.
-The treatment effect $`\beta_1`$ and the covariate effects are unchanged
-by centering, and the estimates are invariant to a location shift of any
-covariate. Users therefore do not need to center covariates themselves.
+where I(\mathrm{treatment}\_i) indicates whether observation i is in the
+treatment arm, \beta_0 is the intercept, \beta_1 is the treatment
+effect, x\_{ji} is the jth covariate with corresponding \beta_j
+covariate effect, j=2,\dots,m, and \sigma^2 is the unknown error
+variance.
+
+Let \boldsymbol{x}\_i^T\boldsymbol{\beta}\_{-(0,1)} = x\_{2i}\beta_2 +
+\cdots+x\_{mi}\beta_m. Then, in order to place prior values on the
+treatment effect, we reparameterize the linear regression model as
+
+\begin{aligned} y_i &= \beta_0^{\ast}I(\mathrm{control}\_i) +
+\beta_1^{\ast}I(\mathrm{treatment}\_i) +
+\boldsymbol{x}\_i^T\beta\_{-(0,1)} + \varepsilon_i,\\ \varepsilon_i
+&\sim \mathcal{N}\left(0,\\\sigma^2\right),\qquad i=1,\dots,n,
+\end{aligned}
+
+where now I(\mathrm{control}\_i) indicates whether observation i is in
+the control arm, i.e., I(\mathrm{control}\_i) = 1 -
+I(\mathrm{treatment}\_i). It is then straightforward to show that
+\beta_0 = \beta^{\ast}\_0 and \beta_1 = \beta_1^{\ast} -
+\beta^{\ast}\_0.
+
+In this reparameterization, \beta_0^{\ast} and \beta_1^{\ast} are the
+control and treatment arm means evaluated at covariate = 0. When the
+covariates are not centered, these arm-mean parameters become strongly
+correlated and their (historical) standard errors are extrapolation
+errors at covariate = 0. Because the historical information is
+incorporated through an independent (diagonal) prior on each arm mean,
+this correlation and the inflated standard errors distort the borrowing
+of historical data.
+
+To avoid this, `bdplm` automatically mean-centers each covariate on its
+pooled (current plus historical) mean before fitting, so that
+\beta_0^{\ast} and \beta_1^{\ast} are the arm means at the average
+covariate value.
+
+The intercept is then back-transformed onto the original covariate
+scale: with pooled covariate means \bar{x}\_j and estimated covariate
+effects \beta_j, the reported intercept is \beta_0 = \beta_0^{\ast} -
+\sum_j \beta_j\bar{x}\_j, so \beta_0 is still the control mean at
+covariate = 0 on the original scale. The treatment effect \beta_1 and
+the covariate effects are unchanged by centering, and the estimates are
+invariant to a location shift of any covariate. Users therefore do not
+need to center covariates themselves.
 
 ### Estimation of the historical data weight
 
-In the first estimation step, the historical data weight
-$`\hat{\alpha}`$ is estimated. In the case of a two-arm trial, where
-both treatment and control data are available, an $`\hat{\alpha}`$ value
-is estimated separately for each of the treatment and control arms. Of
-course, historical treatment or historical control data must be present,
-otherwise $`\hat{\alpha}`$ is not estimated for the corresponding arm.
+In the first estimation step, the historical data weight \hat{\alpha} is
+estimated. In the case of a two-arm trial, where both treatment and
+control data are available, an \hat{\alpha} value is estimated
+separately for each of the treatment and control arms. Of course,
+historical treatment or historical control data must be present,
+otherwise \hat{\alpha} is not estimated for the corresponding arm.
 
-When historical data are available, estimation of $`\hat{\alpha}`$ is
-carried out as follows. Let $`\boldsymbol{y}`$ and $`\boldsymbol{y}_0`$
-denote the current and historical data, respectively. The following
-linear regression model is then fit to the data:
-``` math
-y_i = \tilde{\beta}_0 + \tilde{\beta}_1I(historical_i) + x_{2i}\tilde{\beta}_2 + \cdots+x_{mi}\tilde{\beta}_m + \varepsilon_i, \varepsilon_i \sim \mathcal{N}ormal\left(0,\,\sigma^2\right),\,\,\,i=1,\dots,n,
-```
-where $`I(historical_i)`$ indicates whether observation $`i`$ is
-historical. With vague priors on each parameter, we estimate the
-posterior probability that $`\tilde{\beta}_1 > 0`$ by first computing
-$`p_1 = Pr\left(\tilde{\beta_1} > 0 \mid \boldsymbol{y}, \boldsymbol{y}_0\right)`$.
-Then, we calculate the posterior probability $`p`$ as
+When historical data are available, estimation of \hat{\alpha} is
+carried out as follows. Let \boldsymbol{y} and \boldsymbol{y}\_0 denote
+the current and historical data, respectively. The following linear
+regression model is then fit to the data:
 
-``` math
-p=\begin{cases}
-2p_{1}, & p_{1}\le0.5\\
-2\left(1-p_{1}\right), & p_{1}>0.5.
-\end{cases}
-```
+\begin{aligned} y_i &= \tilde{\beta}\_0 +
+\tilde{\beta}\_1I(\mathrm{historical}\_i) + x\_{2i}\tilde{\beta}\_2 +
+\cdots+x\_{mi}\tilde{\beta}\_m + \varepsilon_i,\\ \varepsilon_i &\sim
+\mathcal{N}\left(0,\\\sigma^2\right),\qquad i=1,\dots,n, \end{aligned}
 
-Finally, for a discount function, denoted $`W`$, $`\hat{\alpha}`$ is
-computed as
-``` math
-\hat{\alpha} = \alpha_{max}\cdot W\left(p, \,w\right),\,0\le p\le1,
-```
-where $`w`$ may be one or more parameters associated with the discount
-function and $`\alpha_{max}`$ scales the weight $`\hat{\alpha}`$ by a
+where I(\mathrm{historical}\_i) indicates whether observation i is
+historical.
+
+With vague priors on each parameter, we estimate the posterior
+probability that \tilde{\beta}\_1 \> 0 by first computing p_1 =
+\Pr\left(\tilde{\beta_1} \> 0 \mid \boldsymbol{y},
+\boldsymbol{y}\_0\right). Then, we calculate the posterior probability p
+as
+
+p=\begin{cases} 2p\_{1}, & p\_{1}\le0.5,\\ 2\left(1-p\_{1}\right), &
+p\_{1}\>0.5. \end{cases}
+
+Finally, for a discount function, denoted W, \hat{\alpha} is computed as
+
+\hat{\alpha} = \alpha\_{\max}\cdot W\left(p, \\w\right),\\0\le p\le1,
+
+where w may be one or more parameters associated with the discount
+function and \alpha\_{\max} scales the weight \hat{\alpha} by a
 user-input maximum value. More details on the discount functions are
 given in the discount function section below.
 
 There are several model inputs at this first stage. First, the user can
-select `fix_alpha = TRUE` and force a fixed value of $`\hat{\alpha}`$
-(at the `alpha_max` input), as opposed to estimation via the discount
+select `fix_alpha = TRUE` and force a fixed value of \hat{\alpha} (at
+the `alpha_max` input), as opposed to estimation via the discount
 function.
 
-An alternate Monte Carlo-based estimation scheme of $`\hat{\alpha}`$ has
+An alternate Monte Carlo-based estimation scheme of \hat{\alpha} has
 been implemented, controlled by the function input `method = "mc"`.
-Here, instead of treating $`\hat{\alpha}`$ as a fixed quantity,
-$`\hat{\alpha}`$ is treated as random. First, $`p`$, is computed as
+Here, instead of treating \hat{\alpha} as a fixed quantity, \hat{\alpha}
+is treated as random.
 
-``` math
- \begin{array}{rcl}
-Z & = & \displaystyle{\frac{\left|\beta_1\right|}{\sigma_{\beta}}},\\
-\\
-p &  =  & 2\left(1-\Phi\left(Z\right)\right),
-\end{array}
-```
-where $`\sigma_{\beta}`$ is an estimate of the standard deviation of
-$`\beta_1`$ and $`\Phi\left(x\right)`$ is the $`x`$th quantile of a
-standard normal (i.e., the `pnorm` R function). Next, $`p`$ is used to
-construct $`\hat{\alpha}`$ via the discount function. Since the values
-$`Z`$ and $`p`$ are computed at each iteration of the Monte Carlo
-estimation scheme, $`\hat{\alpha}`$ is computed at each iteration of the
-Monte Carlo estimation scheme, resulting in a distribution of
-$`\hat{\alpha}`$ values.
+First, p, is computed as
+
+\begin{aligned} Z &= {\frac{\left\|\beta_1\right\|}{\sigma\_{\beta}}},\\
+p &= 2\left(1-\Phi\left(Z\right)\right), \end{aligned}
+
+where \sigma\_{\beta} is an estimate of the standard deviation of
+\beta_1 and \Phi\left(x\right) is the xth quantile of a standard normal
+(i.e., the `pnorm` R function).
+
+Next, p is used to construct \hat{\alpha} via the discount function.
+Since the values Z and p are computed at each iteration of the Monte
+Carlo estimation scheme, \hat{\alpha} is computed at each iteration of
+the Monte Carlo estimation scheme, resulting in a distribution of
+\hat{\alpha} values.
 
 #### Discount function
 
@@ -173,23 +188,23 @@ There are currently three discount functions implemented throughout the
 3.  `scaledweibull`: Scaled Weibull CDF;
 
 First, the identity discount function (default) sets the discount weight
-$`\hat{\alpha}=p`$.
+\hat{\alpha}=p.
 
 Second, the Weibull CDF has two user-specified parameters associated
 with it, the shape and scale. The default shape is 3 and the default
 scale is 0.135, each of which are controlled by the function inputs
 `weibull_shape` and `weibull_scale`, respectively. The form of the
 Weibull CDF is
-``` math
-W(x) = 1 - \exp\left\{- (x/w_{scale})^{w_{shape}}\right\}.
-```
+
+W(x) = 1 - \exp\left\\-
+(x/w\_{\mathrm{scale}})^{w\_{\mathrm{shape}}}\right\\.
 
 The third discount function option is the Scaled Weibull CDF. The Scaled
 Weibull CDF is the Weibull CDF divided by the value of the Weibull CDF
 evaluated at 1, i.e.,
-``` math
+
 W^{\ast}(x) = W(x)/W(1).
-```
+
 Similar to the Weibull CDF, the Scaled Weibull CDF has two
 user-specified parameters associated with it, the shape and scale, again
 controlled by the function inputs `weibull_shape` and `weibull_scale`,
@@ -202,9 +217,9 @@ are shown below.
 ![](bdplm-vignette_files/figure-html/unnamed-chunk-2-1.png)
 
 In each of the above plots, the x-axis is the stochastic comparison
-between current and historical data, which we’ve denoted $`p`$. The
-y-axis is the discount value $`\hat{\alpha}`$ that corresponds to a
-given value of $`p`$.
+between current and historical data, which we’ve denoted p. The y-axis
+is the discount value \hat{\alpha} that corresponds to a given value of
+p.
 
 An advanced input for the plot function is `print`. The default value is
 `print = TRUE`, which simply returns the graphics. Alternately, users
@@ -223,64 +238,78 @@ p1 + ggtitle("Discount Function Plot :-)")
 
 This section details the modeling scheme used to estimate the parameters
 of the linear regression model. In vector notation the model can be
-written \$\$ \begin{array}{rcl} \mathbf{y} & \sim &
-\mathcal{N}\left(\mathbf{X}\boldsymbol{\beta},\thinspace\boldsymbol{\Sigma}\_{y}\right),\\
-\\ \boldsymbol{\beta} & \sim &
-\mathcal{N}\left(\boldsymbol{\mu}\_{\beta},\thinspace\boldsymbol{\Sigma}\_{\beta}\right),
-\end{array} \$\$ where
-$`\boldsymbol{\mu}_{\beta}=\left(\mu_0,\,\mu_1,\,\mu_2,\dots,\,\mu_m\right)^T`$
+written
+
+\begin{aligned} \mathbf{y} &\sim
+\mathcal{N}\left(\mathbf{X}\boldsymbol{\beta},\\\boldsymbol{\Sigma}\_{y}\right),\\
+\boldsymbol{\beta} &\sim
+\mathcal{N}\left(\boldsymbol{\mu}\_{\beta},\\\boldsymbol{\Sigma}\_{\beta}\right),
+\end{aligned}
+
+where
+\boldsymbol{\mu}\_{\beta}=\left(\mu_0,\\\mu_1,\\\mu_2,\dots,\\\mu_m\right)^T
 and
-$`\boldsymbol{\Sigma}_{\beta}=\mbox{diag}\left(\tau^2_0/\alpha_{00},\,\tau^2_1/\alpha_{01},\,\tau^2_2,\dots,\tau^2_m\right)`$
-are known and $`\boldsymbol{\Sigma}_y=\sigma^2\mathbf{I}_n`$. Here,
-$`\mu_0`$ and $`\mu_1`$ are the prior means of the control and treatment
-effects, respectively, while $`\mu_2,\dots,\,\mu_m`$ are the prior means
-of the covariate effects. Likewise, $`\tau^2_0/\alpha_{00}`$ and
-$`\tau^2_1/\alpha_{01}`$ are the prior variances of the control and
-treatment effects (weighted by the discount function result $`\alpha`$),
-respectively, while $`\tau^2_2,\dots,\tau^2_m`$ are the prior variances
-of the remaining covariate effects.
+\boldsymbol{\Sigma}\_{\beta}=\mbox{diag}\left(\tau^2_0/\alpha\_{00},\\\tau^2_1/\alpha\_{01},\\\tau^2_2,\dots,\tau^2_m\right)
+are known and \boldsymbol{\Sigma}\_y=\sigma^2\mathbf{I}\_n.
+
+Here, \mu_0 and \mu_1 are the prior means of the control and treatment
+effects, respectively, while \mu_2,\dots,\\\mu_m are the prior means of
+the covariate effects.
+
+Likewise, \tau^2_0/\alpha\_{00} and \tau^2_1/\alpha\_{01} are the prior
+variances of the control and treatment effects (weighted by the discount
+function result \alpha), respectively, while \tau^2_2,\dots,\tau^2_m are
+the prior variances of the remaining covariate effects.
 
 Using what we refer to as the Gelman parameterization (see Gelman’s
 Bayesian Data Analysis, 3rd edition, chapter 14, for more information),
 the model can be reparameterized to improve computational efficiency.
-First, write \$\$ \mathbf{y}\_{\ast}=\left(\begin{array}{c} \mathbf{y}\\
-\boldsymbol{\mu}\_{\beta}
-\end{array}\right),\thinspace\mathbf{X}\_{\ast}=\left(\begin{array}{c}
-\mathbf{X}\\ \mathbf{I}\_m
-\end{array}\right),\thinspace\boldsymbol{\Sigma}\_{\ast}=\left(\begin{array}{cc}
-\boldsymbol{\Sigma}\_y & 0\\ 0 & \boldsymbol{\Sigma}\_{\beta}
-\end{array}\right). \$\$ Then, the Gelman parameterization has the form
-``` math
-\mathbf{y}_{\ast}=\mathbf{X}_{\ast}\boldsymbol{\beta}+\boldsymbol{\varepsilon},\,\,\,\boldsymbol{\varepsilon}\sim\mathcal{N}\left(\mathbf{0},\,\boldsymbol{\Sigma}_{\ast}\right).
-```
-The estimate of $`\boldsymbol{\beta}`$ is computed as
-``` math
-\hat{\boldsymbol{\beta}}=\mathbf{V}_{\beta}\mathbf{X}_{\ast}^T\boldsymbol{\Sigma}_{\ast}^{-1}\mathbf{y}_{\ast},
-```
-where
-``` math
-\mathbf{V}_{\beta}=\left(\mathbf{X}_{\ast}^T\boldsymbol{\Sigma}_{\ast}^{-1}\mathbf{X}_{\ast}\right)^{-1}.
-```
-This estimate of $`\hat{\boldsymbol{\beta}}`$ is the posterior mean and
-relies on an unknown parameter, $`\sigma^2`$. The marginal posterior
-distribution of $`\sigma^2`$ is found as
-``` math
-\begin{array}{rcl}
-\pi\left(\sigma^2\mid\mathbf{y}\right) & \propto & {\displaystyle \left(\frac{1}{\sigma^2}\right)^{n/2+1}\left|\mathbf{V}_{\beta}\right|^{1/2}\exp\left\{ -\frac{1}{2}\left(\mathbf{y}_{\ast}-\mathbf{X}_{\ast}\hat{\boldsymbol{\beta}}\right)^T\boldsymbol{\Sigma}_{\ast}^{-1}\left(\mathbf{y}_{\ast}-\mathbf{X}_{\ast}\hat{\boldsymbol{\beta}}\right)\right\} }.
-\end{array}
-```
-Notice that both $`\mathbf{V}_{\beta}`$ and $`\Sigma_{\ast}`$ contain
-$`\sigma^2`$. Thus, this marginal posterior of $`\sigma^2`$ does not
-have a known distribution. We resort to a grid search of $`\sigma^2`$
-where 100s or 1000s of values of $`\sigma^2`$ are proposed, on a grid,
-and the proposed values are sampled with probability proportional to the
-likelihood evaluated at the proposal.
+First, write
 
-Finally, values of $`\sigma^2`$ sampled from the posterior distribution
-are then used to sample values of $`\boldsymbol{\beta}`$ from
-``` math
-\boldsymbol{\beta} \sim \mathcal{N}\left(\hat{\boldsymbol{\beta}},\, \mathbf{V}_{\beta}\right).
-```
+\begin{aligned} \mathbf{y}\_{\ast} &= \begin{pmatrix} \mathbf{y}\\
+\boldsymbol{\mu}\_{\beta} \end{pmatrix},\qquad \mathbf{X}\_{\ast} =
+\begin{pmatrix} \mathbf{X}\\ \mathbf{I}\_m \end{pmatrix},\\
+\boldsymbol{\Sigma}\_{\ast} &= \begin{pmatrix} \boldsymbol{\Sigma}\_y &
+0\\ 0 & \boldsymbol{\Sigma}\_{\beta} \end{pmatrix}. \end{aligned}
+
+Then, the Gelman parameterization has the form
+
+\begin{aligned} \mathbf{y}\_{\ast} &=
+\mathbf{X}\_{\ast}\boldsymbol{\beta}+\boldsymbol{\varepsilon},\\
+\boldsymbol{\varepsilon} &\sim
+\mathcal{N}\left(\mathbf{0},\\\boldsymbol{\Sigma}\_{\ast}\right).
+\end{aligned}
+
+The estimate of \boldsymbol{\beta} is computed as
+
+\hat{\boldsymbol{\beta}}=\mathbf{V}\_{\beta}\mathbf{X}\_{\ast}^T\boldsymbol{\Sigma}\_{\ast}^{-1}\mathbf{y}\_{\ast},
+
+where
+
+\mathbf{V}\_{\beta}=\left(\mathbf{X}\_{\ast}^T\boldsymbol{\Sigma}\_{\ast}^{-1}\mathbf{X}\_{\ast}\right)^{-1}.
+
+This estimate of \hat{\boldsymbol{\beta}} is the posterior mean and
+relies on an unknown parameter, \sigma^2. The marginal posterior
+distribution of \sigma^2 is found as
+
+\begin{aligned} \pi\left(\sigma^2\mid\mathbf{y}\right) &\propto
+\left(\frac{1}{\sigma^2}\right)^{n/2+1}\left\|\mathbf{V}\_{\beta}\right\|^{1/2}\\
+&\quad\times\exp\left\\
+-\frac{1}{2}\left(\mathbf{y}\_{\ast}-\mathbf{X}\_{\ast}\hat{\boldsymbol{\beta}}\right)^T\boldsymbol{\Sigma}\_{\ast}^{-1}\left(\mathbf{y}\_{\ast}-\mathbf{X}\_{\ast}\hat{\boldsymbol{\beta}}\right)\right\\.
+\end{aligned}
+
+Notice that both \mathbf{V}\_{\beta} and \Sigma\_{\ast} contain
+\sigma^2. Thus, this marginal posterior of \sigma^2 does not have a
+known distribution. We resort to a grid search of \sigma^2 where 100s or
+1000s of values of \sigma^2 are proposed, on a grid, and the proposed
+values are sampled with probability proportional to the likelihood
+evaluated at the proposal.
+
+Finally, values of \sigma^2 sampled from the posterior distribution are
+then used to sample values of \boldsymbol{\beta} from
+
+\boldsymbol{\beta} \sim \mathcal{N}\left(\hat{\boldsymbol{\beta}},\\
+\mathbf{V}\_{\beta}\right).
 
 ### Inputting Data
 
