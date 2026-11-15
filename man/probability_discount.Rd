@@ -36,7 +36,7 @@ probability_discount(
 estimates the posterior probability and holds it fixed. Alternative method
 "\code{mc}" estimates the posterior probability for each Monte Carlo
 iteration. See the the \code{bdpnormal} vignette \cr
-\code{vignette("bdpnormal-vignette", package="bayesDP")} for more details.}
+\code{vignette("bdpnormal-vignette", package = "bayesDP")} for more details.}
 }
 \value{
 \code{probability_discount} returns an object of class
@@ -46,7 +46,7 @@ An object of class \code{probability_discount} contains the following:
 \describe{
  \item{\code{p_hat}}{
    scalar. The posterior probability of the comparison historical data weight. If
-   \code{method="mc"}, a vector of posterior probabilities of length
+   \code{method = "mc"}, a vector of posterior probabilities of length
    \code{number_mcmc} is returned.}
 }
 }

@@ -51,13 +51,13 @@
 #'   \code{alpha_discount} is a random vector and may exhibit substantial
 #'   Monte Carlo variability. Alternate value "\code{fixed}" estimates alpha
 #'   once and holds it fixed throughout the analysis. See the \code{bdpnormal}
-#'   vignette \cr \code{vignette("bdpnormal-vignette", package="bayesDP")} for
+#'   vignette \cr \code{vignette("bdpnormal-vignette", package = "bayesDP")} for
 #'   more details.
 #' @param compare logical. Should a comparison object be included in the fit?
 #'   For a one-arm analysis, the comparison object is simply the posterior chain
 #'   of the treatment group parameter. For a two-arm analysis, the comparison
 #'   object is the posterior chain of the treatment effect that compares
-#'   treatment and control. If \code{compare=TRUE}, the comparison object is
+#'   treatment and control. If \code{compare = TRUE}, the comparison object is
 #'   accessible in the \code{final} slot, else the \code{final} slot is
 #'   \code{NULL}. Default is \code{TRUE}.
 #' @details \code{bdpnormal} uses a two-stage approach for determining the
@@ -89,7 +89,7 @@
 #'   data.
 #'
 #'   For more details, see the \code{bdpnormal} vignette: \cr
-#'   \code{vignette("bdpnormal-vignette", package="bayesDP")}
+#'   \code{vignette("bdpnormal-vignette", package = "bayesDP")}
 #'
 #' @return \code{bdpnormal} returns an object of class "bdpnormal". The
 #'   functions \code{\link[=summary,bdpnormal-method]{summary}} and

@@ -12,7 +12,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, SETTINGS-knitr, include=FALSE}
+```{r, SETTINGS-knitr, include = FALSE}
 library(bayesDP)
 stopifnot(require(knitr))
 opts_chunk$set(
@@ -22,18 +22,26 @@ opts_chunk$set(
   fig.width = 5,
   out.width = "60%",
   fig.align = "center"
-  )
+)
 
-set.seed(42)  
-fit01 <- bdpbinomial(y_t=10, N_t=500, y0_t=25, N0_t=250, method="fixed")
-fit02 <- bdpbinomial(y_t=10, N_t=500, y0_t=10, N0_t=250, method="fixed",
-                     discount_function="weibull")
+set.seed(42)
+fit01 <- bdpbinomial(
+  y_t = 10, N_t = 500, y0_t = 25, N0_t = 250, method = "fixed"
+)
+fit02 <- bdpbinomial(
+  y_t = 10, N_t = 500, y0_t = 10, N0_t = 250, method = "fixed",
+  discount_function = "weibull"
+)
 
-fit_scaledweibull <- bdpbinomial(y_t=10, N_t=500, y0_t=25, N0_t=250, 
-                                 discount_function="scaledweibull",
-                                 method="fixed")
-fit_identity <- bdpbinomial(y_t=10, N_t=500, y0_t=10, N0_t=250,
-                            method="fixed")
+fit_scaledweibull <- bdpbinomial(
+  y_t = 10, N_t = 500, y0_t = 25, N0_t = 250,
+  discount_function = "scaledweibull",
+  method = "fixed"
+)
+fit_identity <- bdpbinomial(
+  y_t = 10, N_t = 500, y0_t = 10, N0_t = 250,
+  method = "fixed"
+)
 ```
 
 # Introduction
@@ -95,9 +103,9 @@ $$
 $$
 where $w$ may be one or more parameters associated with the discount function and $\alpha_{max}$ scales the weight $\hat{\alpha}$ by a user-input maximum value. More details on the discount functions are given in the discount function section below.
 
-There are several model inputs at this first stage. First, the user can select `fix_alpha=TRUE` and force a fixed value of $\hat{\alpha}$ (at the `alpha_max` input), as opposed to estimation via the discount function.  
+There are several model inputs at this first stage. First, the user can select `fix_alpha = TRUE` and force a fixed value of $\hat{\alpha}$ (at the `alpha_max` input), as opposed to estimation via the discount function.  
 
-An alternate Monte Carlo-based estimation scheme of $\hat{\alpha}$ has been implemented, controlled by the function input `method="mc"`. Here, instead of treating $\hat{\alpha}$ as a fixed quantity, $\hat{\alpha}$ is treated as random. First, $p$, is computed as 
+An alternate Monte Carlo-based estimation scheme of $\hat{\alpha}$ has been implemented, controlled by the function input `method = "mc"`. Here, instead of treating $\hat{\alpha}$ as a fixed quantity, $\hat{\alpha}$ is treated as random. First, $p$, is computed as 
 
 
 $$ \begin{array}{rcl}
@@ -129,21 +137,24 @@ Similar to the Weibull CDF, the Scaled Weibull CDF has two user-specified parame
 
 
 Using the default shape and scale inputs, each of the discount functions are shown below.
-```{r, echo=FALSE}
-df2 <- plot(fit_identity, type="discount", print=FALSE)
+```{r, echo = FALSE}
+df2 <- plot(fit_identity, type = "discount", print = FALSE)
 df2 + ggtitle("Discount function plot", "Identity")
 ```
 
-```{r, echo=FALSE}
-df1 <- plot(fit02, type="discount", print=FALSE)
-df1 + ggtitle("Discount function plot", "Weibull distribution with shape=3 and scale=0.135")
+```{r, echo = FALSE}
+df1 <- plot(fit02, type = "discount", print = FALSE)
+df1 + ggtitle(
+  "Discount function plot",
+  "Weibull distribution with shape=3 and scale=0.135"
+)
 ```
 
 In each of the above plots, the x-axis is the stochastic comparison between current and historical data, which we've denoted $p$. The y-axis is the discount value $\hat{\alpha}$ that corresponds to a given value of $p$. 
 
 An advanced input for the plot function is `print`. The default value is `print = TRUE`, which simply returns the graphics. Alternately, users can specify `print = FALSE`, which returns a `ggplot2` object. Below is an example using the discount function plot:
 ```{r}
-p1 <- plot(fit02, type="discount", print=FALSE)
+p1 <- plot(fit02, type = "discount", print = FALSE)
 p1 + ggtitle("Discount Function Plot :-)")
 ```
 
@@ -214,38 +225,40 @@ Throughout this package, we define a two-arm trial as an analysis where a curren
 set.seed(42)
 ### Simulate  data
 # Sample sizes
-n_t  <- 30     # Current treatment sample size
-n_c  <- 30     # Current control sample size
-n_t0 <- 80     # Historical treatment sample size
-n_c0 <- 80     # Historical control sample size
+n_t <- 30 # Current treatment sample size
+n_c <- 30 # Current control sample size
+n_t0 <- 80 # Historical treatment sample size
+n_c0 <- 80 # Historical control sample size
 
 # Treatment group vectors for current and historical data
-treatment   <- c(rep(1,n_t), rep(0,n_c))
-treatment0  <- c(rep(1,n_t0), rep(0,n_c0))
+treatment <- c(rep(1, n_t), rep(0, n_c))
+treatment0 <- c(rep(1, n_t0), rep(0, n_c0))
 
 # Simulate a covariate effect for current and historical data
-x  <- rnorm(n_t+n_c, 1, 5)
-x0 <- rnorm(n_t0+n_c0, 1, 5)
+x <- rnorm(n_t + n_c, 1, 5)
+x0 <- rnorm(n_t0 + n_c0, 1, 5)
 
 # Simulate outcome:
 # - Intercept of 10 for current and historical data
 # - Treatment effect of 31 for current data
 # - Treatment effect of 30 for historical data
 # - Covariate effect of 3 for current and historical data
-Y  <- 10 + 31*treatment  + x*3 + rnorm(n_t+n_c,0,5)
-Y0 <- 10 + 30*treatment0 + x0*3 + rnorm(n_t0+n_c0,0,5)
+Y <- 10 + 31 * treatment + x * 3 + rnorm(n_t + n_c, 0, 5)
+Y0 <- 10 + 30 * treatment0 + x0 * 3 + rnorm(n_t0 + n_c0, 0, 5)
 
 # Place data into separate treatment and control data frames and
 # assign historical = 0 (current) or historical = 1 (historical)
-df_ <- data.frame(Y=Y, treatment=treatment, x=x)
-df0 <- data.frame(Y=Y0, treatment=treatment0, x=x0)
+df_ <- data.frame(Y = Y, treatment = treatment, x = x)
+df0 <- data.frame(Y = Y0, treatment = treatment0, x = x0)
 
 # Fit model using default settings
-fit <- bdplm(formula=Y ~ treatment+x, data=df_, data0=df0,
-             method="fixed")
+fit <- bdplm(
+  formula = Y ~ treatment + x, data = df_, data0 = df0,
+  method = "fixed"
+)
 
 summary(fit)
 print(fit)
-#plot(fit)   <-- Not yet implemented
+# plot(fit)   <-- Not yet implemented
 ```
 

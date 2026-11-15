@@ -481,7 +481,7 @@ setMethod("summary", signature(object = "bdpsurvival"), function(object) {
 #' @details Displays a summary of the \code{bdplm} fit. Displayed output is
 #'   similar to \code{\link{summary.lm}}. The function call, residuals, and
 #'   coefficient table are displayed. The discount function weight estimates are
-#'   displayed as well. If \code{method}="mc", the median estimate of alpha is
+#'   displayed as well. If \code{method = "mc"}, the median estimate of alpha is
 #'   displayed.
 #'
 #' @export

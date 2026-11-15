@@ -71,7 +71,7 @@
 #'   paramter alpha. Default method "\code{mc}" estimates alpha for each
 #'   Monte Carlo iteration. Alternate value "\code{fixed}" estimates alpha once and
 #'   holds it fixed throughout the analysis.  See the the \code{bdplm} vignette \cr
-#'   \code{vignette("bdplm-vignette", package="bayesDP")} for more details.
+#'   \code{vignette("bdplm-vignette", package = "bayesDP")} for more details.
 #' @details \code{bdplogit} uses a two-stage approach for determining the
 #'   strength of historical data in estimation of an adjusted mean or covariate
 #'   effect. In the first stage, a \emph{discount function} is used that
@@ -128,8 +128,8 @@
 #'   \item{\code{alpha_discount}}{
 #'     vector. The posterior probability of the stochastic comparison
 #'     between the current and historical data for each of the treatment
-#'     and control arms. If \code{method="mc"}, the result is a matrix of
-#'     estimates, otherwise for \code{method="fixed"}, the result is a vector
+#'     and control arms. If \code{method = "mc"}, the result is a matrix of
+#'     estimates, otherwise for \code{method = "fixed"}, the result is a vector
 #'     of estimates.}
 #'   \item{\code{estimates}}{
 #'     list. The posterior means and standard errors of the intercept,

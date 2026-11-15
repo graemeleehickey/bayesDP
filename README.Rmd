@@ -45,13 +45,13 @@ for methodological details.
 
 Install the released version from CRAN:
 
-```{r, eval=FALSE}
+```{r, eval = FALSE}
 install.packages("bayesDP")
 ```
 
 Install the development version from GitHub:
 
-```{r, eval=FALSE}
+```{r, eval = FALSE}
 # install.packages("remotes")
 remotes::install_github("graemeleehickey/bayesDP")
 ```
@@ -122,6 +122,6 @@ summary(fit_lm)
 
 If you use `bayesDP`, please cite the package and the methodological paper:
 
-```{r, eval=FALSE}
+```{r, eval = FALSE}
 citation("bayesDP")
 ```

@@ -73,7 +73,7 @@
 #'   weight paramter alpha. Default method "\code{mc}" estimates alpha for each
 #'   Monte Carlo iteration. Alternate value "\code{fixed}" estimates alpha once
 #'   and holds it fixed throughout the analysis.  See the the \code{bdplm}
-#'   vignette \cr \code{vignette("bdplm-vignette", package="bayesDP")} for more
+#'   vignette \cr \code{vignette("bdplm-vignette", package = "bayesDP")} for more
 #'   details.
 #' @details \code{bdplm} uses a two-stage approach for determining the strength
 #'   of historical data in estimation of an adjusted mean or covariate effect.
@@ -136,8 +136,8 @@
 #'   The grid of sigma values are included.} \item{\code{alpha_discount}}{
 #'   vector. The posterior probability of the stochastic comparison between the
 #'   current and historical data for each of the treatment and control arms. If
-#'   \code{method="mc"}, the result is a matrix of estimates, otherwise for
-#'   \code{method="fixed"}, the result is a vector of estimates.}
+#'   \code{method = "mc"}, the result is a matrix of estimates, otherwise for
+#'   \code{method = "fixed"}, the result is a vector of estimates.}
 #'   \item{\code{estimates}}{ list. The posterior means and standard errors of
 #'   the intercept, treatment effect, covariate effect(s) and error variance.} }
 #'
