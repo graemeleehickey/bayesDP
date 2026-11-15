@@ -79,18 +79,18 @@ given in the discount function section below.
 
 There are several model inputs at this first stage. First, the user can
 select the discount function type via the `discount_function` input (see
-below). Next, choosing `fix_alpha=TRUE` forces a fixed value of
+below). Next, choosing `fix_alpha = TRUE` forces a fixed value of
 $`\hat{\alpha}`$ (at the `alpha_max` input), as opposed to estimation
 via the discount function. In the next modeling stage, a Monte Carlo
 estimation approach is used, requiring several samples from the
 posterior distributions. Thus, the user can input a sample size greater
-than or less than the default value of `number_mcmc=10000`. Finally, the
-Beta rate parameters can be changed from the defaults of $`a_0=b_0=1`$
-(`a0` and `b0` inputs).
+than or less than the default value of `number_mcmc = 10000`. Finally,
+the Beta rate parameters can be changed from the defaults of
+$`a_0=b_0=1`$ (`a0` and `b0` inputs).
 
 An alternate Monte Carlo-based estimation scheme of $`\hat{\alpha}`$ has
-been implemented, controlled by the function input `method="mc"`. Here,
-instead of treating $`\hat{\alpha}`$ as a fixed quantity,
+been implemented, controlled by the function input `method = "mc"`.
+Here, instead of treating $`\hat{\alpha}`$ as a fixed quantity,
 $`\hat{\alpha}`$ is treated as random. Because $`p`$ is recomputed at
 each Monte Carlo draw using a single pair of posterior samples, the
 resulting sequence of $`\hat{\alpha}`$ values can exhibit noticeable
@@ -169,7 +169,7 @@ an example using the discount function plot:
 
 ``` r
 
-p1 <- plot(fit02, type="discount", print=FALSE)
+p1 <- plot(fit02, type = "discount", print = FALSE)
 p1 + ggtitle("Discount Function Plot :-)")
 ```
 
@@ -226,24 +226,26 @@ this function would not be necessary either.
 
 ### One-arm trial
 
-Suppose we have historical data with `y0_t=25` events out of a sample
-size of `N0_t=250` patients. This gives a historical event rate of 0.1.
-Now, suppose we have current data with `y_t=15` events out of a sample
-size of `N_t=200` patients, giving an event rate of 0.075. To illustrate
-the approach, let’s first give full weight to the historical data. This
-is accomplished by setting `alpha_max=1` and `fix_alpha=TRUE` as
-follows:
+Suppose we have historical data with `y0_t = 25` events out of a sample
+size of `N0_t = 250` patients. This gives a historical event rate of
+0.1. Now, suppose we have current data with `y_t = 15` events out of a
+sample size of `N_t = 200` patients, giving an event rate of 0.075. To
+illustrate the approach, let’s first give full weight to the historical
+data. This is accomplished by setting `alpha_max = 1` and
+`fix_alpha = TRUE` as follows:
 
 ``` r
 
 set.seed(42)
-fit1 <- bdpbinomial(y_t       = 15,
-                    N_t       = 200,
-                    y0_t      = 25,
-                    N0_t      = 250,
-                    alpha_max = 1,
-                    fix_alpha = TRUE,
-                    method    = "fixed")
+fit1 <- bdpbinomial(
+  y_t = 15,
+  N_t = 200,
+  y0_t = 25,
+  N0_t = 250,
+  alpha_max = 1,
+  fix_alpha = TRUE,
+  method = "fixed"
+)
 summary(fit1)
 ```
 
@@ -272,13 +274,15 @@ this opportunity to describe the output of the plot method.
 ``` r
 
 set.seed(42)
-fit1a <- bdpbinomial(y_t       = 15,
-                     N_t       = 200,
-                     y0_t      = 25,
-                     N0_t      = 250,
-                     alpha_max = 1,
-                     fix_alpha = FALSE,
-                     method    = "fixed")
+fit1a <- bdpbinomial(
+  y_t = 15,
+  N_t = 200,
+  y0_t = 25,
+  N0_t = 250,
+  alpha_max = 1,
+  fix_alpha = FALSE,
+  method = "fixed"
+)
 summary(fit1a)
 ```
 
@@ -314,7 +318,7 @@ computed at run-time. The results can be replicated as:
 
 ``` r
 
-mean_augmented <- round(median(fit1a$posterior_treatment$posterior),4)
+mean_augmented <- round(median(fit1a$posterior_treatment$posterior), 4)
 mean_augmented
 ```
 
@@ -322,7 +326,10 @@ mean_augmented
 
 ``` r
 
-CI95_augmented <- round(quantile(fit1a$posterior_treatment$posterior, prob=c(0.025, 0.975)),4)
+CI95_augmented <- round(
+  quantile(fit1a$posterior_treatment$posterior, prob = c(0.025, 0.975)),
+  4
+)
 CI95_augmented
 ```
 
@@ -333,21 +340,21 @@ Finally, we’ll explore the `plot` method.
 
 ``` r
 
-plot(fit1a, type="posteriors")
+plot(fit1a, type = "posteriors")
 ```
 
 ![](bdpbinomial-vignette_files/figure-html/unnamed-chunk-7-1.png)
 
 ``` r
 
-plot(fit1a, type="density")
+plot(fit1a, type = "density")
 ```
 
 ![](bdpbinomial-vignette_files/figure-html/unnamed-chunk-7-2.png)
 
 ``` r
 
-plot(fit1a, type="discount")
+plot(fit1a, type = "discount")
 ```
 
 ![](bdpbinomial-vignette_files/figure-html/unnamed-chunk-7-3.png)
@@ -372,7 +379,7 @@ analysis where a current and/or historical control arm is present.
 Suppose we have the same treatment data as in the one-arm example, but
 now we introduce control data: `y_c = 15`, `N_c = 200`, `y0_c = 20`, and
 `N0_c = 250`. This control data gives a current and historical event
-rate of `20/250 = 0.08`.
+rate of `20 / 250 = 0.08`.
 
 Before proceeding, it is worth pointing out that the discount function
 is applied separately to the treatment and control data. Now, let’s
@@ -381,15 +388,17 @@ carry out the two-arm analysis using default inputs:
 ``` r
 
 set.seed(42)
-fit2 <- bdpbinomial(y_t  = 15,
-                    N_t  = 200,
-                    y0_t = 25,
-                    N0_t = 250,
-                    y_c  = 20,
-                    N_c  = 250,
-                    y0_c = 20,
-                    N0_c = 250,
-                    method = "fixed")
+fit2 <- bdpbinomial(
+  y_t = 15,
+  N_t = 200,
+  y0_t = 25,
+  N0_t = 250,
+  y_c = 20,
+  N_c = 250,
+  y0_c = 20,
+  N0_c = 250,
+  method = "fixed"
+)
 summary(fit2)
 ```
 
@@ -417,7 +426,7 @@ control data. In the present analysis, the current and historical
 control data have event rates that are very close, thus the historical
 control data is given full weight. This implies that the (augmented)
 posterior control event rate is approximately
-`(20 + 20)/(250 + 250) = 0.08`. Again, moderate weight is given to the
+`(20 + 20) / (250 + 250) = 0.08`. Again, moderate weight is given to the
 historical treatment data, so we have an (augmented) posterior treatment
 event rate of 0.08.
 
@@ -431,21 +440,21 @@ one-arm analysis as well:
 
 ``` r
 
-plot(fit2, type="posteriors")
+plot(fit2, type = "posteriors")
 ```
 
 ![](bdpbinomial-vignette_files/figure-html/unnamed-chunk-9-1.png)
 
 ``` r
 
-plot(fit2, type="density")
+plot(fit2, type = "density")
 ```
 
 ![](bdpbinomial-vignette_files/figure-html/unnamed-chunk-9-2.png)
 
 ``` r
 
-plot(fit2, type="discount")
+plot(fit2, type = "discount")
 ```
 
 ![](bdpbinomial-vignette_files/figure-html/unnamed-chunk-9-3.png) Each

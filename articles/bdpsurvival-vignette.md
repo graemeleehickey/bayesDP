@@ -192,17 +192,17 @@ user-input maximum value. More details on the discount functions are
 given in the discount function section below.
 
 There are several model inputs at this first stage. First, the user can
-select `fix_alpha=TRUE` and force a fixed value of $`\hat{\alpha}`$ (at
-the `alpha_max` input), as opposed to estimation via the discount
+select `fix_alpha = TRUE` and force a fixed value of $`\hat{\alpha}`$
+(at the `alpha_max` input), as opposed to estimation via the discount
 function. Next, a Monte Carlo estimation approach is used, requiring
 several samples from the posterior distributions. Thus, the user can
 input a sample size greater than or less than the default value of
-`number_mcmc=10000`. Next, the Beta rate parameters can be changed from
-the defaults of $`a_0=b_0=1`$ (`a0` and `b0` inputs).
+`number_mcmc = 10000`. Next, the Beta rate parameters can be changed
+from the defaults of $`a_0=b_0=1`$ (`a0` and `b0` inputs).
 
 An alternate Monte Carlo-based estimation scheme of $`\hat{\alpha}`$ has
-been implemented, controlled by the function input `method="mc"`. Here,
-instead of treating $`\hat{\alpha}`$ as a fixed quantity,
+been implemented, controlled by the function input `method = "mc"`.
+Here, instead of treating $`\hat{\alpha}`$ as a fixed quantity,
 $`\hat{\alpha}`$ is treated as random. Because each Monte Carlo
 iteration recomputes the comparison probability from that iteration’s
 posterior draws, the resulting sequence of $`\hat{\alpha}`$ values can
@@ -308,7 +308,7 @@ an example using the discount function plot:
 
 ``` r
 
-p1 <- plot(fit02, type="discount", print=FALSE)
+p1 <- plot(fit02, type = "discount", print = FALSE)
 p1 + ggtitle("Discount Function Plot :-)")
 ```
 
@@ -398,31 +398,36 @@ will assume that there are no censored observations.
 
 set.seed(42)
 # Simulate survival times for current and historical data
-surv_1arm <- data.frame(status = 1,
-                        time   = rexp(10, rate=1/10))
+surv_1arm <- data.frame(
+  status = 1,
+  time = rexp(10, rate = 1 / 10)
+)
 
 # Simulate survival times for historical data
-surv_1arm0 <- data.frame(status = 1,
-                         time   = rexp(50, rate=1/11))
+surv_1arm0 <- data.frame(
+  status = 1,
+  time = rexp(50, rate = 1 / 11)
+)
 ```
 
 In this example, we’ve simulated current survival times from an
-exponential distribution with rate `1/10` and historical survival times
-from an exponential distribution with rate `1/11`; `status = 1` for all
-observations, implying no times are censored. With our data frame
-constructed, we can now fit the `bdpsurvival` model. Since this is a
-one-arm trial, we will request the survival probability at
-`surv_time=5`. Thus, estimation using the default model inputs is
+exponential distribution with rate `1 / 10` and historical survival
+times from an exponential distribution with rate `1 / 11`; `status = 1`
+for all observations, implying no times are censored. With our data
+frame constructed, we can now fit the `bdpsurvival` model. Since this is
+a one-arm trial, we will request the survival probability at
+`surv_time = 5`. Thus, estimation using the default model inputs is
 carried out:
 
 ``` r
 
 set.seed(42)
 fit1 <- bdpsurvival(Surv(time, status) ~ 1,
-                    data  = surv_1arm,
-                    data0 = surv_1arm0,
-                    surv_time = 5,
-                    method = "fixed")
+  data = surv_1arm,
+  data0 = surv_1arm0,
+  surv_time = 5,
+  method = "fixed"
+)
 print(fit1)
 ```
 
@@ -474,19 +479,20 @@ stochastic comparison suggests that the current and historical data are
 not similar.
 
 Suppose that we would like to apply full weight to the historical data.
-This can be accomplished by setting `alpha_max=1` and `fix_alpha=TRUE`
-as follows:
+This can be accomplished by setting `alpha_max = 1` and
+`fix_alpha = TRUE` as follows:
 
 ``` r
 
 set.seed(42)
 fit1a <- bdpsurvival(Surv(time, status) ~ 1,
-                    data  = surv_1arm,
-                    data0 = surv_1arm0,
-                    surv_time = 5,
-                    alpha_max = 1,
-                    fix_alpha = TRUE,
-                    method = "fixed")
+  data = surv_1arm,
+  data0 = surv_1arm0,
+  surv_time = 5,
+  alpha_max = 1,
+  fix_alpha = TRUE,
+  method = "fixed"
+)
 
 print(fit1a)
 ```
@@ -510,10 +516,11 @@ and CI are computed at run-time. The results can be replicated as:
 ``` r
 
 survival_time_posterior <- ppexp(5,
-                                 fit1a$posterior_treatment$posterior_hazard,
-                                 cuts=c(0,fit1a$args1$breaks))
-surv_augmented <- 1-median(survival_time_posterior)
-CI95_augmented <- 1-quantile(survival_time_posterior, prob=c(0.975, 0.025))
+  fit1a$posterior_treatment$posterior_hazard,
+  cuts = c(0, fit1a$args1$breaks)
+)
+surv_augmented <- 1 - median(survival_time_posterior)
+CI95_augmented <- 1 - quantile(survival_time_posterior, prob = c(0.975, 0.025))
 ```
 
 Here, we first compute the piecewise exponential cumulative distribution
@@ -525,14 +532,14 @@ Finally, we’ll explore the `plot` method.
 
 ``` r
 
-plot(fit1, type="survival")
+plot(fit1, type = "survival")
 ```
 
 ![](bdpsurvival-vignette_files/figure-html/unnamed-chunk-10-1.png)
 
 ``` r
 
-plot(fit1, type="discount")
+plot(fit1, type = "discount")
 ```
 
 ![](bdpsurvival-vignette_files/figure-html/unnamed-chunk-10-2.png) The
@@ -559,27 +566,31 @@ censoring present in the control data:
 
 set.seed(42)
 # Simulate survival times for treatment data
-time_current_trt    <- rexp(10, rate=1/10)
-time_historical_trt <- rexp(50, rate=1/11)
+time_current_trt <- rexp(10, rate = 1 / 10)
+time_historical_trt <- rexp(50, rate = 1 / 11)
 
 # Simulate survival times for control data
-time_current_cntrl    <- rexp(10, rate=1/12)
-time_historical_cntrl <- rexp(50, rate=1/12)
+time_current_cntrl <- rexp(10, rate = 1 / 12)
+time_historical_cntrl <- rexp(50, rate = 1 / 12)
 
 
 # Combine simulated data into data frames
-surv_2arm <- data.frame(treatment = c(rep(1,10),rep(0,10)),
-                        time      = c(time_current_trt, time_current_cntrl),
-                        status    = 1)
+surv_2arm <- data.frame(
+  treatment = c(rep(1, 10), rep(0, 10)),
+  time = c(time_current_trt, time_current_cntrl),
+  status = 1
+)
 
-surv_2arm0 <- data.frame(treatment = c(rep(1,50),rep(0,50)),
-                         time      = c(time_historical_trt, time_historical_cntrl),
-                         status    = 1)
+surv_2arm0 <- data.frame(
+  treatment = c(rep(1, 50), rep(0, 50)),
+  time = c(time_historical_trt, time_historical_cntrl),
+  status = 1
+)
 ```
 
 In this example, we’ve simulated current and historical control survival
-times from exponential distributions with rate `1/12`. Note how the data
-frames have been constructed; we’ve taken care to ensure that the
+times from exponential distributions with rate `1 / 12`. Note how the
+data frames have been constructed; we’ve taken care to ensure that the
 current/historical and treatment/control indicators line up properly.
 With our data frame constructed, we can now fit the `bdpsurvival` model.
 Before proceeding, it is worth pointing out that the discount function
@@ -590,9 +601,10 @@ carry out the two-arm analysis using default inputs:
 
 set.seed(42)
 fit2 <- bdpsurvival(Surv(time, status) ~ treatment,
-                    data = surv_2arm,
-                    data0 = surv_2arm0,
-                    method = "fixed")
+  data = surv_2arm,
+  data0 = surv_2arm0,
+  method = "fixed"
+)
 print(fit2)
 ```
 

@@ -135,7 +135,7 @@ bdpnormal(
   `alpha_discount` is a random vector and may exhibit substantial Monte
   Carlo variability. Alternate value "`fixed`" estimates alpha once and
   holds it fixed throughout the analysis. See the `bdpnormal` vignette  
-  [`vignette("bdpnormal-vignette", package="bayesDP")`](https://graemeleehickey.github.io/bayesDP/articles/bdpnormal-vignette.md)
+  [`vignette("bdpnormal-vignette", package = "bayesDP")`](https://graemeleehickey.github.io/bayesDP/articles/bdpnormal-vignette.md)
   for more details.
 
 - compare:
@@ -144,7 +144,7 @@ bdpnormal(
   one-arm analysis, the comparison object is simply the posterior chain
   of the treatment group parameter. For a two-arm analysis, the
   comparison object is the posterior chain of the treatment effect that
-  compares treatment and control. If `compare=TRUE`, the comparison
+  compares treatment and control. If `compare = TRUE`, the comparison
   object is accessible in the `final` slot, else the `final` slot is
   `NULL`. Default is `TRUE`.
 
@@ -258,7 +258,7 @@ difference between current treatment and control, augmented by available
 historical data.
 
 For more details, see the `bdpnormal` vignette:  
-[`vignette("bdpnormal-vignette", package="bayesDP")`](https://graemeleehickey.github.io/bayesDP/articles/bdpnormal-vignette.md)
+[`vignette("bdpnormal-vignette", package = "bayesDP")`](https://graemeleehickey.github.io/bayesDP/articles/bdpnormal-vignette.md)
 
 ## References
 

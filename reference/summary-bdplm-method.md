@@ -21,5 +21,5 @@ summary(object)
 Displays a summary of the `bdplm` fit. Displayed output is similar to
 [`summary.lm`](https://rdrr.io/r/stats/summary.lm.html). The function
 call, residuals, and coefficient table are displayed. The discount
-function weight estimates are displayed as well. If `method`="mc", the
+function weight estimates are displayed as well. If `method = "mc"`, the
 median estimate of alpha is displayed.

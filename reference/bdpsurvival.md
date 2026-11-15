@@ -123,7 +123,7 @@ bdpsurvival(
   Carlo variability. Alternate value "`fixed`" estimates alpha once and
   holds it fixed throughout the analysis. See the `bdpsurvival`
   vignette  
-  [`vignette("bdpsurvival-vignette", package="bayesDP")`](https://graemeleehickey.github.io/bayesDP/articles/bdpsurvival-vignette.md)
+  [`vignette("bdpsurvival-vignette", package = "bayesDP")`](https://graemeleehickey.github.io/bayesDP/articles/bdpsurvival-vignette.md)
   for more details.
 
 - compare:
@@ -132,7 +132,7 @@ bdpsurvival(
   one-arm analysis, the comparison object is simply the posterior chain
   of the treatment group parameter. For a two-arm analysis, the
   comparison object is the posterior chain of the treatment effect that
-  compares treatment and control. If `compare=TRUE`, the comparison
+  compares treatment and control. If `compare = TRUE`, the comparison
   object is accessible in the `final` slot, else the `final` slot is
   `NULL`. Default is `TRUE`.
 
@@ -251,7 +251,7 @@ distribution of the hazard ratio between the treatment and control
 groups.
 
 For more details, see the `bdpsurvival` vignette:  
-[`vignette("bdpsurvival-vignette", package="bayesDP")`](https://graemeleehickey.github.io/bayesDP/articles/bdpsurvival-vignette.md)
+[`vignette("bdpsurvival-vignette", package = "bayesDP")`](https://graemeleehickey.github.io/bayesDP/articles/bdpsurvival-vignette.md)
 
 ## References
 

@@ -146,7 +146,7 @@ bdplogit(
   paramter alpha. Default method "`mc`" estimates alpha for each Monte
   Carlo iteration. Alternate value "`fixed`" estimates alpha once and
   holds it fixed throughout the analysis. See the the `bdplm` vignette  
-  [`vignette("bdplm-vignette", package="bayesDP")`](https://graemeleehickey.github.io/bayesDP/articles/bdplm-vignette.md)
+  [`vignette("bdplm-vignette", package = "bayesDP")`](https://graemeleehickey.github.io/bayesDP/articles/bdplm-vignette.md)
   for more details.
 
 ## Value
@@ -165,8 +165,8 @@ following components:
 
   vector. The posterior probability of the stochastic comparison between
   the current and historical data for each of the treatment and control
-  arms. If `method="mc"`, the result is a matrix of estimates, otherwise
-  for `method="fixed"`, the result is a vector of estimates.
+  arms. If `method = "mc"`, the result is a matrix of estimates,
+  otherwise for `method = "fixed"`, the result is a vector of estimates.
 
 - `estimates`:
 

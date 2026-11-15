@@ -56,7 +56,7 @@ probability_discount(
   posterior probability and holds it fixed. Alternative method "`mc`"
   estimates the posterior probability for each Monte Carlo iteration.
   See the the `bdpnormal` vignette  
-  [`vignette("bdpnormal-vignette", package="bayesDP")`](https://graemeleehickey.github.io/bayesDP/articles/bdpnormal-vignette.md)
+  [`vignette("bdpnormal-vignette", package = "bayesDP")`](https://graemeleehickey.github.io/bayesDP/articles/bdpnormal-vignette.md)
   for more details.
 
 ## Value
@@ -69,7 +69,7 @@ An object of class `probability_discount` contains the following:
 - `p_hat`:
 
   scalar. The posterior probability of the comparison historical data
-  weight. If `method="mc"`, a vector of posterior probabilities of
+  weight. If `method = "mc"`, a vector of posterior probabilities of
   length `number_mcmc` is returned.
 
 ## Details

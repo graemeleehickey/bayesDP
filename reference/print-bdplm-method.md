@@ -22,4 +22,4 @@ print(x)
 Displays a print of the `bdplm` fit and the initial function call. The
 fit includes the estimate of the intercept, treatment effect, and
 covariate effects. The discount function weight estimates are displayed
-as well. If `method`="mc", the median estimate of alpha is displayed.
+as well. If `method = "mc"`, the median estimate of alpha is displayed.

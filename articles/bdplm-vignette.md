@@ -135,13 +135,13 @@ user-input maximum value. More details on the discount functions are
 given in the discount function section below.
 
 There are several model inputs at this first stage. First, the user can
-select `fix_alpha=TRUE` and force a fixed value of $`\hat{\alpha}`$ (at
-the `alpha_max` input), as opposed to estimation via the discount
+select `fix_alpha = TRUE` and force a fixed value of $`\hat{\alpha}`$
+(at the `alpha_max` input), as opposed to estimation via the discount
 function.
 
 An alternate Monte Carlo-based estimation scheme of $`\hat{\alpha}`$ has
-been implemented, controlled by the function input `method="mc"`. Here,
-instead of treating $`\hat{\alpha}`$ as a fixed quantity,
+been implemented, controlled by the function input `method = "mc"`.
+Here, instead of treating $`\hat{\alpha}`$ as a fixed quantity,
 $`\hat{\alpha}`$ is treated as random. First, $`p`$, is computed as
 
 ``` math
@@ -213,7 +213,7 @@ an example using the discount function plot:
 
 ``` r
 
-p1 <- plot(fit02, type="discount", print=FALSE)
+p1 <- plot(fit02, type = "discount", print = FALSE)
 p1 + ggtitle("Discount Function Plot :-)")
 ```
 
@@ -304,35 +304,37 @@ dataframe and view the estimates of the model fit.
 set.seed(42)
 ### Simulate  data
 # Sample sizes
-n_t  <- 30     # Current treatment sample size
-n_c  <- 30     # Current control sample size
-n_t0 <- 80     # Historical treatment sample size
-n_c0 <- 80     # Historical control sample size
+n_t <- 30 # Current treatment sample size
+n_c <- 30 # Current control sample size
+n_t0 <- 80 # Historical treatment sample size
+n_c0 <- 80 # Historical control sample size
 
 # Treatment group vectors for current and historical data
-treatment   <- c(rep(1,n_t), rep(0,n_c))
-treatment0  <- c(rep(1,n_t0), rep(0,n_c0))
+treatment <- c(rep(1, n_t), rep(0, n_c))
+treatment0 <- c(rep(1, n_t0), rep(0, n_c0))
 
 # Simulate a covariate effect for current and historical data
-x  <- rnorm(n_t+n_c, 1, 5)
-x0 <- rnorm(n_t0+n_c0, 1, 5)
+x <- rnorm(n_t + n_c, 1, 5)
+x0 <- rnorm(n_t0 + n_c0, 1, 5)
 
 # Simulate outcome:
 # - Intercept of 10 for current and historical data
 # - Treatment effect of 31 for current data
 # - Treatment effect of 30 for historical data
 # - Covariate effect of 3 for current and historical data
-Y  <- 10 + 31*treatment  + x*3 + rnorm(n_t+n_c,0,5)
-Y0 <- 10 + 30*treatment0 + x0*3 + rnorm(n_t0+n_c0,0,5)
+Y <- 10 + 31 * treatment + x * 3 + rnorm(n_t + n_c, 0, 5)
+Y0 <- 10 + 30 * treatment0 + x0 * 3 + rnorm(n_t0 + n_c0, 0, 5)
 
 # Place data into separate treatment and control data frames and
 # assign historical = 0 (current) or historical = 1 (historical)
-df_ <- data.frame(Y=Y, treatment=treatment, x=x)
-df0 <- data.frame(Y=Y0, treatment=treatment0, x=x0)
+df_ <- data.frame(Y = Y, treatment = treatment, x = x)
+df0 <- data.frame(Y = Y0, treatment = treatment0, x = x0)
 
 # Fit model using default settings
-fit <- bdplm(formula=Y ~ treatment+x, data=df_, data0=df0,
-             method="fixed")
+fit <- bdplm(
+  formula = Y ~ treatment + x, data = df_, data0 = df0,
+  method = "fixed"
+)
 
 summary(fit)
 ```
@@ -378,5 +380,5 @@ print(fit)
 
 ``` r
 
-#plot(fit)   <-- Not yet implemented
+# plot(fit)   <-- Not yet implemented
 ```

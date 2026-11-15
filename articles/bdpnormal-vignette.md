@@ -88,16 +88,16 @@ given in the discount function section below.
 
 There are several model inputs at this first stage. First, the user can
 select the discount function type via the `discount_function` input (see
-below). Next, choosing `fix_alpha=TRUE` forces a fixed value of
+below). Next, choosing `fix_alpha = TRUE` forces a fixed value of
 $`\hat{\alpha}`$ (at the `alpha_max` input), as opposed to estimation
 via the discount function. In the next modeling stage, a Monte Carlo
 estimation approach is used, requiring several samples from the
 posterior distributions. Thus, the user can input a sample size greater
-than or less than the default value of `number_mcmc=10000`.
+than or less than the default value of `number_mcmc = 10000`.
 
 An alternate Monte Carlo-based estimation scheme of $`\hat{\alpha}`$ has
-been implemented, controlled by the function input `method="mc"`. Here,
-instead of treating $`\hat{\alpha}`$ as a fixed quantity,
+been implemented, controlled by the function input `method = "mc"`.
+Here, instead of treating $`\hat{\alpha}`$ as a fixed quantity,
 $`\hat{\alpha}`$ is treated as random. Because $`p`$ is recomputed at
 each Monte Carlo draw using a single pair of posterior samples, the
 resulting sequence of $`\hat{\alpha}`$ values can exhibit noticeable
@@ -172,7 +172,7 @@ an example using the discount function plot:
 
 ``` r
 
-p1 <- plot(fit02, type="discount", print=FALSE)
+p1 <- plot(fit02, type = "discount", print = FALSE)
 p1 + ggtitle("Discount Function Plot :-)")
 ```
 
@@ -236,26 +236,28 @@ combinations are allowed:
 
 ### One-arm trial
 
-Suppose we have historical data with a mean of `mu0_t=50`, standard
-deviation of `sigma0_t=10`, and sample size of `N0_t=50` patients. Also
-suppose that we have current data with a mean of `mu_t=45`, standard
-deviation of `sigma_t=10`, and sample size of `N_t=50`. To illustrate
-the approach, let’s first give full weight to the historical data. This
-is accomplished by setting `alpha_max=1` and `fix_alpha=TRUE` as
-follows:
+Suppose we have historical data with a mean of `mu0_t = 50`, standard
+deviation of `sigma0_t = 10`, and sample size of `N0_t = 50` patients.
+Also suppose that we have current data with a mean of `mu_t = 45`,
+standard deviation of `sigma_t = 10`, and sample size of `N_t = 50`. To
+illustrate the approach, let’s first give full weight to the historical
+data. This is accomplished by setting `alpha_max = 1` and
+`fix_alpha = TRUE` as follows:
 
 ``` r
 
 set.seed(42)
-fit1 <- bdpnormal(mu_t      = 45,
-                  sigma_t   = 10,
-                  N_t       = 50, 
-                  mu0_t     = 50,
-                  sigma0_t  = 10,
-                  N0_t      = 50,
-                  alpha_max = 1,
-                  fix_alpha = TRUE,
-                  method    = "fixed")
+fit1 <- bdpnormal(
+  mu_t = 45,
+  sigma_t = 10,
+  N_t = 50,
+  mu0_t = 50,
+  sigma0_t = 10,
+  N0_t = 50,
+  alpha_max = 1,
+  fix_alpha = TRUE,
+  method = "fixed"
+)
 summary(fit1)
 ```
 
@@ -285,10 +287,12 @@ the output of the plot method.
 ``` r
 
 set.seed(42)
-fit1a <- bdpnormal(mu_t      = 45, sigma_t  = 10, N_t  = 50, 
-                   mu0_t     = 50, sigma0_t = 10, N0_t = 50,
-                   fix_alpha = FALSE,
-                   method    = "fixed")
+fit1a <- bdpnormal(
+  mu_t = 45, sigma_t = 10, N_t = 50,
+  mu0_t = 50, sigma0_t = 10, N0_t = 50,
+  fix_alpha = FALSE,
+  method = "fixed"
+)
 summary(fit1a)
 ```
 
@@ -325,7 +329,7 @@ computed at run-time. The results can be replicated as:
 
 ``` r
 
-mean_augmented <- round(median(fit1a$posterior_treatment$posterior_mu),4)
+mean_augmented <- round(median(fit1a$posterior_treatment$posterior_mu), 4)
 mean_augmented
 ```
 
@@ -333,7 +337,10 @@ mean_augmented
 
 ``` r
 
-CI95_augmented <- round(quantile(fit1a$posterior_treatment$posterior_mu, prob=c(0.025, 0.975)),4)
+CI95_augmented <- round(
+  quantile(fit1a$posterior_treatment$posterior_mu, prob = c(0.025, 0.975)),
+  4
+)
 CI95_augmented
 ```
 
@@ -344,21 +351,21 @@ Finally, we’ll explore the `plot` method.
 
 ``` r
 
-plot(fit1a, type="posteriors")
+plot(fit1a, type = "posteriors")
 ```
 
 ![](bdpnormal-vignette_files/figure-html/unnamed-chunk-7-1.png)
 
 ``` r
 
-plot(fit1a, type="density")
+plot(fit1a, type = "density")
 ```
 
 ![](bdpnormal-vignette_files/figure-html/unnamed-chunk-7-2.png)
 
 ``` r
 
-plot(fit1a, type="discount")
+plot(fit1a, type = "discount")
 ```
 
 ![](bdpnormal-vignette_files/figure-html/unnamed-chunk-7-3.png)
@@ -390,12 +397,14 @@ carry out the two-arm analysis using default inputs:
 ``` r
 
 set.seed(42)
-fit2 <- bdpnormal(mu_t      = 45, sigma_t  = 10, N_t  = 50, 
-                  mu0_t     = 50, sigma0_t = 10, N0_t = 50,
-                  mu_c      = 40, sigma_c  = 10, N_c  = 50, 
-                  mu0_c     = 40, sigma0_c = 10, N0_c = 50,
-                  fix_alpha = FALSE,
-                  method    = "fixed")
+fit2 <- bdpnormal(
+  mu_t = 45, sigma_t = 10, N_t = 50,
+  mu0_t = 50, sigma0_t = 10, N0_t = 50,
+  mu_c = 40, sigma_c = 10, N_c = 50,
+  mu0_c = 40, sigma0_c = 10, N0_c = 50,
+  fix_alpha = FALSE,
+  method = "fixed"
+)
 summary(fit2)
 ```
 
@@ -436,21 +445,21 @@ one-arm analysis as well:
 
 ``` r
 
-plot(fit2, type="posteriors")
+plot(fit2, type = "posteriors")
 ```
 
 ![](bdpnormal-vignette_files/figure-html/unnamed-chunk-9-1.png)
 
 ``` r
 
-plot(fit2, type="density")
+plot(fit2, type = "density")
 ```
 
 ![](bdpnormal-vignette_files/figure-html/unnamed-chunk-9-2.png)
 
 ``` r
 
-plot(fit2, type="discount")
+plot(fit2, type = "discount")
 ```
 
 ![](bdpnormal-vignette_files/figure-html/unnamed-chunk-9-3.png) Each of

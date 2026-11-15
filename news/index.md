@@ -2,6 +2,8 @@
 
 ## bayesDP 1.3.8
 
+CRAN release: 2026-06-25
+
 ### Bug fixes
 
 - Fixed
