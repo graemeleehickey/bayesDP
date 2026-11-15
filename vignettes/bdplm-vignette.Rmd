@@ -212,7 +212,7 @@ $$
 \end{aligned}
 $$
 
-where $\boldsymbol{\mu}_{\beta}=\left(\mu_0,\,\mu_1,\,\mu_2,\dots,\,\mu_m\right)^T$ and $\boldsymbol{\Sigma}_{\beta}=\mbox{diag}\left(\tau^2_0/\alpha_{00},\,\tau^2_1/\alpha_{01},\,\tau^2_2,\dots,\tau^2_m\right)$ are known and $\boldsymbol{\Sigma}_y=\sigma^2\mathbf{I}_n$.
+where $\boldsymbol{\mu}_{\beta}=\left(\mu_0,\,\mu_1,\,\mu_2,\dots,\,\mu_m\right)^T$ and $\boldsymbol{\Sigma}_{\beta}=\operatorname{diag}\left(\tau^2_0/\alpha_{00},\,\tau^2_1/\alpha_{01},\,\tau^2_2,\dots,\tau^2_m\right)$ are known and $\boldsymbol{\Sigma}_y=\sigma^2\mathbf{I}_n$.
 
 Here, $\mu_0$ and $\mu_1$ are the prior means of the control and treatment effects, respectively, while $\mu_2,\dots,\,\mu_m$ are the prior means of the covariate effects.
 
