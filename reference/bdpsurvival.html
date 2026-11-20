@@ -19,7 +19,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">bayesDP</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.12</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.13</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -294,12 +294,16 @@ the following components:</p><dl><dt><code>posterior_treatment</code></dt>
   mapping remains an approximation, especially with sparse events.
   The returned <code>p_hat</code> uses the selected method's transformation even
   with <code>fix_alpha = TRUE</code>; the prescribed weight is unaffected.</p>
-<p>The historical Gamma update includes the baseline prior in both source
-  posteriors before discounting. This differs from discounting the historical
-  likelihood alone and remains under review; see the survival vignette.</p>
-<p>In the second stage, posterior estimation is performed where the discount
-  function parameter, <code>alpha</code>, is incorporated in all posterior
-  estimation procedures.</p>
+<p>In the second stage, the historical likelihood is raised to the weight
+  <code>alpha</code>, and the baseline Gamma prior is included once. For an
+  interval with current event count D and exposure T, and historical
+  event count D0 and exposure T0, the augmented Gamma shape and rate are
+  <code>a0 + D + alpha * D0</code> and <code>b0 + T + alpha * T0</code>.
+  The prior shape <code>a0</code> is distinct from the historical weight alpha.
+  At alpha = 0 this gives the current-only posterior; at alpha = 1 it
+  gives the pooled posterior using the same interval boundaries and baseline
+  prior. With <code>method = "mc"</code>, each draw uses its generated weight;
+  the resulting marginal distribution is a mixture of Gamma distributions.</p>
 <p>To carry out a single arm (OPC) analysis, data for the current and
   historical treatments are specified in separate data frames, data and
   data0, respectively. The data frames must have matching columns denoting
@@ -362,7 +366,7 @@ the following components:</p><dl><dt><code>posterior_treatment</code></dt>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   n events surv_time median lower 95% CrI upper 95% CrI</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  50     29         5 0.7945        0.6787        0.8842</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  50     29         5 0.7945        0.6788        0.8843</span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit1</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
@@ -399,15 +403,15 @@ the following components:</p><dl><dt><code>posterior_treatment</code></dt>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     Two-armed bdp survival</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> data:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Current treatment: n = 50, number of events = 36</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Current control: n = 50, number of events = 43</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.0168</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Stochastic comparison (p_hat) - control (current vs. historical data): 0.0112</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Discount function value (alpha) - treatment: 0.0168</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Discount function value (alpha) - control: 0.0112</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Current treatment: n = 50, number of events = 37</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Current control: n = 50, number of events = 41</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Stochastic comparison (p_hat) - treatment (current vs. historical data): 4e-04</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Stochastic comparison (p_hat) - control (current vs. historical data): 0.012</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Discount function value (alpha) - treatment: 4e-04</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Discount function value (alpha) - control: 0.012</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>              coef exp(coef) se(coef) lower 95% CI upper 95% CI</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> treatment -0.4724    0.6235    0.235      -0.9294      -0.0147</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> treatment -0.4583    0.6323    0.237      -0.9212        9e-04</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">### Fix alpha at 1</span></span></span>
 <span class="r-in"><span><span class="va">fit2_1</span> <span class="op">&lt;-</span> <span class="fu">bdpsurvival</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="va">treatment</span>,</span></span>
@@ -421,15 +425,15 @@ the following components:</p><dl><dt><code>posterior_treatment</code></dt>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     Two-armed bdp survival</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> data:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Current treatment: n = 50, number of events = 36</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Current control: n = 50, number of events = 43</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.0132</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Stochastic comparison (p_hat) - control (current vs. historical data): 0.0112</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Current treatment: n = 50, number of events = 37</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Current control: n = 50, number of events = 41</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Stochastic comparison (p_hat) - treatment (current vs. historical data): 4e-04</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Stochastic comparison (p_hat) - control (current vs. historical data): 0.013</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Discount function value (alpha) - treatment: 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Discount function value (alpha) - control: 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>              coef exp(coef) se(coef) lower 95% CI upper 95% CI</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> treatment -1.0977    0.3337   0.1784      -1.4547      -0.7591</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> treatment -1.1137    0.3283   0.1816       -1.465      -0.7566</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

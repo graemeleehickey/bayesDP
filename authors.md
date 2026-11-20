@@ -23,13 +23,13 @@ Balcome S, Musgrove D, Haddad T, Hickey G (2026). *bayesDP:
 Implementation of the Bayesian Discount Prior Approach for Clinical
 Trials*.
 [doi:10.32614/CRAN.package.bayesDP](https://doi.org/10.32614/CRAN.package.bayesDP).
-R package version 1.3.12, <https://CRAN.R-project.org/package=bayesDP>.
+R package version 1.3.13, <https://CRAN.R-project.org/package=bayesDP>.
 
     @Manual{,
       title = {bayesDP: Implementation of the Bayesian Discount Prior Approach for Clinical Trials},
       author = {Shawn Balcome and Donnie Musgrove and Tarek Haddad and Graeme L. Hickey},
       year = {2026},
-      note = {R package version 1.3.12},
+      note = {R package version 1.3.13},
       url = {https://CRAN.R-project.org/package=bayesDP},
       doi = {10.32614/CRAN.package.bayesDP},
     }

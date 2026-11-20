@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">bayesDP</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.12</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.13</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -46,6 +46,19 @@
       <small>Source: <a href="https://github.com/graemeleehickey/bayesDP/blob/master/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.3.13" id="bayesdp-1313">bayesDP 1.3.13<a class="anchor" aria-label="anchor" href="#bayesdp-1313"></a></h2>
+<div class="section level3">
+<h3 id="bug-fixes-1-3-13">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-3-13"></a></h3>
+<ul><li>Corrected survival augmentation to discount historical event counts and exposure while including the baseline Gamma prior once (<a href="https://github.com/graemeleehickey/bayesDP/issues/17" class="external-link">#17</a>). The augmented shape is now <code>a0 + D + alpha * D0</code>, and the rate is <code>b0 + T + alpha * T0</code>, removing the extra <code>alpha * a0</code> and <code>alpha * b0</code> contributions.</li>
+<li>Applied the correction to one- and two-arm analyses, including prescribed, estimated fixed, and draw-specific weights. Full borrowing now gives the pooled interval-hazard posterior with the same baseline prior and interval boundaries. Survival estimates and treatment effects may change, especially with sparse events or influential priors; refit earlier analyses to use the corrected update.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="documentation-and-tests-1-3-13">Documentation and tests<a class="anchor" aria-label="anchor" href="#documentation-and-tests-1-3-13"></a></h3>
+<ul><li>Updated the survival and borrowing vignettes to explain historical likelihood discounting, distinguish the historical weight <code>alpha</code> from the Gamma shape <code>a0</code>, and interpret current-only and full-borrowing limits. Regenerated the worked examples with the corrected update.</li>
+<li>Added checks against analytical Gamma and survival moments, current-only and pooled analyses, different arm weights, draw-specific Gamma mixtures, zero events, and intervals without observations. The tests use influential priors as well as the default prior, so duplicated prior contributions are detected.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.3.12" id="bayesdp-1312">bayesDP 1.3.12<a class="anchor" aria-label="anchor" href="#bayesdp-1312"></a></h2>
 <div class="section level3">

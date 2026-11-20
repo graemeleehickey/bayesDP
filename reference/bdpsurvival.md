@@ -251,14 +251,16 @@ mapping remains an approximation, especially with sparse events. The
 returned `p_hat` uses the selected method's transformation even with
 `fix_alpha = TRUE`; the prescribed weight is unaffected.
 
-The historical Gamma update includes the baseline prior in both source
-posteriors before discounting. This differs from discounting the
-historical likelihood alone and remains under review; see the survival
-vignette.
-
-In the second stage, posterior estimation is performed where the
-discount function parameter, `alpha`, is incorporated in all posterior
-estimation procedures.
+In the second stage, the historical likelihood is raised to the weight
+`alpha`, and the baseline Gamma prior is included once. For an interval
+with current event count D and exposure T, and historical event count D0
+and exposure T0, the augmented Gamma shape and rate are
+`a0 + D + alpha * D0` and `b0 + T + alpha * T0`. The prior shape `a0` is
+distinct from the historical weight alpha. At alpha = 0 this gives the
+current-only posterior; at alpha = 1 it gives the pooled posterior using
+the same interval boundaries and baseline prior. With `method = "mc"`,
+each draw uses its generated weight; the resulting marginal distribution
+is a mixture of Gamma distributions.
 
 To carry out a single arm (OPC) analysis, data for the current and
 historical treatments are specified in separate data frames, data and
@@ -327,7 +329,7 @@ print(fit1)
 #> 
 #> 
 #>   n events surv_time median lower 95% CrI upper 95% CrI
-#>  50     29         5 0.7945        0.6787        0.8842
+#>  50     29         5 0.7945        0.6788        0.8843
 if (FALSE) { # \dontrun{
 plot(fit1)
 } # }
@@ -364,15 +366,15 @@ summary(fit2)
 #>     Two-armed bdp survival
 #> 
 #> data:
-#>   Current treatment: n = 50, number of events = 36
-#>   Current control: n = 50, number of events = 43
-#> Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.0168
-#> Stochastic comparison (p_hat) - control (current vs. historical data): 0.0112
-#> Discount function value (alpha) - treatment: 0.0168
-#> Discount function value (alpha) - control: 0.0112
+#>   Current treatment: n = 50, number of events = 37
+#>   Current control: n = 50, number of events = 41
+#> Stochastic comparison (p_hat) - treatment (current vs. historical data): 4e-04
+#> Stochastic comparison (p_hat) - control (current vs. historical data): 0.012
+#> Discount function value (alpha) - treatment: 4e-04
+#> Discount function value (alpha) - control: 0.012
 #> 
 #>              coef exp(coef) se(coef) lower 95% CI upper 95% CI
-#> treatment -0.4724    0.6235    0.235      -0.9294      -0.0147
+#> treatment -0.4583    0.6323    0.237      -0.9212        9e-04
 
 ### Fix alpha at 1
 fit2_1 <- bdpsurvival(Surv(time, status) ~ treatment,
@@ -386,13 +388,13 @@ summary(fit2_1)
 #>     Two-armed bdp survival
 #> 
 #> data:
-#>   Current treatment: n = 50, number of events = 36
-#>   Current control: n = 50, number of events = 43
-#> Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.0132
-#> Stochastic comparison (p_hat) - control (current vs. historical data): 0.0112
+#>   Current treatment: n = 50, number of events = 37
+#>   Current control: n = 50, number of events = 41
+#> Stochastic comparison (p_hat) - treatment (current vs. historical data): 4e-04
+#> Stochastic comparison (p_hat) - control (current vs. historical data): 0.013
 #> Discount function value (alpha) - treatment: 1
 #> Discount function value (alpha) - control: 1
 #> 
 #>              coef exp(coef) se(coef) lower 95% CI upper 95% CI
-#> treatment -1.0977    0.3337   0.1784      -1.4547      -0.7591
+#> treatment -1.1137    0.3283   0.1816       -1.465      -0.7566
 ```

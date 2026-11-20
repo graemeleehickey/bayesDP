@@ -1,6 +1,6 @@
 # Survival outcomes with bayesDP
 
-## Purpose and current limitations
+## Purpose and scope
 
 [`bdpsurvival()`](https://graemeleehickey.github.io/bayesDP/reference/bdpsurvival.md)
 uses piecewise constant hazards for right-censored outcomes. In one arm,
@@ -8,12 +8,11 @@ the estimand is survival probability at a specified time. With two arms,
 the reported effect is an approximate common log hazard ratio, treatment
 relative to control.
 
-The baseline-prior contribution during historical augmentation remains
-under investigation ([issue
-17](https://github.com/graemeleehickey/bayesDP/issues/17)). The
-implemented update is described below. These examples illustrate the
-calculations and their sensitivity to the borrowing method; they do not
-establish operating characteristics for a trial design.
+Within each arm, historical events and exposure contribute through a
+borrowing weight, while the baseline Gamma prior is included once. These
+examples illustrate the calculations and their sensitivity to the
+borrowing method; they do not establish operating characteristics for a
+trial design.
 
 See the [borrowing
 overview](https://graemeleehickey.github.io/bayesDP/articles/borrowing.md)
@@ -103,14 +102,19 @@ knitr::kable(comparison, digits = 4,
 |                | Historical weight | Median S(6) | Lower 95% CrI | Upper 95% CrI |
 |:---------------|------------------:|------------:|--------------:|--------------:|
 | Current only   |            0.0000 |      0.4945 |        0.3572 |        0.6294 |
-| Discounted     |            0.0272 |      0.5027 |        0.3690 |        0.6365 |
-| Full borrowing |            1.0000 |      0.6171 |        0.5331 |        0.6955 |
+| Discounted     |            0.0272 |      0.5028 |        0.3690 |        0.6366 |
+| Full borrowing |            1.0000 |      0.6175 |        0.5342 |        0.6969 |
 
 The estimated historical weight is 0.0272. The augmented posterior
-median six-month survival is 0.5027. These summarize survival
-probability at six months, not median survival time. The full-borrowing
-result includes the extra baseline-prior contribution described below
-and should not be called an ordinary pooled analysis.
+median six-month survival is 0.5028. These summarize survival
+probability at six months, not median survival time.
+
+The current-only result uses the current participants and the specified
+baseline prior. Full borrowing gives the posterior from pooled current
+and historical participants under the same piecewise exponential model
+and baseline prior. Keep the interval boundaries and survival horizon
+identical when making these comparisons; default cutpoints depend on the
+supplied data.
 
 [`print()`](https://rdrr.io/r/base/print.html) gives a compact summary
 at the requested horizon. Its sample size and event count refer to
@@ -133,7 +137,7 @@ print(discounted)
     ## 
     ## 
     ##   n events surv_time median lower 95% CrI upper 95% CrI
-    ##  60     36         6 0.5027         0.369        0.6365
+    ##  60     36         6 0.5028         0.369        0.6366
 
 ``` r
 
@@ -180,7 +184,7 @@ knitr::kable(do.call(rbind, lapply(names(methods_one), function(method) {
 | Method        | Median weight | Weight 2.5–97.5% | Median S(6) | 95% CrI for S(6) |
 |:--------------|--------------:|:-----------------|------------:|:-----------------|
 | Fixed         |         0.027 | 0.027 to 0.027   |       0.503 | 0.369 to 0.637   |
-| Draw-specific |         0.040 | 0.000 to 0.783   |       0.521 | 0.380 to 0.657   |
+| Draw-specific |         0.040 | 0.000 to 0.783   |       0.521 | 0.380 to 0.658   |
 
 The two procedures need not give the same mean or median weight, even
 with many simulation draws. Their definitions differ: one transforms an
@@ -220,7 +224,7 @@ summary(fit_two)
     ## Discount function value (alpha) - control: 0.8042
     ## 
     ##             coef exp(coef) se(coef) lower 95% CI upper 95% CI
-    ## treatment 0.0582    1.0599   0.1957      -0.3282       0.4387
+    ## treatment 0.0621    1.0641   0.1955      -0.3275       0.4367
 
 ``` r
 
@@ -233,13 +237,13 @@ knitr::kable(rbind(
 
 |                  |    2.5% |    50% |  97.5% |
 |:-----------------|--------:|-------:|-------:|
-| Log hazard ratio | -0.3282 | 0.0606 | 0.4387 |
-| Hazard ratio     |  0.7202 | 1.0624 | 1.5507 |
+| Log hazard ratio | -0.3275 | 0.0653 | 0.4367 |
+| Hazard ratio     |  0.7208 | 1.0675 | 1.5476 |
 
 The summary counts 60 current treatment participants and 60 current
 control participants, regardless of how many intervals their follow-up
 spans. The treatment and control historical weights are 0.1116 and
-0.8042, respectively. The median hazard ratio is 1.0624. For an adverse
+0.8042, respectively. The median hazard ratio is 1.0675. For an adverse
 event, a hazard ratio below 1 favours treatment; the corresponding
 no-effect value on the log scale is zero. The two rows transform both
 the estimates and credible limits consistently.
@@ -282,8 +286,8 @@ knitr::kable(do.call(rbind, lapply(names(methods_two), function(method) {
 
 | Method | Median treatment weight | Median control weight | Median HR | 95% CrI for HR |
 |:---|---:|---:|---:|:---|
-| Fixed | 0.112 | 0.804 | 1.062 | 0.720 to 1.551 |
-| Draw-specific | 0.099 | 0.487 | 1.006 | 0.670 to 1.549 |
+| Fixed | 0.112 | 0.804 | 1.068 | 0.721 to 1.548 |
+| Draw-specific | 0.099 | 0.487 | 1.006 | 0.667 to 1.563 |
 
 ## Piecewise exponential model
 
@@ -301,6 +305,16 @@ priors with shape a_0 and rate b_0 give
 The defaults are a_0=b_0=0.1. This prior is not flat. The rate parameter
 has exposure-time units, so a change from months to days requires a
 corresponding change in b_0 to preserve the same prior information.
+
+The prior shape a_0 (Latin “a”) and the historical weight \alpha (Greek
+“alpha”) have different roles:
+
+| Quantity | R name | Role |
+|:---|:---|:---|
+| a_0 | `a0` | Baseline Gamma prior shape; default 0.1 |
+| b_0 | `b0` | Baseline Gamma prior rate; default 0.1 |
+| \alpha | `alpha_discount` in the fitted arm | Historical borrowing weight |
+| \alpha\_{\max} | `alpha_max` | Maximum permitted weight, or the prescribed weight when `fix_alpha = TRUE`; default 1 |
 
 Let \ell_j(t)=\max\\0,\min(t,\tau_j)-\tau\_{j-1}\\ be the length of
 interval j before t. Then
@@ -391,26 +405,36 @@ comparisons and treatment effect. More simulation draws reduce Monte
 Carlo error; they do not remove the spread of draw-specific weights or
 resolve the normal approximation’s limitations.
 
-### Implemented historical augmentation
+### Historical likelihood augmentation
 
-For each weight, the current implementation generates augmented hazards
-as
+Let L_j(\lambda_j) and L\_{0j}(\lambda_j) be the current and historical
+interval likelihoods. For a chosen weight \alpha, historical likelihood
+discounting combines them with the baseline prior \pi_0 as (Ibrahim and
+Chen 2000)
+
+\pi(\lambda_j\mid\text{data},\alpha) \propto
+\pi_0(\lambda_j)L_j(\lambda_j)L\_{0j}(\lambda_j)^\alpha.
+
+The historical likelihood contributes \lambda_j^{\alpha
+D\_{0j}}\exp(-\alpha T\_{0j}\lambda_j). With the Gamma shape-rate prior,
+the resulting update is
 
 \lambda_j\mid\text{data},\alpha\sim\operatorname{Gamma}\left(
-(1+\alpha)a_0+D_j+\alpha D\_{0j}, (1+\alpha)b_0+T_j+\alpha
-T\_{0j}\right).
+a_0+D_j+\alpha D\_{0j}, b_0+T_j+\alpha T\_{0j}\right).
 
-It discounts the historical posterior parameters, including their
-baseline-prior terms. A historical-likelihood power update would instead
-include a_0,b_0 only once (Haddad et al. 2017). The intended
-construction is under review in issue 17. This distinction matters most
-when event counts or exposure are small, or the prior is influential. In
-two arms, the implementation uses separate treatment and control weights
-in this same update.
+The baseline prior enters once. The two separate source posteriors used
+to estimate borrowing weights do not contribute additional copies of
+that prior to augmentation. At \alpha=0, the update is the current-only
+posterior. At \alpha=1, it is the pooled posterior under a common hazard
+in each interval, with the same baseline prior. In two arms, treatment
+and control use their own weights and hazard parameters.
 
 With `method = "mc"`, substitute \alpha^{(s)} for each draw. The
 resulting marginal distribution mixes over the generated weights and is
-generally not one Gamma distribution.
+generally not one Gamma distribution. Its variance includes both the
+conditional Gamma variance and variation between conditional means;
+substituting the mean weight into one Gamma distribution does not
+reproduce that mixture.
 
 ### Approximate two-arm effect
 
@@ -453,18 +477,13 @@ check numerical precision with more draws and independent seeds.
 
 Trial-design use requires evaluation of the complete procedure,
 including its operating characteristics under agreement and conflict
-between studies. The baseline-prior augmentation question in issue 17
-remains unresolved; these worked examples do not provide that
-validation.
+between studies. These worked examples do not provide that validation.
 
 ## References
 
-Haddad, Tarek, Adam Himes, Laura Thompson, Telba Irony, Rajesh Nair, and
-MDIC Computer Modeling and Simulation Working Group Participants. 2017.
-“Incorporation of Stochastic Engineering Models as Prior Information in
-Bayesian Medical Device Trials.” *Journal of Biopharmaceutical
-Statistics* 27 (6): 1089–103.
-<https://doi.org/10.1080/10543406.2017.1300907>.
+Ibrahim, Joseph G., and Ming-Hui Chen. 2000. “Power Prior Distributions
+for Regression Models.” *Statistical Science* 15 (1): 46–60.
+<https://doi.org/10.1214/ss/1009212673>.
 
 Wellner, Jon A. 2008. *Gamma, Digamma, and Polygamma*. University of
 Washington, Statistics 581 handout.

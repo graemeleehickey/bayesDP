@@ -1,5 +1,34 @@
 # Changelog
 
+## bayesDP 1.3.13
+
+### Bug fixes
+
+- Corrected survival augmentation to discount historical event counts
+  and exposure while including the baseline Gamma prior once
+  ([\#17](https://github.com/graemeleehickey/bayesDP/issues/17)). The
+  augmented shape is now `a0 + D + alpha * D0`, and the rate is
+  `b0 + T + alpha * T0`, removing the extra `alpha * a0` and
+  `alpha * b0` contributions.
+- Applied the correction to one- and two-arm analyses, including
+  prescribed, estimated fixed, and draw-specific weights. Full borrowing
+  now gives the pooled interval-hazard posterior with the same baseline
+  prior and interval boundaries. Survival estimates and treatment
+  effects may change, especially with sparse events or influential
+  priors; refit earlier analyses to use the corrected update.
+
+### Documentation and tests
+
+- Updated the survival and borrowing vignettes to explain historical
+  likelihood discounting, distinguish the historical weight `alpha` from
+  the Gamma shape `a0`, and interpret current-only and full-borrowing
+  limits. Regenerated the worked examples with the corrected update.
+- Added checks against analytical Gamma and survival moments,
+  current-only and pooled analyses, different arm weights, draw-specific
+  Gamma mixtures, zero events, and intervals without observations. The
+  tests use influential priors as well as the default prior, so
+  duplicated prior contributions are detected.
+
 ## bayesDP 1.3.12
 
 ### Bug fixes

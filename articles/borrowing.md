@@ -26,8 +26,8 @@ The binomial and normal functions allow several combinations of these
 sources, including a historical-only control. Such a comparison is not a
 concurrent randomized comparison: interpretation depends on
 comparability across studies. Regression requires both arms in both
-studies. The survival vignette describes the supported examples and
-outstanding limitations.
+studies. The survival vignette describes its data requirements and
+modeling assumptions.
 
 ## Choosing the historical weight
 
@@ -44,6 +44,14 @@ Use `alpha_max = 0` with `fix_alpha = TRUE` for no borrowing, or
 supplies treatment and control limits, in that order.
 [`bdplm()`](https://graemeleehickey.github.io/bayesDP/reference/bdplm.md)
 requires `method = "fixed"` when `fix_alpha = TRUE`.
+
+For survival outcomes, \alpha weights historical events and exposure;
+the baseline Gamma shape and rate, `a0` and `b0`, enter the augmented
+distribution once. The shape a_0 is distinct from the borrowing weight
+\alpha. With full borrowing, the interval-hazard posterior matches a
+pooled analysis using the same Gamma prior and interval boundaries. The
+regression and normal models have their own borrowing constructions,
+described in their vignettes.
 
 The main worked examples explicitly choose `method = "fixed"` so that
 their borrowing weights are easy to interpret. This is a choice for
