@@ -245,20 +245,6 @@ test_that("survival borrowing and treatment effects are invariant to time units"
   }
 })
 
-test_that("historical-posterior augmentation remains unchanged pending issue 17", {
-  withr::local_seed(168)
-  d <- survival_borrowing_data()
-  d0 <- transform(d, time = time * 1.2)
-  fit <- bdpsurvival(Surv(time, status) ~ 1, d, d0, breaks = numeric(),
-    surv_time = 5, a0 = 2, b0 = 3, fix_alpha = TRUE, alpha_max = .4,
-    method = "fixed", number_mcmc = 50000)
-  A <- 2 + sum(d$status) + .4 * (2 + sum(d0$status))
-  B <- 3 + sum(d$time) + .4 * (3 + sum(d0$time))
-  draws <- as.numeric(fit$posterior_treatment$posterior_hazard)
-  expect_equal(mean(draws), A / B, tolerance = .002)
-  expect_equal(var(draws), A / B^2, tolerance = .0001)
-})
-
 test_that("invalid survival comparison settings give informative errors", {
   d <- survival_borrowing_data()
   fit <- function(...) bdpsurvival(Surv(time, status) ~ 1, d, d,

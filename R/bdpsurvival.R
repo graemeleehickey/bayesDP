@@ -91,13 +91,16 @@
 #'   The returned \code{p_hat} uses the selected method's transformation even
 #'   with \code{fix_alpha = TRUE}; the prescribed weight is unaffected.
 #'
-#'   The historical Gamma update includes the baseline prior in both source
-#'   posteriors before discounting. This differs from discounting the historical
-#'   likelihood alone and remains under review; see the survival vignette.
-#'
-#'   In the second stage, posterior estimation is performed where the discount
-#'   function parameter, \code{alpha}, is incorporated in all posterior
-#'   estimation procedures.
+#'   In the second stage, the historical likelihood is raised to the weight
+#'   \code{alpha}, and the baseline Gamma prior is included once. For an
+#'   interval with current event count D and exposure T, and historical
+#'   event count D0 and exposure T0, the augmented Gamma shape and rate are
+#'   \code{a0 + D + alpha * D0} and \code{b0 + T + alpha * T0}.
+#'   The prior shape \code{a0} is distinct from the historical weight alpha.
+#'   At alpha = 0 this gives the current-only posterior; at alpha = 1 it
+#'   gives the pooled posterior using the same interval boundaries and baseline
+#'   prior. With \code{method = "mc"}, each draw uses its generated weight;
+#'   the resulting marginal distribution is a mixture of Gamma distributions.
 #'
 #'   To carry out a single arm (OPC) analysis, data for the current and
 #'   historical treatments are specified in separate data frames, data and
@@ -677,10 +680,10 @@ posterior_survival <- function(S, S0, surv_time, discount_function,
 
     posterior_log_hazard <- matrix(NA_real_, number_mcmc, nInt)
     for (j in seq_len(nInt)) {
-      # Retain the implemented historical-posterior augmentation (issue #17).
+      # Discount historical events and exposure; include the baseline prior once.
       posterior_log_hazard[, j] <- bdp_log_gamma(number_mcmc,
-        current$shape[j] + weight * historical$shape[j],
-        current$rate[j] + weight * historical$rate[j])
+        a0 + current$events[j] + weight * historical$events[j],
+        b0 + current$exposure[j] + weight * historical$exposure[j])
     }
   } else {
     source <- if (is.null(current)) historical else current
@@ -709,15 +712,18 @@ posterior_survival <- function(S, S0, surv_time, discount_function,
 # Separate Gamma posteriors for each source and interval.
 bdp_survival_source <- function(data, nInt, a0, b0, n) {
   if (is.null(data)) return(NULL)
-  shape <- rate <- numeric(nInt)
+  events <- exposure <- shape <- rate <- numeric(nInt)
   log_hazard <- matrix(NA_real_, n, nInt)
   for (j in seq_len(nInt)) {
     rows <- as.integer(data$interval) == j
-    shape[j] <- a0 + sum(data$status[rows])
-    rate[j] <- b0 + sum(data$exposure[rows])
+    events[j] <- sum(data$status[rows])
+    exposure[j] <- sum(data$exposure[rows])
+    shape[j] <- a0 + events[j]
+    rate[j] <- b0 + exposure[j]
     log_hazard[, j] <- bdp_log_gamma(n, shape[j], rate[j])
   }
-  list(shape = shape, rate = rate, log_hazard = log_hazard)
+  list(events = events, exposure = exposure, shape = shape, rate = rate,
+    log_hazard = log_hazard)
 }
 
 # For a < 1, Gamma(a, 1) = Gamma(a + 1, 1) * U^(1/a), independently.

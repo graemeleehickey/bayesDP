@@ -213,13 +213,16 @@ Historical borrowing is assessed separately within each arm by
   The returned \code{p_hat} uses the selected method's transformation even
   with \code{fix_alpha = TRUE}; the prescribed weight is unaffected.
 
-  The historical Gamma update includes the baseline prior in both source
-  posteriors before discounting. This differs from discounting the historical
-  likelihood alone and remains under review; see the survival vignette.
-
-  In the second stage, posterior estimation is performed where the discount
-  function parameter, \code{alpha}, is incorporated in all posterior
-  estimation procedures.
+  In the second stage, the historical likelihood is raised to the weight
+  \code{alpha}, and the baseline Gamma prior is included once. For an
+  interval with current event count D and exposure T, and historical
+  event count D0 and exposure T0, the augmented Gamma shape and rate are
+  \code{a0 + D + alpha * D0} and \code{b0 + T + alpha * T0}.
+  The prior shape \code{a0} is distinct from the historical weight alpha.
+  At alpha = 0 this gives the current-only posterior; at alpha = 1 it
+  gives the pooled posterior using the same interval boundaries and baseline
+  prior. With \code{method = "mc"}, each draw uses its generated weight;
+  the resulting marginal distribution is a mixture of Gamma distributions.
 
   To carry out a single arm (OPC) analysis, data for the current and
   historical treatments are specified in separate data frames, data and
