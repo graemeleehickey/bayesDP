@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">bayesDP</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.11</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.12</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -75,7 +75,7 @@ Musgrove</h4>
                         <h4 data-toc-skip class="author">Graeme L.
 Hickey</h4>
             
-            <h4 data-toc-skip class="date">2026-11-15</h4>
+            <h4 data-toc-skip class="date">2026-11-20</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/graemeleehickey/bayesDP/blob/master/vignettes/bdpsurvival-vignette.Rmd" class="external-link"><code>vignettes/bdpsurvival-vignette.Rmd</code></a></small>
       <div class="d-none name"><code>bdpsurvival-vignette.Rmd</code></div>
@@ -91,17 +91,16 @@ right-censored outcomes. In one arm, the estimand is survival
 probability at a specified time. With two arms, the reported effect is
 an approximate common log hazard ratio, treatment relative to
 control.</p>
-<p>Two limitations remain under investigation: the default Monte Carlo
-weight calculation (<a href="https://github.com/graemeleehickey/bayesDP/issues/16" class="external-link">issue
-16</a>) and the baseline-prior contribution during historical
-augmentation (<a href="https://github.com/graemeleehickey/bayesDP/issues/17" class="external-link">issue
-17</a>). These examples use <code>method = "fixed"</code>, describe the
-implemented prior update, and calculate tables directly from posterior
-draws. They illustrate current behaviour; they do not validate the
-unresolved procedures for trial design.</p>
+<p>The baseline-prior contribution during historical augmentation
+remains under investigation (<a href="https://github.com/graemeleehickey/bayesDP/issues/17" class="external-link">issue
+17</a>). The implemented update is described below. These examples
+illustrate the calculations and their sensitivity to the borrowing
+method; they do not establish operating characteristics for a trial
+design.</p>
 <p>See the <a href="borrowing.html">borrowing overview</a> for weighting
-choices and interpretation. The function default is
-<code>method = "mc"</code>, so the explicit method argument matters.</p>
+choices and interpretation. The main examples use
+<code>method = "fixed"</code> for exposition and then compare it with
+the default <code>method = "mc"</code>.</p>
 </div>
 <div class="section level2">
 <h2 id="data-and-follow-up">Data and follow-up<a class="anchor" aria-label="anchor" href="#data-and-follow-up"></a>
@@ -117,10 +116,12 @@ covariate adjustment is not implemented.</p>
 <p>Choose a time unit, clinically relevant survival horizon, and
 interval boundaries. <code>breaks</code> contains positive internal
 cutpoints, without zero or infinity. The final interval extends beyond
-the last cutpoint. By default the cutpoints are the pooled observed-time
-20th, 40th, 60th, and 80th percentiles; these are quantiles of
-event-or-censoring times, not estimated survival quantiles. The examples
-prespecify cutpoints and the horizon.</p>
+the last cutpoint; <code>breaks = numeric(0)</code> specifies one
+constant hazard. Cutpoints are sorted and duplicates removed.</p>
+<p>By default the cutpoints are the pooled observed-time 20th, 40th,
+60th, and 80th percentiles; these are quantiles of event-or-censoring
+times, not estimated survival quantiles. The examples prespecify
+cutpoints and the horizon.</p>
 </div>
 <div class="section level2">
 <h2 id="one-arm-example-with-censoring">One-arm example with censoring<a class="anchor" aria-label="anchor" href="#one-arm-example-with-censoring"></a>
@@ -211,15 +212,15 @@ of event and censoring times.</p>
 <td align="left">Current only</td>
 <td align="right">0.0000</td>
 <td align="right">0.4945</td>
-<td align="right">0.3571</td>
+<td align="right">0.3572</td>
 <td align="right">0.6294</td>
 </tr>
 <tr class="even">
 <td align="left">Discounted</td>
-<td align="right">0.0236</td>
-<td align="right">0.5016</td>
-<td align="right">0.3676</td>
-<td align="right">0.6336</td>
+<td align="right">0.0272</td>
+<td align="right">0.5027</td>
+<td align="right">0.3690</td>
+<td align="right">0.6365</td>
 </tr>
 <tr class="odd">
 <td align="left">Full borrowing</td>
@@ -230,8 +231,8 @@ of event and censoring times.</p>
 </tr>
 </tbody>
 </table>
-<p>The estimated historical weight is 0.0236. The augmented posterior
-median six-month survival is 0.5016. These summarize survival
+<p>The estimated historical weight is 0.0272. The augmented posterior
+median six-month survival is 0.5027. These summarize survival
 probability at six months, not median survival time. The full-borrowing
 result includes the extra baseline-prior contribution described below
 and should not be called an ordinary pooled analysis.</p>
@@ -251,7 +252,7 @@ the numbers at risk.</p>
 <span><span class="co">## </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">##   n events surv_time median lower 95% CrI upper 95% CrI</span></span>
-<span><span class="co">##  60     36         6 0.5016        0.3676        0.6336</span></span></code></pre>
+<span><span class="co">##  60     36         6 0.5027         0.369        0.6365</span></span></code></pre>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">discounted</span>, type <span class="op">=</span> <span class="st">"survival"</span>, print <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Follow-up (months)"</span><span class="op">)</span></span></code></pre></div>
@@ -262,6 +263,68 @@ are model-based curves, not Kaplan–Meier estimates; uncertainty is
 summarized in the six-month table.
 </p>
 </div>
+<div class="section level3">
+<h3 id="sensitivity-to-the-borrowing-method">Sensitivity to the borrowing method<a class="anchor" aria-label="anchor" href="#sensitivity-to-the-borrowing-method"></a>
+</h3>
+<p>Keep the data, priors, intervals, horizon, discount function, and
+maximum weight the same, and change the borrowing procedure. For the
+draw-specific method, summarize the distribution of weights as well as
+the survival estimate. The weight percentiles describe variation
+introduced by this procedure; they are not a credible interval from a
+separate posterior model for the weight.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
+<span><span class="va">discounted_mc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bdpsurvival.html">bdpsurvival</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="fl">1</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">current</span>, data0 <span class="op">=</span> <span class="va">historical</span>, breaks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">6</span>, <span class="fl">12</span><span class="op">)</span>, surv_time <span class="op">=</span> <span class="fl">6</span>,</span>
+<span>  a0 <span class="op">=</span> <span class="fl">0.1</span>, b0 <span class="op">=</span> <span class="fl">0.1</span>, method <span class="op">=</span> <span class="st">"mc"</span>, fix_alpha <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  discount_function <span class="op">=</span> <span class="st">"identity"</span>, alpha_max <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">format_interval</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"%.3f"</span>, <span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">x</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">.025</span>, <span class="fl">.975</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">" to "</span><span class="op">)</span></span>
+<span><span class="va">methods_one</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"Fixed"</span> <span class="op">=</span> <span class="va">discounted</span>, <span class="st">"Draw-specific"</span> <span class="op">=</span> <span class="va">discounted_mc</span><span class="op">)</span></span>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">methods_one</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">method</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">arm</span> <span class="op">&lt;-</span> <span class="va">methods_one</span><span class="op">[[</span><span class="va">method</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">posterior_treatment</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Method <span class="op">=</span> <span class="va">method</span>, `Median weight` <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/median.html" class="external-link">median</a></span><span class="op">(</span><span class="va">arm</span><span class="op">$</span><span class="va">alpha_discount</span><span class="op">)</span>,</span>
+<span>    `Weight 2.5–97.5%` <span class="op">=</span> <span class="fu">format_interval</span><span class="op">(</span><span class="va">arm</span><span class="op">$</span><span class="va">alpha_discount</span><span class="op">)</span>,</span>
+<span>    `Median S(6)` <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/median.html" class="external-link">median</a></span><span class="op">(</span><span class="va">arm</span><span class="op">$</span><span class="va">posterior_survival</span><span class="op">)</span>,</span>
+<span>    `95% CrI for S(6)` <span class="op">=</span> <span class="fu">format_interval</span><span class="op">(</span><span class="va">arm</span><span class="op">$</span><span class="va">posterior_survival</span><span class="op">)</span>, check.names <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span><span class="op">)</span>, digits <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<colgroup>
+<col width="18%">
+<col width="18%">
+<col width="22%">
+<col width="16%">
+<col width="22%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Method</th>
+<th align="right">Median weight</th>
+<th align="left">Weight 2.5–97.5%</th>
+<th align="right">Median S(6)</th>
+<th align="left">95% CrI for S(6)</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Fixed</td>
+<td align="right">0.027</td>
+<td align="left">0.027 to 0.027</td>
+<td align="right">0.503</td>
+<td align="left">0.369 to 0.637</td>
+</tr>
+<tr class="even">
+<td align="left">Draw-specific</td>
+<td align="right">0.040</td>
+<td align="left">0.000 to 0.783</td>
+<td align="right">0.521</td>
+<td align="left">0.380 to 0.657</td>
+</tr>
+</tbody>
+</table>
+<p>The two procedures need not give the same mean or median weight, even
+with many simulation draws. Their definitions differ: one transforms an
+estimated directional probability, whereas the other transforms each
+standardized difference. Neither weight is the posterior probability of
+equivalence between studies.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="two-arm-example">Two-arm example<a class="anchor" aria-label="anchor" href="#two-arm-example"></a>
@@ -269,7 +332,7 @@ summarized in the six-month table.
 <p>Add independent current and historical controls with mean event time
 12 months, using the same censoring mechanism. All four sources are
 present.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">101</span><span class="op">)</span></span>
 <span><span class="va">control</span> <span class="op">&lt;-</span> <span class="fu">simulate_followup</span><span class="op">(</span><span class="fl">60</span>, mean_event <span class="op">=</span> <span class="fl">12</span>, mean_censor <span class="op">=</span> <span class="fl">18</span>, horizon <span class="op">=</span> <span class="fl">18</span><span class="op">)</span></span>
 <span><span class="va">control0</span> <span class="op">&lt;-</span> <span class="fu">simulate_followup</span><span class="op">(</span><span class="fl">100</span>, mean_event <span class="op">=</span> <span class="fl">12</span>, mean_censor <span class="op">=</span> <span class="fl">18</span>, horizon <span class="op">=</span> <span class="fl">18</span><span class="op">)</span></span>
@@ -286,14 +349,14 @@ present.</p>
 <span><span class="co">## data:</span></span>
 <span><span class="co">##   Current treatment: n = 60, number of events = 36</span></span>
 <span><span class="co">##   Current control: n = 60, number of events = 30</span></span>
-<span><span class="co">## Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.1034</span></span>
-<span><span class="co">## Stochastic comparison (p_hat) - control (current vs. historical data): 0.8144</span></span>
-<span><span class="co">## Discount function value (alpha) - treatment: 0.1034</span></span>
-<span><span class="co">## Discount function value (alpha) - control: 0.8144</span></span>
+<span><span class="co">## Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.1116</span></span>
+<span><span class="co">## Stochastic comparison (p_hat) - control (current vs. historical data): 0.8042</span></span>
+<span><span class="co">## Discount function value (alpha) - treatment: 0.1116</span></span>
+<span><span class="co">## Discount function value (alpha) - control: 0.8042</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">##             coef exp(coef) se(coef) lower 95% CI upper 95% CI</span></span>
-<span><span class="co">## treatment 0.0626    1.0647   0.1975       -0.326       0.4441</span></span></code></pre>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<span><span class="co">## treatment 0.0582    1.0599   0.1957      -0.3282       0.4387</span></span></code></pre>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">log_hr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">fit_two</span><span class="op">$</span><span class="va">final</span><span class="op">$</span><span class="va">posterior_loghazard</span><span class="op">)</span></span>
 <span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span></span>
 <span>  <span class="st">"Log hazard ratio"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">log_hr</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.025</span>, <span class="fl">0.5</span>, <span class="fl">0.975</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -309,26 +372,26 @@ present.</p>
 <tbody>
 <tr class="odd">
 <td align="left">Log hazard ratio</td>
-<td align="right">-0.3260</td>
-<td align="right">0.0633</td>
-<td align="right">0.4441</td>
+<td align="right">-0.3282</td>
+<td align="right">0.0606</td>
+<td align="right">0.4387</td>
 </tr>
 <tr class="even">
 <td align="left">Hazard ratio</td>
-<td align="right">0.7218</td>
-<td align="right">1.0653</td>
-<td align="right">1.5591</td>
+<td align="right">0.7202</td>
+<td align="right">1.0624</td>
+<td align="right">1.5507</td>
 </tr>
 </tbody>
 </table>
 <p>The summary counts 60 current treatment participants and 60 current
 control participants, regardless of how many intervals their follow-up
-spans. The treatment and control historical weights are 0.1034 and
-0.8144, respectively. The median hazard ratio is 1.0653. For an adverse
+spans. The treatment and control historical weights are 0.1116 and
+0.8042, respectively. The median hazard ratio is 1.0624. For an adverse
 event, a hazard ratio below 1 favours treatment; the corresponding
 no-effect value on the log scale is zero. The two rows transform both
 the estimates and credible limits consistently.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>hazard_ratio <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">log_hr</span><span class="op">)</span><span class="op">)</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">hazard_ratio</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_density.html" class="external-link">geom_density</a></span><span class="op">(</span>colour <span class="op">=</span> <span class="st">"#0072B2"</span>, linewidth <span class="op">=</span> <span class="fl">0.9</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_vline</a></span><span class="op">(</span>xintercept <span class="op">=</span> <span class="fl">1</span>, linetype <span class="op">=</span> <span class="fl">2</span>, colour <span class="op">=</span> <span class="st">"#666666"</span><span class="op">)</span> <span class="op">+</span></span>
@@ -339,6 +402,56 @@ Posterior hazard ratio from the approximate common-effect calculation.
 The dashed line marks a hazard ratio of 1.
 </p>
 </div>
+<p>Repeat the two-arm analysis using draw-specific borrowing, retaining
+the same settings. Treatment and control have separate weight
+distributions.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
+<span><span class="va">fit_two_mc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bdpsurvival.html">bdpsurvival</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="va">treatment</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">current_two</span>, data0 <span class="op">=</span> <span class="va">historical_two</span>, breaks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">6</span>, <span class="fl">12</span><span class="op">)</span>,</span>
+<span>  a0 <span class="op">=</span> <span class="fl">0.1</span>, b0 <span class="op">=</span> <span class="fl">0.1</span>, method <span class="op">=</span> <span class="st">"mc"</span>, fix_alpha <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  discount_function <span class="op">=</span> <span class="st">"identity"</span>, alpha_max <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">methods_two</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"Fixed"</span> <span class="op">=</span> <span class="va">fit_two</span>, <span class="st">"Draw-specific"</span> <span class="op">=</span> <span class="va">fit_two_mc</span><span class="op">)</span></span>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">methods_two</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">method</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">fit</span> <span class="op">&lt;-</span> <span class="va">methods_two</span><span class="op">[[</span><span class="va">method</span><span class="op">]</span><span class="op">]</span></span>
+<span>  <span class="va">hr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">final</span><span class="op">$</span><span class="va">posterior_loghazard</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Method <span class="op">=</span> <span class="va">method</span>,</span>
+<span>    `Median treatment weight` <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/median.html" class="external-link">median</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">posterior_treatment</span><span class="op">$</span><span class="va">alpha_discount</span><span class="op">)</span>,</span>
+<span>    `Median control weight` <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/median.html" class="external-link">median</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">posterior_control</span><span class="op">$</span><span class="va">alpha_discount</span><span class="op">)</span>,</span>
+<span>    `Median HR` <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/median.html" class="external-link">median</a></span><span class="op">(</span><span class="va">hr</span><span class="op">)</span>, `95% CrI for HR` <span class="op">=</span> <span class="fu">format_interval</span><span class="op">(</span><span class="va">hr</span><span class="op">)</span>, check.names <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span><span class="op">)</span>, digits <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<colgroup>
+<col width="16%">
+<col width="28%">
+<col width="25%">
+<col width="11%">
+<col width="17%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Method</th>
+<th align="right">Median treatment weight</th>
+<th align="right">Median control weight</th>
+<th align="right">Median HR</th>
+<th align="left">95% CrI for HR</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Fixed</td>
+<td align="right">0.112</td>
+<td align="right">0.804</td>
+<td align="right">1.062</td>
+<td align="left">0.720 to 1.551</td>
+</tr>
+<tr class="even">
+<td align="left">Draw-specific</td>
+<td align="right">0.099</td>
+<td align="right">0.487</td>
+<td align="right">1.006</td>
+<td align="left">0.670 to 1.549</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="section level2">
 <h2 id="piecewise-exponential-model">Piecewise exponential model<a class="anchor" aria-label="anchor" href="#piecewise-exponential-model"></a>
@@ -364,33 +477,101 @@ be the length of interval <span class="math inline">j</span> before
 <p><span class="math display">
 S(t)=\exp\left\{-\sum_j\lambda_j\ell_j(t)\right\}.
 </span></p>
-<p><code>ppexp(t, hazards, cuts = c(0, breaks))</code> returns <span class="math inline">1-S(t)</span> for each row of hazard draws. Survival
-probabilities are obtained as one minus that result.</p>
+<p>The exported helper
+<code>ppexp(t, hazards, cuts = c(0, breaks))</code> returns <span class="math inline">1-S(t)</span> for each row of hazard draws. The
+fitting function calculates survival directly from cumulative hazards.
+Borrowing comparisons use retained log hazards, so they can distinguish
+draws even when the corresponding survival probabilities round to zero
+or one.</p>
 <div class="section level3">
-<h3 id="fixed-borrowing-comparison">Fixed borrowing comparison<a class="anchor" aria-label="anchor" href="#fixed-borrowing-comparison"></a>
+<h3 id="comparing-current-and-historical-data">Comparing current and historical data<a class="anchor" aria-label="anchor" href="#comparing-current-and-historical-data"></a>
 </h3>
-<p>For one arm, compute <span class="math inline">q=\Pr\{S(t^*)&gt;S_0(t^*)\mid\text{data}\}</span>
-from the separate current and historical hazard draws, then <span class="math inline">p=2\min(q,1-q)</span> and <span class="math inline">\alpha=\alpha_{\max}W(p)</span>. The horizon <span class="math inline">t^*</span> can therefore change the weight, even
-though that weight is applied to all intervals. With
-<code>fix_alpha = TRUE</code>, the current one-arm implementation
-reports the untransformed directional <span class="math inline">q</span>
-in <code>p_hat</code>; the prescribed weight itself is unaffected. This
-inconsistency is part of issue 16.</p>
-<p>For two arms, compare current and historical hazards separately
-within treatment and within control. For each such comparison, form
-interval log hazard ratios, estimate their variances across draws, and
-combine them using inverse-variance weights. The directional probability
-of a positive combined log hazard ratio is then transformed to <span class="math inline">p=2\min(q,1-q)</span>. This is not the probability
-that two continuous parameters are unequal.</p>
-<p>The draw-specific survival formulas are not presented as a valid
-alternative here because the current implementation’s standardization,
-repeated transformation, and interval weighting remain unresolved in
-issue 16.</p>
+<p>Comparisons use independent draws from the separate current and
+historical posteriors within an arm. Write <span class="math inline">A_j=a_0+D_j</span> and <span class="math inline">B_j=b_0+T_j</span>, with <span class="math inline">A_{0j},B_{0j}</span> defined analogously for
+historical data. Gamma shape-rate moments give <span class="math inline">\operatorname{Var}(\lambda_j)=A_j/B_j^2</span> and
+<span class="math inline">\operatorname{Var}(\log\lambda_j)=\psi_1(A_j)</span>,
+where <span class="math inline">\psi_1</span> is the trigamma function
+<span class="citation">(Wellner 2008)</span>. The latter is exact;
+replacing it by <span class="math inline">1/A_j</span> is unsuitable for
+small shapes.</p>
+<div class="section level4">
+<h4 id="one-arm-survival-at-the-chosen-horizon">One arm: survival at the chosen horizon<a class="anchor" aria-label="anchor" href="#one-arm-survival-at-the-chosen-horizon"></a>
+</h4>
+<p>At horizon <span class="math inline">t^*</span>, the log survival
+difference and its posterior variance are</p>
+<p><span class="math display">
+\Delta^{(s)}=\log S^{(s)}(t^*)-\log S_0^{(s)}(t^*)
+=\sum_j\ell_j(t^*)\{\lambda_{0j}^{(s)}-\lambda_j^{(s)}\},
+</span></p>
+<p><span class="math display">
+V=\sum_j\ell_j(t^*)^2\left(\frac{A_j}{B_j^2}+\frac{A_{0j}}{B_{0j}^2}\right),
+\qquad Z^{(s)}=\frac{\Delta^{(s)}}{\sqrt{V}}.
+</span></p>
+<p>Only intervals before the horizon contribute. For example, a horizon
+at a cutpoint excludes the subsequent interval. Changing the horizon can
+change the comparison, although the resulting historical weight is
+applied to all intervals.</p>
+</div>
+<div class="section level4">
+<h4 id="two-arms-compare-studies-separately-within-each-arm">Two arms: compare studies separately within each arm<a class="anchor" aria-label="anchor" href="#two-arms-compare-studies-separately-within-each-arm"></a>
+</h4>
+<p>Within treatment, and separately within control, define the interval
+log hazard differences and variances</p>
+<p><span class="math display">
+C_j^{(s)}=\log\lambda_{0j}^{(s)}-\log\lambda_j^{(s)},
+\qquad v_j=\psi_1(A_{0j})+\psi_1(A_j).
+</span></p>
+<p>Combine intervals using inverse-variance weights:</p>
+<p><span class="math display">
+C^{(s)}=\frac{\sum_j C_j^{(s)}/v_j}{\sum_j1/v_j},
+\qquad V=\frac{1}{\sum_j1/v_j},
+\qquad Z^{(s)}=\frac{C^{(s)}}{\sqrt{V}}.
+</span></p>
+<p>Both borrowing methods use these analytic interval weights. Opposing
+current–historical differences across intervals can cancel in the
+combined comparison; inspect interval-specific hazards rather than
+treating a high weight as evidence of agreement throughout
+follow-up.</p>
+</div>
+<div class="section level4">
+<h4 id="transforming-the-comparison-into-a-weight">Transforming the comparison into a weight<a class="anchor" aria-label="anchor" href="#transforming-the-comparison-into-a-weight"></a>
+</h4>
+<p>For <code>method = "fixed"</code>, estimate the directional
+probability <span class="math inline">q=\Pr\{\Delta&gt;0\mid\text{data}\}</span> for one
+arm, or <span class="math inline">q=\Pr\{C&gt;0\mid\text{data}\}</span>
+within each arm of a two-arm analysis. Then use</p>
+<p><span class="math display">
+p=2\min(q,1-q),\qquad \alpha=\alpha_{\max}W(p).
+</span></p>
+<p>For <code>method = "mc"</code>, use each standardized draw
+directly:</p>
+<p><span class="math display">
+p^{(s)}=2\{1-\Phi(|Z^{(s)}|)\},
+\qquad \alpha^{(s)}=\alpha_{\max}W(p^{(s)}).
+</span></p>
+<p>The normal-tail transformation is applied once: <span class="math inline">Z^{(s)}=0</span> gives <span class="math inline">p^{(s)}=1</span>, and larger absolute differences
+give smaller values. It remains an approximate comparison score,
+particularly with sparse, skewed Gamma posteriors; exact variance
+standardization does not make those distributions normal. Identical
+current and historical data produce independent posterior draws, so
+their draw-specific weights need not all equal one.</p>
+<p>Neither transformation is a posterior probability of equality or
+equivalence. <code>p_hat</code> contains the selected method’s
+transformed comparison, including when <code>fix_alpha = TRUE</code>. In
+that case, the weight is prescribed as <code>alpha_max</code> and does
+not depend on <code>p_hat</code>.</p>
+<p>Log-Gamma sampling avoids an artificial positive hazard offset. Very
+small hazards may still round to zero in the returned ordinary-scale
+matrices, while their retained log values remain available for the
+comparisons and treatment effect. More simulation draws reduce Monte
+Carlo error; they do not remove the spread of draw-specific weights or
+resolve the normal approximation’s limitations.</p>
+</div>
 </div>
 <div class="section level3">
 <h3 id="implemented-historical-augmentation">Implemented historical augmentation<a class="anchor" aria-label="anchor" href="#implemented-historical-augmentation"></a>
 </h3>
-<p>For a fixed weight, the current implementation generates augmented
+<p>For each weight, the current implementation generates augmented
 hazards as</p>
 <p><span class="math display">
 \lambda_j\mid\text{data},\alpha\sim\operatorname{Gamma}\left(
@@ -404,6 +585,9 @@ is under review in issue 17. This distinction matters most when event
 counts or exposure are small, or the prior is influential. In two arms,
 the implementation uses separate treatment and control weights in this
 same update.</p>
+<p>With <code>method = "mc"</code>, substitute <span class="math inline">\alpha^{(s)}</span> for each draw. The resulting
+marginal distribution mixes over the generated weights and is generally
+not one Gamma distribution.</p>
 </div>
 <div class="section level3">
 <h3 id="approximate-two-arm-effect">Approximate two-arm effect<a class="anchor" aria-label="anchor" href="#approximate-two-arm-effect"></a>
@@ -417,6 +601,10 @@ R_j^{(s)}=\log\lambda_{jT}^{(s)}-\log\lambda_{jC}^{(s)},
 <p><span class="math display">
 \beta^{(s)}=\frac{\sum_j R_j^{(s)}/V_j}{\sum_j1/V_j}.
 </span></p>
+<p>These empirical variances summarize the <em>augmented</em> draws,
+including variation from draw-specific weights. They serve a different
+purpose from the analytic source-posterior variances used to choose
+borrowing weights above.</p>
 <p>This is the implemented inverse-variance approximation to a common
 log hazard ratio. It is not an exact joint posterior fit of a
 proportional-hazards Poisson regression. A common treatment effect
@@ -436,11 +624,15 @@ time origin, and time units across studies. Inspect follow-up support at
 the chosen horizon; extrapolation beyond observed follow-up depends on
 the piecewise hazard assumptions.</p>
 <p>Check sensitivity to interval boundaries, survival horizon, Gamma
-priors, discount function, and maximum weight. Sparse or zero-event
-intervals can be strongly prior-dependent. Compare the interval-specific
-effects before interpreting a common hazard ratio. The outstanding
-issues above must be resolved and the complete procedure evaluated
-before treating these examples as validation of a trial design.</p>
+priors, borrowing method, discount function, and maximum weight. Sparse
+or zero-event intervals can be strongly prior-dependent. Compare
+interval-specific effects before interpreting a common hazard ratio, and
+check numerical precision with more draws and independent seeds.</p>
+<p>Trial-design use requires evaluation of the complete procedure,
+including its operating characteristics under agreement and conflict
+between studies. The baseline-prior augmentation question in issue 17
+remains unresolved; these worked examples do not provide that
+validation.</p>
 </div>
 <div class="section level2">
 <h2 class="unnumbered" id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
@@ -452,6 +644,10 @@ MDIC Computer Modeling and Simulation Working Group Participants. 2017.
 <span>“Incorporation of Stochastic Engineering Models as Prior
 Information in <span>Bayesian</span> Medical Device Trials.”</span>
 <em>Journal of Biopharmaceutical Statistics</em> 27 (6): 1089–103. <a href="https://doi.org/10.1080/10543406.2017.1300907" class="external-link">https://doi.org/10.1080/10543406.2017.1300907</a>.
+</div>
+<div id="ref-wellner2008" class="csl-entry">
+Wellner, Jon A. 2008. <em><span>Gamma</span>, Digamma, and
+Polygamma</em>. University of Washington, Statistics 581 handout. <a href="https://sites.stat.washington.edu/jaw/COURSES/580s/581/HO/digamma2.pdf" class="external-link">https://sites.stat.washington.edu/jaw/COURSES/580s/581/HO/digamma2.pdf</a>.
 </div>
 </div>
 </div>

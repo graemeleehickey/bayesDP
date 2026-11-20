@@ -1,9 +1,8 @@
 # Bayesian Discount Prior: Historical Data Weight (alpha)
 
 `alpha_discount` can be used to estimate the weight applied to
-historical data in the context of a one- or two-arm clinical trial.
-`alpha_discount` is not used internally but is given for educational
-purposes.
+historical data in the context of a one- or two-arm clinical trial. It
+is also used by the survival fitting function and discount plots.
 
 ## Usage
 
@@ -21,16 +20,17 @@ alpha_discount(
 
 - p_hat:
 
-  scalar. A current-historical comparison in \[0, 1\]. This value can be
-  the output of `probability_discount` or a value between 0 and 1.
+  numeric scalar or vector. Current-historical comparisons in \[0, 1\].
+  This value can be the output of `probability_discount` or a value
+  between 0 and 1.
 
 - discount_function:
 
   character. Specify the discount function to use. Currently supports
   `weibull`, `scaledweibull`, and `identity`. The discount function
   `scaledweibull` scales the output of the Weibull CDF to have a max
-  value of 1. The `identity` discount function uses the posterior
-  probability directly as the discount weight. Default value is
+  value of 1. The `identity` discount function uses the supplied
+  comparison directly as the discount weight. Default value is
   "`weibull`".
 
 - alpha_max:
@@ -56,11 +56,9 @@ vector), scaled by `alpha_max`.
 
 ## Details
 
-This function is not used internally but is given for educational
-purposes. Given inputs `p_hat`, `discount_function`, `alpha_max`,
-`weibull_shape`, and `weibull_scale` the output is the weight that would
-be applied to historical data in the context of a one- or two-arm
-clinical trial.
+Given inputs `p_hat`, `discount_function`, `alpha_max`, `weibull_shape`,
+and `weibull_scale` the output is the weight that would be applied to
+historical data in the context of a one- or two-arm clinical trial.
 
 ## References
 

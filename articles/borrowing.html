@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">bayesDP</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.11</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.12</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -75,7 +75,7 @@ Musgrove</h4>
                         <h4 data-toc-skip class="author">Graeme L.
 Hickey</h4>
             
-            <h4 data-toc-skip class="date">2026-11-15</h4>
+            <h4 data-toc-skip class="date">2026-11-20</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/graemeleehickey/bayesDP/blob/master/vignettes/borrowing.Rmd" class="external-link"><code>vignettes/borrowing.Rmd</code></a></small>
       <div class="d-none name"><code>borrowing.Rmd</code></div>
@@ -194,12 +194,12 @@ no borrowing, or <code>alpha_max = 1</code> for full borrowing. In
 two-arm analyses a vector supplies treatment and control limits, in that
 order. <code><a href="../reference/bdplm.html">bdplm()</a></code> requires <code>method = "fixed"</code> when
 <code>fix_alpha = TRUE</code>.</p>
-<p>The worked examples explicitly choose <code>method = "fixed"</code>
-so that their borrowing weights are easy to interpret. This is a choice
-for exposition, not the default and not evidence that one procedure is
-universally preferable. The default survival Monte Carlo procedure has
-unresolved calculation problems described in <a href="https://github.com/graemeleehickey/bayesDP/issues/16" class="external-link">issue
-16</a>; the survival examples therefore use the fixed method.</p>
+<p>The main worked examples explicitly choose
+<code>method = "fixed"</code> so that their borrowing weights are easy
+to interpret. This is a choice for exposition, not the default and not
+evidence that one procedure is universally preferable. The survival
+vignette also compares the two procedures using the same data and
+analysis settings.</p>
 <div class="section level3">
 <h3 id="an-estimated-fixed-weight">An estimated fixed weight<a class="anchor" aria-label="anchor" href="#an-estimated-fixed-weight"></a>
 </h3>
@@ -227,7 +227,7 @@ for the weight and estimate it jointly with the outcome parameters.</p>
 <div class="section level3">
 <h3 id="a-weight-for-each-draw">A weight for each draw<a class="anchor" aria-label="anchor" href="#a-weight-for-each-draw"></a>
 </h3>
-<p>For binomial, normal, and linear regression analyses,
+<p>For binomial, normal, linear regression, and survival analyses,
 <code>method = "mc"</code> computes a standardized difference <span class="math inline">Z^{(s)}</span> from draw <span class="math inline">s</span> and uses</p>
 <p><span class="math display">
 p^{(s)}=2\{1-\Phi(|Z^{(s)}|)\},
@@ -310,11 +310,11 @@ Historical weight with alpha_max = 1. The scale 0.8 panel illustrates
 the normalization; it is not a recommended calibration.
 </p>
 </div>
-<p><code><a href="../reference/alpha_discount.html">alpha_discount()</a></code> is an educational helper and defaults
-to <code>"weibull"</code>, unlike the four model-fitting functions.
-Specify the function explicitly when comparing them.
-<code><a href="../reference/probability_discount.html">probability_discount()</a></code> illustrates the normal-data
-comparison and defaults to <code>"fixed"</code>.</p>
+<p><code><a href="../reference/alpha_discount.html">alpha_discount()</a></code> applies the selected discount function
+to a supplied comparison. It defaults to <code>"weibull"</code>, unlike
+the four model-fitting functions; specify the function explicitly when
+comparing them. <code><a href="../reference/probability_discount.html">probability_discount()</a></code> illustrates the
+normal-data comparison and defaults to <code>"fixed"</code>.</p>
 <p>For a binomial analysis with a fixed weight, <span class="math inline">\alpha N_0</span> is the weighted historical sample
 size in the Beta update. It is not a general measure of effective
 information for every model: normal borrowing also depends on variances,

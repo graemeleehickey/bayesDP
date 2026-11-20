@@ -8,20 +8,18 @@ the estimand is survival probability at a specified time. With two arms,
 the reported effect is an approximate common log hazard ratio, treatment
 relative to control.
 
-Two limitations remain under investigation: the default Monte Carlo
-weight calculation ([issue
-16](https://github.com/graemeleehickey/bayesDP/issues/16)) and the
-baseline-prior contribution during historical augmentation ([issue
-17](https://github.com/graemeleehickey/bayesDP/issues/17)). These
-examples use `method = "fixed"`, describe the implemented prior update,
-and calculate tables directly from posterior draws. They illustrate
-current behaviour; they do not validate the unresolved procedures for
-trial design.
+The baseline-prior contribution during historical augmentation remains
+under investigation ([issue
+17](https://github.com/graemeleehickey/bayesDP/issues/17)). The
+implemented update is described below. These examples illustrate the
+calculations and their sensitivity to the borrowing method; they do not
+establish operating characteristics for a trial design.
 
 See the [borrowing
 overview](https://graemeleehickey.github.io/bayesDP/articles/borrowing.md)
-for weighting choices and interpretation. The function default is
-`method = "mc"`, so the explicit method argument matters.
+for weighting choices and interpretation. The main examples use
+`method = "fixed"` for exposition and then compare it with the default
+`method = "mc"`.
 
 ## Data and follow-up
 
@@ -35,11 +33,14 @@ covariate adjustment is not implemented.
 
 Choose a time unit, clinically relevant survival horizon, and interval
 boundaries. `breaks` contains positive internal cutpoints, without zero
-or infinity. The final interval extends beyond the last cutpoint. By
-default the cutpoints are the pooled observed-time 20th, 40th, 60th, and
-80th percentiles; these are quantiles of event-or-censoring times, not
-estimated survival quantiles. The examples prespecify cutpoints and the
-horizon.
+or infinity. The final interval extends beyond the last cutpoint;
+`breaks = numeric(0)` specifies one constant hazard. Cutpoints are
+sorted and duplicates removed.
+
+By default the cutpoints are the pooled observed-time 20th, 40th, 60th,
+and 80th percentiles; these are quantiles of event-or-censoring times,
+not estimated survival quantiles. The examples prespecify cutpoints and
+the horizon.
 
 ## One-arm example with censoring
 
@@ -101,12 +102,12 @@ knitr::kable(comparison, digits = 4,
 
 |                | Historical weight | Median S(6) | Lower 95% CrI | Upper 95% CrI |
 |:---------------|------------------:|------------:|--------------:|--------------:|
-| Current only   |            0.0000 |      0.4945 |        0.3571 |        0.6294 |
-| Discounted     |            0.0236 |      0.5016 |        0.3676 |        0.6336 |
+| Current only   |            0.0000 |      0.4945 |        0.3572 |        0.6294 |
+| Discounted     |            0.0272 |      0.5027 |        0.3690 |        0.6365 |
 | Full borrowing |            1.0000 |      0.6171 |        0.5331 |        0.6955 |
 
-The estimated historical weight is 0.0236. The augmented posterior
-median six-month survival is 0.5016. These summarize survival
+The estimated historical weight is 0.0272. The augmented posterior
+median six-month survival is 0.5027. These summarize survival
 probability at six months, not median survival time. The full-borrowing
 result includes the extra baseline-prior contribution described below
 and should not be called an ordinary pooled analysis.
@@ -132,7 +133,7 @@ print(discounted)
     ## 
     ## 
     ##   n events surv_time median lower 95% CrI upper 95% CrI
-    ##  60     36         6 0.5016        0.3676        0.6336
+    ##  60     36         6 0.5027         0.369        0.6365
 
 ``` r
 
@@ -148,6 +149,44 @@ table.](bdpsurvival-vignette_files/figure-html/survival-curves-1.png)
 Posterior median survival curves for the estimated-borrowing fit. These
 are model-based curves, not Kaplan–Meier estimates; uncertainty is
 summarized in the six-month table.
+
+### Sensitivity to the borrowing method
+
+Keep the data, priors, intervals, horizon, discount function, and
+maximum weight the same, and change the borrowing procedure. For the
+draw-specific method, summarize the distribution of weights as well as
+the survival estimate. The weight percentiles describe variation
+introduced by this procedure; they are not a credible interval from a
+separate posterior model for the weight.
+
+``` r
+
+set.seed(42)
+discounted_mc <- bdpsurvival(Surv(time, status) ~ 1,
+  data = current, data0 = historical, breaks = c(3, 6, 12), surv_time = 6,
+  a0 = 0.1, b0 = 0.1, method = "mc", fix_alpha = FALSE,
+  discount_function = "identity", alpha_max = 1)
+format_interval <- function(x) paste(sprintf("%.3f", quantile(x, c(.025, .975))), collapse = " to ")
+methods_one <- list("Fixed" = discounted, "Draw-specific" = discounted_mc)
+knitr::kable(do.call(rbind, lapply(names(methods_one), function(method) {
+  arm <- methods_one[[method]]$posterior_treatment
+  data.frame(Method = method, `Median weight` = median(arm$alpha_discount),
+    `Weight 2.5–97.5%` = format_interval(arm$alpha_discount),
+    `Median S(6)` = median(arm$posterior_survival),
+    `95% CrI for S(6)` = format_interval(arm$posterior_survival), check.names = FALSE)
+})), digits = 3)
+```
+
+| Method        | Median weight | Weight 2.5–97.5% | Median S(6) | 95% CrI for S(6) |
+|:--------------|--------------:|:-----------------|------------:|:-----------------|
+| Fixed         |         0.027 | 0.027 to 0.027   |       0.503 | 0.369 to 0.637   |
+| Draw-specific |         0.040 | 0.000 to 0.783   |       0.521 | 0.380 to 0.657   |
+
+The two procedures need not give the same mean or median weight, even
+with many simulation draws. Their definitions differ: one transforms an
+estimated directional probability, whereas the other transforms each
+standardized difference. Neither weight is the posterior probability of
+equivalence between studies.
 
 ## Two-arm example
 
@@ -175,13 +214,13 @@ summary(fit_two)
     ## data:
     ##   Current treatment: n = 60, number of events = 36
     ##   Current control: n = 60, number of events = 30
-    ## Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.1034
-    ## Stochastic comparison (p_hat) - control (current vs. historical data): 0.8144
-    ## Discount function value (alpha) - treatment: 0.1034
-    ## Discount function value (alpha) - control: 0.8144
+    ## Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.1116
+    ## Stochastic comparison (p_hat) - control (current vs. historical data): 0.8042
+    ## Discount function value (alpha) - treatment: 0.1116
+    ## Discount function value (alpha) - control: 0.8042
     ## 
     ##             coef exp(coef) se(coef) lower 95% CI upper 95% CI
-    ## treatment 0.0626    1.0647   0.1975       -0.326       0.4441
+    ## treatment 0.0582    1.0599   0.1957      -0.3282       0.4387
 
 ``` r
 
@@ -194,13 +233,13 @@ knitr::kable(rbind(
 
 |                  |    2.5% |    50% |  97.5% |
 |:-----------------|--------:|-------:|-------:|
-| Log hazard ratio | -0.3260 | 0.0633 | 0.4441 |
-| Hazard ratio     |  0.7218 | 1.0653 | 1.5591 |
+| Log hazard ratio | -0.3282 | 0.0606 | 0.4387 |
+| Hazard ratio     |  0.7202 | 1.0624 | 1.5507 |
 
 The summary counts 60 current treatment participants and 60 current
 control participants, regardless of how many intervals their follow-up
-spans. The treatment and control historical weights are 0.1034 and
-0.8144, respectively. The median hazard ratio is 1.0653. For an adverse
+spans. The treatment and control historical weights are 0.1116 and
+0.8042, respectively. The median hazard ratio is 1.0624. For an adverse
 event, a hazard ratio below 1 favours treatment; the corresponding
 no-effect value on the log scale is zero. The two rows transform both
 the estimates and credible limits consistently.
@@ -219,6 +258,32 @@ The dashed line marks a hazard ratio of
 
 Posterior hazard ratio from the approximate common-effect calculation.
 The dashed line marks a hazard ratio of 1.
+
+Repeat the two-arm analysis using draw-specific borrowing, retaining the
+same settings. Treatment and control have separate weight distributions.
+
+``` r
+
+set.seed(42)
+fit_two_mc <- bdpsurvival(Surv(time, status) ~ treatment,
+  data = current_two, data0 = historical_two, breaks = c(3, 6, 12),
+  a0 = 0.1, b0 = 0.1, method = "mc", fix_alpha = FALSE,
+  discount_function = "identity", alpha_max = 1)
+methods_two <- list("Fixed" = fit_two, "Draw-specific" = fit_two_mc)
+knitr::kable(do.call(rbind, lapply(names(methods_two), function(method) {
+  fit <- methods_two[[method]]
+  hr <- exp(fit$final$posterior_loghazard)
+  data.frame(Method = method,
+    `Median treatment weight` = median(fit$posterior_treatment$alpha_discount),
+    `Median control weight` = median(fit$posterior_control$alpha_discount),
+    `Median HR` = median(hr), `95% CrI for HR` = format_interval(hr), check.names = FALSE)
+})), digits = 3)
+```
+
+| Method | Median treatment weight | Median control weight | Median HR | 95% CrI for HR |
+|:---|---:|---:|---:|:---|
+| Fixed | 0.112 | 0.804 | 1.062 | 0.720 to 1.551 |
+| Draw-specific | 0.099 | 0.487 | 1.006 | 0.670 to 1.549 |
 
 ## Piecewise exponential model
 
@@ -242,37 +307,94 @@ interval j before t. Then
 
 S(t)=\exp\left\\-\sum_j\lambda_j\ell_j(t)\right\\.
 
-`ppexp(t, hazards, cuts = c(0, breaks))` returns 1-S(t) for each row of
-hazard draws. Survival probabilities are obtained as one minus that
-result.
+The exported helper `ppexp(t, hazards, cuts = c(0, breaks))` returns
+1-S(t) for each row of hazard draws. The fitting function calculates
+survival directly from cumulative hazards. Borrowing comparisons use
+retained log hazards, so they can distinguish draws even when the
+corresponding survival probabilities round to zero or one.
 
-### Fixed borrowing comparison
+### Comparing current and historical data
 
-For one arm, compute q=\Pr\\S(t^\*)\>S_0(t^\*)\mid\text{data}\\ from the
-separate current and historical hazard draws, then p=2\min(q,1-q) and
-\alpha=\alpha\_{\max}W(p). The horizon t^\* can therefore change the
-weight, even though that weight is applied to all intervals. With
-`fix_alpha = TRUE`, the current one-arm implementation reports the
-untransformed directional q in `p_hat`; the prescribed weight itself is
-unaffected. This inconsistency is part of issue 16.
+Comparisons use independent draws from the separate current and
+historical posteriors within an arm. Write A_j=a_0+D_j and B_j=b_0+T_j,
+with A\_{0j},B\_{0j} defined analogously for historical data. Gamma
+shape-rate moments give \operatorname{Var}(\lambda_j)=A_j/B_j^2 and
+\operatorname{Var}(\log\lambda_j)=\psi_1(A_j), where \psi_1 is the
+trigamma function (Wellner 2008). The latter is exact; replacing it by
+1/A_j is unsuitable for small shapes.
 
-For two arms, compare current and historical hazards separately within
-treatment and within control. For each such comparison, form interval
-log hazard ratios, estimate their variances across draws, and combine
-them using inverse-variance weights. The directional probability of a
-positive combined log hazard ratio is then transformed to
-p=2\min(q,1-q). This is not the probability that two continuous
-parameters are unequal.
+#### One arm: survival at the chosen horizon
 
-The draw-specific survival formulas are not presented as a valid
-alternative here because the current implementation’s standardization,
-repeated transformation, and interval weighting remain unresolved in
-issue 16.
+At horizon t^\*, the log survival difference and its posterior variance
+are
+
+\Delta^{(s)}=\log S^{(s)}(t^\*)-\log S_0^{(s)}(t^\*)
+=\sum_j\ell_j(t^\*)\\\lambda\_{0j}^{(s)}-\lambda_j^{(s)}\\,
+
+V=\sum_j\ell_j(t^\*)^2\left(\frac{A_j}{B_j^2}+\frac{A\_{0j}}{B\_{0j}^2}\right),
+\qquad Z^{(s)}=\frac{\Delta^{(s)}}{\sqrt{V}}.
+
+Only intervals before the horizon contribute. For example, a horizon at
+a cutpoint excludes the subsequent interval. Changing the horizon can
+change the comparison, although the resulting historical weight is
+applied to all intervals.
+
+#### Two arms: compare studies separately within each arm
+
+Within treatment, and separately within control, define the interval log
+hazard differences and variances
+
+C_j^{(s)}=\log\lambda\_{0j}^{(s)}-\log\lambda_j^{(s)}, \qquad
+v_j=\psi_1(A\_{0j})+\psi_1(A_j).
+
+Combine intervals using inverse-variance weights:
+
+C^{(s)}=\frac{\sum_j C_j^{(s)}/v_j}{\sum_j1/v_j}, \qquad
+V=\frac{1}{\sum_j1/v_j}, \qquad Z^{(s)}=\frac{C^{(s)}}{\sqrt{V}}.
+
+Both borrowing methods use these analytic interval weights. Opposing
+current–historical differences across intervals can cancel in the
+combined comparison; inspect interval-specific hazards rather than
+treating a high weight as evidence of agreement throughout follow-up.
+
+#### Transforming the comparison into a weight
+
+For `method = "fixed"`, estimate the directional probability
+q=\Pr\\\Delta\>0\mid\text{data}\\ for one arm, or
+q=\Pr\\C\>0\mid\text{data}\\ within each arm of a two-arm analysis. Then
+use
+
+p=2\min(q,1-q),\qquad \alpha=\alpha\_{\max}W(p).
+
+For `method = "mc"`, use each standardized draw directly:
+
+p^{(s)}=2\\1-\Phi(\|Z^{(s)}\|)\\, \qquad
+\alpha^{(s)}=\alpha\_{\max}W(p^{(s)}).
+
+The normal-tail transformation is applied once: Z^{(s)}=0 gives
+p^{(s)}=1, and larger absolute differences give smaller values. It
+remains an approximate comparison score, particularly with sparse,
+skewed Gamma posteriors; exact variance standardization does not make
+those distributions normal. Identical current and historical data
+produce independent posterior draws, so their draw-specific weights need
+not all equal one.
+
+Neither transformation is a posterior probability of equality or
+equivalence. `p_hat` contains the selected method’s transformed
+comparison, including when `fix_alpha = TRUE`. In that case, the weight
+is prescribed as `alpha_max` and does not depend on `p_hat`.
+
+Log-Gamma sampling avoids an artificial positive hazard offset. Very
+small hazards may still round to zero in the returned ordinary-scale
+matrices, while their retained log values remain available for the
+comparisons and treatment effect. More simulation draws reduce Monte
+Carlo error; they do not remove the spread of draw-specific weights or
+resolve the normal approximation’s limitations.
 
 ### Implemented historical augmentation
 
-For a fixed weight, the current implementation generates augmented
-hazards as
+For each weight, the current implementation generates augmented hazards
+as
 
 \lambda_j\mid\text{data},\alpha\sim\operatorname{Gamma}\left(
 (1+\alpha)a_0+D_j+\alpha D\_{0j}, (1+\alpha)b_0+T_j+\alpha
@@ -286,6 +408,10 @@ when event counts or exposure are small, or the prior is influential. In
 two arms, the implementation uses separate treatment and control weights
 in this same update.
 
+With `method = "mc"`, substitute \alpha^{(s)} for each draw. The
+resulting marginal distribution mixes over the generated weights and is
+generally not one Gamma distribution.
+
 ### Approximate two-arm effect
 
 From the augmented arm hazards, calculate for each draw
@@ -296,6 +422,11 @@ V_j=\operatorname{Var}\_s(R_j^{(s)}),
 and combine intervals as
 
 \beta^{(s)}=\frac{\sum_j R_j^{(s)}/V_j}{\sum_j1/V_j}.
+
+These empirical variances summarize the *augmented* draws, including
+variation from draw-specific weights. They serve a different purpose
+from the analytic source-posterior variances used to choose borrowing
+weights above.
 
 This is the implemented inverse-variance approximation to a common log
 hazard ratio. It is not an exact joint posterior fit of a
@@ -315,11 +446,16 @@ chosen horizon; extrapolation beyond observed follow-up depends on the
 piecewise hazard assumptions.
 
 Check sensitivity to interval boundaries, survival horizon, Gamma
-priors, discount function, and maximum weight. Sparse or zero-event
-intervals can be strongly prior-dependent. Compare the interval-specific
-effects before interpreting a common hazard ratio. The outstanding
-issues above must be resolved and the complete procedure evaluated
-before treating these examples as validation of a trial design.
+priors, borrowing method, discount function, and maximum weight. Sparse
+or zero-event intervals can be strongly prior-dependent. Compare
+interval-specific effects before interpreting a common hazard ratio, and
+check numerical precision with more draws and independent seeds.
+
+Trial-design use requires evaluation of the complete procedure,
+including its operating characteristics under agreement and conflict
+between studies. The baseline-prior augmentation question in issue 17
+remains unresolved; these worked examples do not provide that
+validation.
 
 ## References
 
@@ -329,3 +465,7 @@ MDIC Computer Modeling and Simulation Working Group Participants. 2017.
 Bayesian Medical Device Trials.” *Journal of Biopharmaceutical
 Statistics* 27 (6): 1089–103.
 <https://doi.org/10.1080/10543406.2017.1300907>.
+
+Wellner, Jon A. 2008. *Gamma, Digamma, and Polygamma*. University of
+Washington, Statistics 581 handout.
+<https://sites.stat.washington.edu/jaw/COURSES/580s/581/HO/digamma2.pdf>.

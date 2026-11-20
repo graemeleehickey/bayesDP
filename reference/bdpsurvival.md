@@ -51,25 +51,27 @@ bdpsurvival(
 
 - breaks:
 
-  vector. Breaks (interval starts) used to compose the breaks of the
-  piecewise exponential model. Do not include zero. Default breaks are
-  the quantiles of the input times.
+  numeric vector. Positive, finite internal cutpoints of the piecewise
+  exponential model, without zero or infinity. Values are sorted and
+  duplicates removed. Use `numeric(0)` for one constant hazard. Default
+  cutpoints are pooled observed-time quantiles.
 
 - a0:
 
-  scalar. Prior value for the gamma shape of the piecewise exponential
-  hazards. Default is 0.1.
+  positive, finite scalar. Prior value for the gamma shape of the
+  piecewise exponential hazards. Default is 0.1.
 
 - b0:
 
-  scalar. Prior value for the gamma rate of the piecewise exponential
-  hazards. Default is 0.1.
+  positive, finite scalar. Prior value for the gamma rate of the
+  piecewise exponential hazards. Default is 0.1.
 
 - surv_time:
 
-  scalar. Survival time of interest for computing the probability of
-  survival for a single arm (OPC) trial. Default is overall, i.e.,
-  current+historical, median survival time.
+  positive, finite scalar. Time of interest for computing the
+  probability of survival for a single arm (OPC) trial. Default is
+  overall, i.e., current+historical, median observed event-or-censoring
+  time.
 
 - discount_function:
 
@@ -82,10 +84,11 @@ bdpsurvival(
 
 - alpha_max:
 
-  scalar. Maximum weight the discount function can apply. Default is 1.
-  For a two-arm trial, users may specify a vector of two values where
-  the first value is used to weight the historical treatment group and
-  the second value is used to weight the historical control group.
+  scalar in \[0, 1\]. Maximum weight the discount function can apply.
+  Default is 1. For a two-arm trial, users may specify a vector of two
+  values where the first value is used to weight the historical
+  treatment group and the second value is used to weight the historical
+  control group.
 
 - fix_alpha:
 
@@ -93,7 +96,8 @@ bdpsurvival(
 
 - number_mcmc:
 
-  scalar. Number of Monte Carlo simulations. Default is 10000.
+  integer of at least 2. Number of Monte Carlo simulations. Default is
+  10000.
 
 - weibull_scale:
 
@@ -157,34 +161,41 @@ following components:
   - `alpha_discount` numeric. Alpha value, the weighting parameter of
     the historical data.
 
-  - `p_hat` numeric. The current-historical comparison between the
-    current and historical data.
+  - `p_hat` numeric. The two-sided current-historical comparison in \[0,
+    1\]: one value for `method = "fixed"`, or `number_mcmc` values for
+    `method = "mc"`. See Details for the transformation.
 
-  - `posterior_survival` vector. If one-arm trial, a vector of length
-    `number_mcmc` containing the posterior probability draws of survival
-    at `surv_time`.
+  - `posterior_survival` matrix. If one-arm trial, one column with
+    `number_mcmc` rows containing the posterior probability draws of
+    survival at `surv_time`.
 
-  - `posterior_flat_survival` vector. If one-arm trial, a vector of
-    length `number_mcmc` containing the probability draws of survival at
+  - `posterior_flat_survival` matrix. If one-arm trial, one column with
+    `number_mcmc` rows containing the probability draws of survival at
     `surv_time` for the current treatment not augmented by historical
     treatment.
 
-  - `prior_survival` vector. If one-arm trial, a vector of length
-    `number_mcmc` containing the probability draws of survival at
+  - `prior_survival` matrix. If one-arm trial, one column with
+    `number_mcmc` rows containing the probability draws of survival at
     `surv_time` for the historical treatment.
 
   - `posterior_hazard` matrix. A matrix with `number_mcmc` rows and
-    `length(breaks)` columns containing the posterior draws of the
+    `length(breaks) + 1` columns containing the posterior draws of the
     piecewise hazards for each interval break point.
 
   - `posterior_flat_hazard` matrix. A matrix with `number_mcmc` rows and
-    `length(breaks)` columns containing the draws of piecewise hazards
-    for each interval break point for current treatment not augmented by
-    historical treatment.
+    `length(breaks) + 1` columns containing the draws of piecewise
+    hazards for each interval break point for current treatment not
+    augmented by historical treatment.
 
   - `prior_hazard` matrix. A matrix with `number_mcmc` rows and
-    `length(breaks)` columns containing the draws of piecewise hazards
-    for each interval break point for historical treatment.
+    `length(breaks) + 1` columns containing the draws of piecewise
+    hazards for each interval break point for historical treatment.
+
+  - `posterior_log_hazard`, `posterior_flat_log_hazard`,
+    `prior_log_hazard` matrices. Log hazards corresponding to the three
+    hazard matrices. These retain finite log draws when very small
+    hazards round to zero and are used for borrowing comparisons and the
+    two-arm effect.
 
 - `posterior_control`:
 
@@ -230,11 +241,20 @@ is not a posterior probability of equality or equivalence. Choosing
 
 For one arm, q compares survival at `surv_time`; for two arms it
 compares current and historical hazards separately within treatment and
-control. The default Monte Carlo calculation and historical Gamma update
-have unresolved limitations documented in the survival vignette. The
-vignette uses the fixed method and describes the implemented prior
-update. With one arm and `fix_alpha = TRUE`, the returned `p_hat` is the
-directional q rather than the transformed p.
+control using analytic inverse-variance weights for the interval log
+hazard differences. With `method = "mc"`, each draw's difference is
+divided by its posterior standard deviation and mapped to
+`2 * pnorm(abs(Z), lower.tail = FALSE)`. The variance is calculated from
+exact Gamma moments: hazard variances for log survival differences, and
+trigamma log-hazard variances for two-arm comparisons. The normal-tail
+mapping remains an approximation, especially with sparse events. The
+returned `p_hat` uses the selected method's transformation even with
+`fix_alpha = TRUE`; the prescribed weight is unaffected.
+
+The historical Gamma update includes the baseline prior in both source
+posteriors before discounting. This differs from discounting the
+historical likelihood alone and remains under review; see the survival
+vignette.
 
 In the second stage, posterior estimation is performed where the
 discount function parameter, `alpha`, is incorporated in all posterior
@@ -307,7 +327,7 @@ print(fit1)
 #> 
 #> 
 #>   n events surv_time median lower 95% CrI upper 95% CrI
-#>  50     29         5  0.794        0.6771        0.8832
+#>  50     29         5 0.7945        0.6787        0.8842
 if (FALSE) { # \dontrun{
 plot(fit1)
 } # }
@@ -344,15 +364,15 @@ summary(fit2)
 #>     Two-armed bdp survival
 #> 
 #> data:
-#>   Current treatment: n = 50, number of events = 29
-#>   Current control: n = 50, number of events = 40
-#> Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.633
-#> Stochastic comparison (p_hat) - control (current vs. historical data): 0.0018
-#> Discount function value (alpha) - treatment: 0.633
-#> Discount function value (alpha) - control: 0.0018
+#>   Current treatment: n = 50, number of events = 36
+#>   Current control: n = 50, number of events = 43
+#> Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.0168
+#> Stochastic comparison (p_hat) - control (current vs. historical data): 0.0112
+#> Discount function value (alpha) - treatment: 0.0168
+#> Discount function value (alpha) - control: 0.0112
 #> 
 #>              coef exp(coef) se(coef) lower 95% CI upper 95% CI
-#> treatment -1.0753    0.3412   0.2337      -1.5287      -0.6158
+#> treatment -0.4724    0.6235    0.235      -0.9294      -0.0147
 
 ### Fix alpha at 1
 fit2_1 <- bdpsurvival(Surv(time, status) ~ treatment,
@@ -366,13 +386,13 @@ summary(fit2_1)
 #>     Two-armed bdp survival
 #> 
 #> data:
-#>   Current treatment: n = 50, number of events = 29
-#>   Current control: n = 50, number of events = 40
-#> Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.6106
-#> Stochastic comparison (p_hat) - control (current vs. historical data): 8e-04
+#>   Current treatment: n = 50, number of events = 36
+#>   Current control: n = 50, number of events = 43
+#> Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.0132
+#> Stochastic comparison (p_hat) - control (current vs. historical data): 0.0112
 #> Discount function value (alpha) - treatment: 1
 #> Discount function value (alpha) - control: 1
 #> 
 #>              coef exp(coef) se(coef) lower 95% CI upper 95% CI
-#> treatment -1.3787    0.2519   0.1895      -1.7559      -1.0089
+#> treatment -1.0977    0.3337   0.1784      -1.4547      -0.7591
 ```

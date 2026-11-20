@@ -45,13 +45,11 @@ supplies treatment and control limits, in that order.
 [`bdplm()`](https://graemeleehickey.github.io/bayesDP/reference/bdplm.md)
 requires `method = "fixed"` when `fix_alpha = TRUE`.
 
-The worked examples explicitly choose `method = "fixed"` so that their
-borrowing weights are easy to interpret. This is a choice for
+The main worked examples explicitly choose `method = "fixed"` so that
+their borrowing weights are easy to interpret. This is a choice for
 exposition, not the default and not evidence that one procedure is
-universally preferable. The default survival Monte Carlo procedure has
-unresolved calculation problems described in [issue
-16](https://github.com/graemeleehickey/bayesDP/issues/16); the survival
-examples therefore use the fixed method.
+universally preferable. The survival vignette also compares the two
+procedures using the same data and analysis settings.
 
 ### An estimated fixed weight
 
@@ -79,8 +77,9 @@ for the weight and estimate it jointly with the outcome parameters.
 
 ### A weight for each draw
 
-For binomial, normal, and linear regression analyses, `method = "mc"`
-computes a standardized difference Z^{(s)} from draw s and uses
+For binomial, normal, linear regression, and survival analyses,
+`method = "mc"` computes a standardized difference Z^{(s)} from draw s
+and uses
 
 p^{(s)}=2\\1-\Phi(\|Z^{(s)}\|)\\, \qquad
 \alpha^{(s)}=\alpha\_{\max}W(p^{(s)}).
@@ -145,9 +144,9 @@ Historical weight with alpha_max = 1. The scale 0.8 panel illustrates
 the normalization; it is not a recommended calibration.
 
 [`alpha_discount()`](https://graemeleehickey.github.io/bayesDP/reference/alpha_discount.md)
-is an educational helper and defaults to `"weibull"`, unlike the four
-model-fitting functions. Specify the function explicitly when comparing
-them.
+applies the selected discount function to a supplied comparison. It
+defaults to `"weibull"`, unlike the four model-fitting functions;
+specify the function explicitly when comparing them.
 [`probability_discount()`](https://graemeleehickey.github.io/bayesDP/reference/probability_discount.md)
 illustrates the normal-data comparison and defaults to `"fixed"`.
 
