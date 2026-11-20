@@ -483,8 +483,11 @@ setMethod(
 
     ### Mark artificial interval endpoints so reports retain each participant once.
     split_marker <- utils::tail(make.unique(c(names(dataALL), ".bayesDP_added")), 1)
+    # A cut at the last observation leaves all records in one interval and
+    # avoids empty-cut errors in recent versions of survival::survSplit().
+    split_cuts <- if (length(breaks)) breaks else max(c(Y[, 1], Y0[, 1]))
     dataSplit <- survSplit(formula,
-                           cut = breaks,
+                           cut = split_cuts,
                            start = "start",
                            episode = "interval",
                            added = split_marker,

@@ -206,6 +206,17 @@ test_that("single intervals, boundary events, and empty final intervals are repr
   unordered <- bdpsurvival(Surv(time, status) ~ 1, d, d,
     breaks = c(6, 2, 4, 2), surv_time = 5, number_mcmc = 500)
   expect_equal(ordered$posterior_treatment, unordered$posterior_treatment)
+
+  d2 <- survival_borrowing_data(TRUE)
+  for (method in c("fixed", "mc")) {
+    fit <- bdpsurvival(Surv(time, status) ~ treatment, d2,
+      transform(d2, time = time * 1.2), breaks = numeric(),
+      method = method, number_mcmc = 500)
+    expect_equal(ncol(fit$posterior_treatment$posterior_hazard), 1L)
+    expect_true(all(as.integer(fit$args1$data$interval) == 1L))
+    expect_equal(nrow(fit$args1$data), 2L * nrow(d2))
+    expect_true(all(is.finite(fit$final$posterior_loghazard)))
+  }
 })
 
 test_that("survival borrowing and treatment effects are invariant to time units", {
