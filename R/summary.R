@@ -385,9 +385,7 @@ setMethod("summary", signature(object = "bdpsurvival"), function(object) {
     ### Compute treatment effect of treatment vs control via the same
     ### inverse-variance-weighted piecewise log-hazard-ratio estimator used in
     ### bdpsurvival(); see the survival vignette, 'Approximate two-arm effect'.
-    R0 <- log(posterior_treatment$posterior_hazard) - log(posterior_control$posterior_hazard)
-    V0 <- 1 / apply(R0, 2, var)
-    logHR0 <- R0 %*% V0 / sum(V0)
+    logHR0 <- bdp_survival_effect(posterior_treatment, posterior_control)
     coef <- mean(logHR0)
     se_coef <- sd(logHR0)
     CI <- quantile(logHR0, probs = c(0.025, 0.975))

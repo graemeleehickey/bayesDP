@@ -55,7 +55,7 @@ Three choices have different meanings:
 
 Use `alpha_max = 0` with `fix_alpha = TRUE` for no borrowing, or `alpha_max = 1` for full borrowing. In two-arm analyses a vector supplies treatment and control limits, in that order. `bdplm()` requires `method = "fixed"` when `fix_alpha = TRUE`.
 
-The worked examples explicitly choose `method = "fixed"` so that their borrowing weights are easy to interpret. This is a choice for exposition, not the default and not evidence that one procedure is universally preferable. The default survival Monte Carlo procedure has unresolved calculation problems described in [issue 16](https://github.com/graemeleehickey/bayesDP/issues/16); the survival examples therefore use the fixed method.
+The main worked examples explicitly choose `method = "fixed"` so that their borrowing weights are easy to interpret. This is a choice for exposition, not the default and not evidence that one procedure is universally preferable. The survival vignette also compares the two procedures using the same data and analysis settings.
 
 ## An estimated fixed weight
 
@@ -78,7 +78,7 @@ A fixed estimated weight conditions the final calculation on this data-derived v
 
 ## A weight for each draw
 
-For binomial, normal, and linear regression analyses, `method = "mc"` computes a standardized difference $Z^{(s)}$ from draw $s$ and uses
+For binomial, normal, linear regression, and survival analyses, `method = "mc"` computes a standardized difference $Z^{(s)}$ from draw $s$ and uses
 
 $$
 p^{(s)}=2\{1-\Phi(|Z^{(s)}|)\},
@@ -119,7 +119,7 @@ ggplot(curves, aes(p, alpha, colour = function_name, linetype = function_name)) 
     colour = "Discount function", linetype = "Discount function")
 ```
 
-`alpha_discount()` is an educational helper and defaults to `"weibull"`, unlike the four model-fitting functions. Specify the function explicitly when comparing them. `probability_discount()` illustrates the normal-data comparison and defaults to `"fixed"`.
+`alpha_discount()` applies the selected discount function to a supplied comparison. It defaults to `"weibull"`, unlike the four model-fitting functions; specify the function explicitly when comparing them. `probability_discount()` illustrates the normal-data comparison and defaults to `"fixed"`.
 
 For a binomial analysis with a fixed weight, $\alpha N_0$ is the weighted historical sample size in the Beta update. It is not a general measure of effective information for every model: normal borrowing also depends on variances, and survival borrowing depends on events and exposure times.
 

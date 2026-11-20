@@ -16,29 +16,30 @@
 #'   required structure.
 #' @param data0 optional. A data frame containing the historical data variables
 #'   in the model. If present, the column labels of data and data0 must match.
-#' @param breaks vector. Breaks (interval starts) used to compose the breaks of
-#'   the piecewise exponential model. Do not include zero. Default breaks are
-#'   the quantiles of the input times.
-#' @param a0 scalar. Prior value for the gamma shape of the piecewise
+#' @param breaks numeric vector. Positive, finite internal cutpoints of the
+#'   piecewise exponential model, without zero or infinity. Values are sorted
+#'   and duplicates removed. Use \code{numeric(0)} for one constant hazard.
+#'   Default cutpoints are pooled observed-time quantiles.
+#' @param a0 positive, finite scalar. Prior value for the gamma shape of the piecewise
 #'   exponential hazards. Default is 0.1.
-#' @param b0 scalar. Prior value for the gamma rate of the piecewise exponential
+#' @param b0 positive, finite scalar. Prior value for the gamma rate of the piecewise exponential
 #'   hazards. Default is 0.1.
-#' @param surv_time scalar. Survival time of interest for computing the
+#' @param surv_time positive, finite scalar. Time of interest for computing the
 #'   probability of survival for a single arm (OPC) trial. Default is overall,
-#'   i.e., current+historical, median survival time.
+#'   i.e., current+historical, median observed event-or-censoring time.
 #' @param discount_function character. Specify the discount function to use.
 #'   Currently supports \code{weibull}, \code{scaledweibull}, and
 #'   \code{identity}. The discount function \code{scaledweibull} scales the
 #'   output of the Weibull CDF to have a max value of 1. The \code{identity}
 #'   discount function uses the transformed comparison directly as the discount
 #'   weight. Default value is "\code{identity}".
-#' @param alpha_max scalar. Maximum weight the discount function can apply.
+#' @param alpha_max scalar in [0, 1]. Maximum weight the discount function can apply.
 #'   Default is 1. For a two-arm trial, users may specify a vector of two values
 #'   where the first value is used to weight the historical treatment group and
 #'   the second value is used to weight the historical control group.
 #' @param fix_alpha logical. Fix alpha at alpha_max? Default value is FALSE.
-#' @param number_mcmc scalar. Number of Monte Carlo simulations. Default is
-#'   10000.
+#' @param number_mcmc integer of at least 2. Number of Monte Carlo simulations.
+#'   Default is 10000.
 #' @param weibull_shape scalar. Shape parameter of the Weibull discount function
 #'   used to compute alpha, the weight parameter of the historical data. Default
 #'   value is 3. For a two-arm trial, users may specify a vector of two values
@@ -80,11 +81,19 @@
 #'
 #'   For one arm, q compares survival at \code{surv_time}; for two arms it
 #'   compares current and historical hazards separately within treatment and
-#'   control. The default Monte Carlo calculation and historical Gamma update
-#'   have unresolved limitations documented in the survival vignette. The
-#'   vignette uses the fixed method and describes the implemented prior update.
-#'   With one arm and \code{fix_alpha = TRUE}, the returned \code{p_hat}
-#'   is the directional q rather than the transformed p.
+#'   control using analytic inverse-variance weights for the interval log
+#'   hazard differences. With \code{method = "mc"}, each draw's difference
+#'   is divided by its posterior standard deviation and mapped to
+#'   \code{2 * pnorm(abs(Z), lower.tail = FALSE)}. The variance is calculated
+#'   from exact Gamma moments: hazard variances for log survival differences,
+#'   and trigamma log-hazard variances for two-arm comparisons. The normal-tail
+#'   mapping remains an approximation, especially with sparse events.
+#'   The returned \code{p_hat} uses the selected method's transformation even
+#'   with \code{fix_alpha = TRUE}; the prescribed weight is unaffected.
+#'
+#'   The historical Gamma update includes the baseline prior in both source
+#'   posteriors before discounting. This differs from discounting the historical
+#'   likelihood alone and remains under review; see the survival vignette.
 #'
 #'   In the second stage, posterior estimation is performed where the discount
 #'   function parameter, \code{alpha}, is incorporated in all posterior
@@ -125,32 +134,38 @@
 #'      \item \code{alpha_discount}
 #'        numeric. Alpha value, the weighting parameter of the historical data.
 #'      \item \code{p_hat}
-#'        numeric. The current-historical comparison
-#'        between the current and historical data.
+#'        numeric. The two-sided current-historical comparison in [0, 1]:
+#'        one value for \code{method = "fixed"}, or \code{number_mcmc} values
+#'        for \code{method = "mc"}. See Details for the transformation.
 #'      \item \code{posterior_survival}
-#'        vector. If one-arm trial, a vector of length \code{number_mcmc}
+#'        matrix. If one-arm trial, one column with \code{number_mcmc} rows
 #'        containing the posterior probability draws of survival at
 #'        \code{surv_time}.
 #'      \item \code{posterior_flat_survival}
-#'        vector. If one-arm trial, a vector of length \code{number_mcmc}
+#'        matrix. If one-arm trial, one column with \code{number_mcmc} rows
 #'        containing the probability draws of survival at \code{surv_time}
 #'        for the current treatment not augmented by historical treatment.
 #'      \item \code{prior_survival}
-#'        vector. If one-arm trial, a vector of length \code{number_mcmc}
+#'        matrix. If one-arm trial, one column with \code{number_mcmc} rows
 #'        containing the probability draws of survival at \code{surv_time}
 #'        for the historical treatment.
 #'      \item \code{posterior_hazard}
-#'        matrix. A matrix with \code{number_mcmc} rows and \code{length(breaks)}
+#'        matrix. A matrix with \code{number_mcmc} rows and \code{length(breaks) + 1}
 #'        columns containing the posterior draws of the piecewise hazards
 #'        for each interval break point.
 #'      \item \code{posterior_flat_hazard}
-#'        matrix. A matrix with \code{number_mcmc} rows and \code{length(breaks)}
+#'        matrix. A matrix with \code{number_mcmc} rows and \code{length(breaks) + 1}
 #'        columns containing the draws of piecewise hazards for each interval
 #'        break point for current treatment not augmented by historical treatment.
 #'      \item \code{prior_hazard}
-#'        matrix. A matrix with \code{number_mcmc} rows and \code{length(breaks)}
+#'        matrix. A matrix with \code{number_mcmc} rows and \code{length(breaks) + 1}
 #'        columns containing the draws of piecewise hazards for each interval break point
 #'        for historical treatment.
+#'      \item \code{posterior_log_hazard}, \code{posterior_flat_log_hazard},
+#'        \code{prior_log_hazard}
+#'        matrices. Log hazards corresponding to the three hazard matrices.
+#'        These retain finite log draws when very small hazards round to zero
+#'        and are used for borrowing comparisons and the two-arm effect.
 #'    }
 #'  }
 #'  \item{\code{posterior_control}}{
@@ -320,6 +335,31 @@ setMethod(
     if (missing(data)) {
       stop("Current data not input correctly.")
     }
+    for (parameter in c("a0", "b0")) {
+      value <- get(parameter)
+      if (!is.numeric(value) || length(value) != 1L ||
+          !is.finite(value) || value <= 0) {
+        stop(parameter, " must be a positive, finite scalar.", call. = FALSE)
+      }
+    }
+    if (length(method) != 1L || is.na(method) || !method %in% c("fixed", "mc")) {
+      stop("Unrecognized method. Use one of 'fixed' or 'mc'.", call. = FALSE)
+    }
+    if (!is.numeric(number_mcmc) || length(number_mcmc) != 1L ||
+        !is.finite(number_mcmc) || number_mcmc < 2 || number_mcmc != floor(number_mcmc)) {
+      stop("number_mcmc must be an integer of at least 2.", call. = FALSE)
+    }
+    if (!is.numeric(alpha_max) || !length(alpha_max) %in% c(1L, 2L) ||
+        any(!is.finite(alpha_max)) || any(alpha_max < 0 | alpha_max > 1)) {
+      stop("alpha_max must contain one or two finite values in [0, 1].", call. = FALSE)
+    }
+    if (!is.logical(fix_alpha) || length(fix_alpha) != 1L || is.na(fix_alpha)) {
+      stop("fix_alpha must be TRUE or FALSE.", call. = FALSE)
+    }
+    if (!is.null(surv_time) && (!is.numeric(surv_time) || length(surv_time) != 1L ||
+        !is.finite(surv_time) || surv_time <= 0)) {
+      stop("surv_time must be a positive, finite scalar.", call. = FALSE)
+    }
 
     ##############################################################################
     ### Parse current data
@@ -373,9 +413,18 @@ setMethod(
 
     # Check that discount_function is input correctly
     all_functions <- c("weibull", "scaledweibull", "identity")
-    function_match <- match(discount_function, all_functions)
-    if (is.na(function_match)) {
+    if (length(discount_function) != 1L || is.na(discount_function) ||
+        !discount_function %in% all_functions) {
       stop("discount_function input incorrectly.")
+    }
+    if (discount_function != "identity" && !fix_alpha) {
+      for (parameter in c("weibull_shape", "weibull_scale")) {
+        value <- get(parameter)
+        if (!is.numeric(value) || !length(value) %in% c(1L, 2L) ||
+            any(!is.finite(value)) || any(value <= 0)) {
+          stop(parameter, " must contain one or two positive, finite values.", call. = FALSE)
+        }
+      }
     }
 
     historical <- NULL
@@ -405,6 +454,10 @@ setMethod(
     if (is.null(breaks)) {
       breaks <- quantile(c(Y[, 1], Y0[, 1]), probs = c(0.2, 0.4, 0.6, 0.8))
     }
+    if (!is.numeric(breaks) || any(!is.finite(breaks)) || any(breaks < 0)) {
+      stop("breaks must contain finite, non-negative cutpoints.", call. = FALSE)
+    }
+    breaks <- sort(unique(breaks))
 
     ### If zero is present in breaks, remove and give warning
     if (any(breaks == 0)) {
@@ -449,9 +502,6 @@ setMethod(
     names(dataSplit)[match(var_time, names(dataSplit))] <- "time"
     names(dataSplit)[match(var_status, names(dataSplit))] <- "status"
 
-    # Grab fu-time column
-    id_time <- names(dataSplit[ncol(dataSplit) - 2])
-
     # Look for treatment column, if missing, add it and set to 1
     if (!any(names(dataSplit) == "treatment")) {
       dataSplit$treatment <- 1
@@ -464,11 +514,10 @@ setMethod(
     ### Compute exposure time within each interval
     dataSplit$exposure <- dataSplit$time - dataSplit$start
 
-    ### Create new labels for the intervals
-    maxTime <- max(dataSplit$time)
-    labels_t <- unique(c(breaks, maxTime))
+    ### Retain all intervals, including those with no observations in one source.
     dataSplit$interval <- factor(dataSplit$interval,
-                                 labels = labels_t
+                                 levels = seq_len(length(breaks) + 1L),
+                                 labels = c(breaks, Inf)
     )
 
     ### Parse out the historical and current data
@@ -495,6 +544,9 @@ setMethod(
     if (is.null(surv_time) & !arm2) {
       all_times <- if (!is.null(Y0)) c(Y[, 1], Y0[, 1]) else Y[, 1]
       surv_time <- median(all_times)
+    }
+    if (!arm2 && (!is.finite(surv_time) || surv_time <= 0)) {
+      stop("surv_time must be a positive, finite scalar.", call. = FALSE)
     }
 
     ### Check inputs
@@ -576,15 +628,8 @@ setMethod(
       final <- NULL
     } else {
       if (arm2) {
-        ### Approximate common log-hazard ratio across piecewise intervals using
-        ### inverse-variance weighting of R_j = log(lambda_jT) - log(lambda_jC).
-        ### See the bdpsurvival vignette, 'Piecewise Exponential Model
-        ### Background', lines 72-93.
-        R0 <- log(posterior_treatment$posterior_hazard) - log(posterior_control$posterior_hazard)
-        V0 <- 1 / apply(R0, 2, var)
-        logHR0 <- R0 %*% V0 / sum(V0)
         final <- list()
-        final$posterior_loghazard <- logHR0
+        final$posterior_loghazard <- bdp_survival_effect(posterior_treatment, posterior_control)
       } else {
         final <- list()
         final$posterior_survival <- posterior_treatment$posterior_survival
@@ -616,251 +661,143 @@ posterior_survival <- function(S, S0, surv_time, discount_function,
                                alpha_max, fix_alpha, a0, b0,
                                number_mcmc, weibull_shape, weibull_scale,
                                breaks, arm2, method) {
+  nInt <- length(breaks) + 1L
+  current <- bdp_survival_source(S, nInt, a0, b0, number_mcmc)
+  historical <- bdp_survival_source(S0, nInt, a0, b0, number_mcmc)
+  p_hat <- weight <- NULL
 
-  ### Extract intervals and count number of intervals
-  ### - It should be that S_int equals S0_int
-  if (!is.null(S)) {
-    S_int <- levels(S$interval)
-    nInt <- length(S_int)
-  }
+  if (!is.null(current) && !is.null(historical)) {
+    p_hat <- bdp_survival_comparison(current, historical, surv_time, breaks, arm2, method)
+    weight <- if (fix_alpha) alpha_max else alpha_discount(p_hat,
+      discount_function = discount_function, alpha_max = alpha_max,
+      weibull_shape = weibull_shape, weibull_scale = weibull_scale)
 
-  if (!is.null(S0)) {
-    S0_int <- levels(S0$interval)
-    nInt <- length(S0_int)
-  }
-
-  interval <- NULL
-
-  ##############################################################################
-  # Discount function
-  # - Comparison is made only if both S and S0 are present
-  ##############################################################################
-
-  # Compute hazards for historical and current data efficiently
-  if (!is.null(S) & !is.null(S0)) {
-    ### Compute posterior of interval hazards
-    a_post <- b_post <- numeric(nInt)
-    a_post0 <- b_post0 <- numeric(nInt)
-
-    posterior_flat_hazard <- prior_hazard <- matrix(NA, number_mcmc, nInt)
-
-    ### Compute posterior values
-    for (i in 1:nInt) {
-      a_post[i] <- a0 + sum(subset(S, interval == S_int[i])$status)
-      b_post[i] <- b0 + sum(subset(S, interval == S_int[i])$exposure)
-
-      a_post0[i] <- a0 + sum(subset(S0, interval == S0_int[i])$status)
-      b_post0[i] <- b0 + sum(subset(S0, interval == S0_int[i])$exposure)
-
-      ### Interval hazards - add on a very small value to avoid underflow
-      posterior_flat_hazard[, i] <- rgamma(number_mcmc, a_post[i], b_post[i]) + 1e-12
-      prior_hazard[, i] <- rgamma(number_mcmc, a_post0[i], b_post0[i]) + 1e-12
-    }
-  } else if (!is.null(S) & is.null(S0)) {
-    ### Compute posterior of interval hazards
-    a_post <- b_post <- numeric(nInt)
-
-    posterior_flat_hazard <- matrix(NA, number_mcmc, nInt)
-    prior_hazard <- NULL
-
-    ### Compute posterior values
-    for (i in 1:nInt) {
-      a_post[i] <- a0 + sum(subset(S, interval == S_int[i])$status)
-      b_post[i] <- b0 + sum(subset(S, interval == S_int[i])$exposure)
-
-      ### Interval hazards - add on a very small value to avoid underflow
-      posterior_flat_hazard[, i] <- rgamma(number_mcmc, a_post[i], b_post[i]) + 1e-12
-    }
-  } else if (is.null(S) & !is.null(S0)) {
-    ### Compute posterior of interval hazards
-    a_post0 <- b_post0 <- numeric(nInt)
-
-    prior_hazard <- matrix(NA, number_mcmc, nInt)
-    posterior_flat_hazard <- NULL
-
-    ### Compute posterior values
-    for (i in 1:nInt) {
-      a_post0[i] <- a0 + sum(subset(S0, interval == S0_int[i])$status)
-      b_post0[i] <- b0 + sum(subset(S0, interval == S0_int[i])$exposure)
-
-      ### Interval hazards - add on a very small value to avoid underflow
-      prior_hazard[, i] <- rgamma(number_mcmc, a_post0[i], b_post0[i]) + 1e-12
-    }
-  }
-
-  ### If only one of S or S0 is present, return related hazard and (if !arm2), return survival
-  if (!is.null(S) & is.null(S0)) {
-    posterior_hazard <- posterior_flat_hazard
-
-    if (!arm2) {
-      posterior_survival <- posterior_flat_survival <- 1 - ppexp(
-        q = surv_time,
-        x = posterior_hazard,
-        cuts = c(0, breaks)
-      )
-      prior_survival <- NULL
-    } else {
-      posterior_survival <- posterior_flat_survival <- prior_survival <- NULL
-    }
-  } else if (is.null(S) & !is.null(S0)) {
-    posterior_hazard <- prior_hazard
-
-    if (!arm2) {
-      posterior_survival <- prior_survival <- 1 - ppexp(
-        q = surv_time,
-        x = posterior_hazard,
-        cuts = c(0, breaks)
-      )
-      posterior_flat_survival <- NULL
-    } else {
-      posterior_survival <- prior_survival <- posterior_flat_survival <- NULL
-    }
-  }
-
-  if (!(!is.null(S) & !is.null(S0))) {
-    return(list(
-      alpha_discount = NULL,
-      p_hat = NULL,
-      posterior_survival = posterior_survival,
-      posterior_flat_survival = posterior_flat_survival,
-      prior_survival = prior_survival,
-      posterior_hazard = posterior_hazard,
-      posterior_flat_hazard = posterior_flat_hazard,
-      prior_hazard = prior_hazard
-    ))
-  }
-
-  ### If both S and S0 are present, carry out the comparison and compute alpha
-  if (!arm2) {
-    ### Posterior survival probability
-    posterior_flat_survival <- 1 - ppexp(q = surv_time, x = posterior_flat_hazard, cuts = c(0, breaks))
-    prior_survival <- 1 - ppexp(q = surv_time, x = prior_hazard, cuts = c(0, breaks))
-
-    ### Compute probability that survival is greater for current vs historical
-    if (method == "mc") {
-      logS <- log(posterior_flat_survival)
-      logS0 <- log(prior_survival)
-
-      ### Variance of log survival, computed via delta method of hazards
-      nIntervals <- sum(surv_time > c(0, breaks))
-      IntLengths <- c(c(0, breaks)[1:nIntervals], surv_time)
-      surv_times <- diff(IntLengths)
-
-      v <- as.matrix(posterior_flat_hazard[, 1:nIntervals]^2) %*% (surv_times^2 / a_post[1:nIntervals])
-      v0 <- as.matrix(prior_hazard[, 1:nIntervals]^2) %*% (surv_times^2 / a_post0[1:nIntervals])
-      Z <- abs(logS - logS0) / (v + v0)
-      p_hat <- 2 * (1 - pnorm(Z))
-    } else if (method == "fixed") {
-      p_hat <- mean(posterior_flat_survival > prior_survival) # higher is better survival
-    } else {
-      stop("Unrecognized method. Use one of 'fixed' or 'mc'")
-    }
-
-    if (fix_alpha) {
-      alpha_discount <- alpha_max
-    } else {
-      p_hat <- 2 * ifelse(p_hat > 0.5, 1 - p_hat, p_hat)
-
-      # Compute alpha discount based on distribution
-      if (discount_function == "weibull") {
-        alpha_discount <- pweibull(p_hat,
-                                   shape = weibull_shape,
-                                   scale = weibull_scale
-        ) * alpha_max
-      } else if (discount_function == "scaledweibull") {
-        max_p <- pweibull(1, shape = weibull_shape, scale = weibull_scale)
-
-        alpha_discount <- pweibull(p_hat,
-                                   shape = weibull_shape,
-                                   scale = weibull_scale
-        ) * alpha_max / max_p
-      } else if (discount_function == "identity") {
-        alpha_discount <- p_hat * alpha_max
-      }
+    posterior_log_hazard <- matrix(NA_real_, number_mcmc, nInt)
+    for (j in seq_len(nInt)) {
+      # Retain the implemented historical-posterior augmentation (issue #17).
+      posterior_log_hazard[, j] <- bdp_log_gamma(number_mcmc,
+        current$shape[j] + weight * historical$shape[j],
+        current$rate[j] + weight * historical$rate[j])
     }
   } else {
-    ### Weight historical data via (approximate) hazard ratio comparing
-    ### current vs historical
-    if (method == "mc") {
-      R0 <- log(prior_hazard) - log(posterior_flat_hazard)
-      v <- 1 / (a_post)
-      v0 <- 1 / (a_post0)
-      R <- rowSums(as.matrix(R0 / (v + v0) / sum(1 / (v + v0))))
-      V0 <- 1 / sum(1 / (v + v0))
-      Z <- abs(R) / V0
-      p_hat <- 2 * (1 - pnorm(Z))
-    } else if (method == "fixed") {
-      ### Approximate common log-hazard ratio across piecewise intervals using
-      ### inverse-variance weighting of R_j = log(lambda_j,0) - log(lambda_j).
-      ### See the bdpsurvival vignette, 'Piecewise Exponential Model
-      ### Background', lines 72-93.
-      R0 <- log(prior_hazard) - log(posterior_flat_hazard)
-      V0 <- 1 / apply(R0, 2, var)
-      logHR0 <- R0 %*% V0 / sum(V0)
-      p_hat <- mean(logHR0 > 0) # larger is higher failure
-      p_hat <- 2 * ifelse(p_hat > 0.5, 1 - p_hat, p_hat)
-    } else {
-      stop("Unrecognized method. Use one of 'fixed' or 'mc'")
-    }
-
-    if (fix_alpha) {
-      alpha_discount <- alpha_max
-    } else {
-
-      # Compute alpha discount based on distribution
-      if (discount_function == "weibull") {
-        alpha_discount <- pweibull(p_hat,
-                                   shape = weibull_shape,
-                                   scale = weibull_scale
-        ) * alpha_max
-      } else if (discount_function == "scaledweibull") {
-        max_p <- pweibull(1, shape = weibull_shape, scale = weibull_scale)
-
-        alpha_discount <- pweibull(p_hat,
-                                   shape = weibull_shape,
-                                   scale = weibull_scale
-        ) * alpha_max / max_p
-      } else if (discount_function == "identity") {
-        alpha_discount <- p_hat * alpha_max
-      }
-    }
+    source <- if (is.null(current)) historical else current
+    posterior_log_hazard <- source$log_hazard
   }
 
-  ##############################################################################
-  # Posterior augmentation via the interval hazards
-  # - If current or historical data are missing, this will not augment(see above)
-  ##############################################################################
-
-  posterior_hazard <- matrix(NA, number_mcmc, nInt)
-
-  ### Reuse the interval sufficient statistics (a_post, b_post, a_post0,
-  ### b_post0) computed in the discount phase above; both S and S0 are
-  ### guaranteed to be present here, so they do not need recomputing.
-  for (i in 1:nInt) {
-    ### Add on a very small value to avoid underflow
-    posterior_hazard[, i] <- rgamma(
-      number_mcmc,
-      a_post[i] + a_post0[i] * alpha_discount,
-      b_post[i] + b_post0[i] * alpha_discount
-    ) + 1e-12
+  survival_draws <- function(log_hazard) {
+    if (arm2 || is.null(log_hazard)) return(NULL)
+    matrix(exp(-exp(bdp_log_cumulative_hazard(log_hazard, surv_time, breaks))), ncol = 1)
   }
-
-  ### Posterior of survival time (if !arm2)
-  if (!arm2) {
-    posterior_survival <- 1 - ppexp(q = surv_time, x = posterior_hazard, cuts = c(0, breaks))
-  } else {
-    posterior_survival <- posterior_flat_survival <- prior_survival <- NULL
-  }
-
-
-  return(list(
-    alpha_discount = alpha_discount,
+  list(
+    alpha_discount = weight,
     p_hat = p_hat,
-    posterior_survival = posterior_survival,
-    posterior_flat_survival = posterior_flat_survival,
-    prior_survival = prior_survival,
-    posterior_hazard = posterior_hazard,
-    posterior_flat_hazard = posterior_flat_hazard,
-    prior_hazard = prior_hazard
-  ))
+    posterior_survival = survival_draws(posterior_log_hazard),
+    posterior_flat_survival = survival_draws(current$log_hazard),
+    prior_survival = survival_draws(historical$log_hazard),
+    posterior_hazard = exp(posterior_log_hazard),
+    posterior_flat_hazard = if (is.null(current)) NULL else exp(current$log_hazard),
+    prior_hazard = if (is.null(historical)) NULL else exp(historical$log_hazard),
+    posterior_log_hazard = posterior_log_hazard,
+    posterior_flat_log_hazard = current$log_hazard,
+    prior_log_hazard = historical$log_hazard
+  )
+}
+
+# Separate Gamma posteriors for each source and interval.
+bdp_survival_source <- function(data, nInt, a0, b0, n) {
+  if (is.null(data)) return(NULL)
+  shape <- rate <- numeric(nInt)
+  log_hazard <- matrix(NA_real_, n, nInt)
+  for (j in seq_len(nInt)) {
+    rows <- as.integer(data$interval) == j
+    shape[j] <- a0 + sum(data$status[rows])
+    rate[j] <- b0 + sum(data$exposure[rows])
+    log_hazard[, j] <- bdp_log_gamma(n, shape[j], rate[j])
+  }
+  list(shape = shape, rate = rate, log_hazard = log_hazard)
+}
+
+# For a < 1, Gamma(a, 1) = Gamma(a + 1, 1) * U^(1/a), independently.
+# Work on the log scale so small hazards need no artificial positive offset.
+bdp_log_gamma <- function(n, shape, rate) {
+  if (any(!is.finite(shape) | shape <= 0) || any(!is.finite(rate) | rate <= 0)) {
+    stop("Gamma shapes and rates must be positive and finite.", call. = FALSE)
+  }
+  shape <- rep_len(shape, n)
+  rate <- rep_len(rate, n)
+  small <- shape < 1
+  draws <- log(rgamma(n, shape + small, rate = 1)) - log(rate)
+  draws[small] <- draws[small] + log(stats::runif(sum(small))) / shape[small]
+  if (any(!is.finite(draws))) {
+    stop("Log-Gamma draws exceed numerical precision; use less extreme prior parameters.", call. = FALSE)
+  }
+  draws
+}
+
+# Sum positive quantities while retaining their logarithms.
+bdp_log_sum_exp <- function(x) {
+  if (!is.matrix(x)) x <- matrix(x, nrow = 1)
+  largest <- apply(x, 1, max)
+  largest + log(rowSums(exp(sweep(x, 1, largest, "-"))))
+}
+
+bdp_interval_lengths <- function(time, breaks) {
+  pmax(0, pmin(time, c(breaks, Inf)) - c(0, breaks))
+}
+
+bdp_log_cumulative_hazard <- function(log_hazard, time, breaks) {
+  lengths <- bdp_interval_lengths(time, breaks)
+  active <- lengths > 0
+  bdp_log_sum_exp(sweep(log_hazard[, active, drop = FALSE],
+    2, log(lengths[active]), "+"))
+}
+
+# Comparisons use separate current and historical posteriors, within one arm.
+bdp_survival_comparison <- function(current, historical, time, breaks, arm2, method) {
+  if (arm2) {
+    variance <- trigamma(current$shape) + trigamma(historical$shape)
+    if (any(!is.finite(variance) | variance <= 0)) {
+      stop("Log-hazard variances exceed numerical precision; use less extreme prior shapes.", call. = FALSE)
+    }
+    # Rescaling inverse variances avoids overflow without changing the weights.
+    weights <- min(variance) / variance
+    weights <- weights / sum(weights)
+    contrast <- drop((historical$log_hazard - current$log_hazard) %*% weights)
+    standard_error <- sqrt(min(variance) / sum(min(variance) / variance))
+    Z <- abs(contrast) / standard_error
+  } else {
+    logH <- bdp_log_cumulative_hazard(current$log_hazard, time, breaks)
+    logH0 <- bdp_log_cumulative_hazard(historical$log_hazard, time, breaks)
+    # Survival is higher when cumulative hazard is smaller. Comparing log H
+    # also distinguishes draws whose survival probabilities round to 0 or 1.
+    contrast <- logH0 - logH
+    lengths <- bdp_interval_lengths(time, breaks)
+    active <- lengths > 0
+    log_variance <- bdp_log_sum_exp(c(
+      log(current$shape[active]) + 2 * (log(lengths[active]) - log(current$rate[active])),
+      log(historical$shape[active]) + 2 * (log(lengths[active]) - log(historical$rate[active]))))
+    Z <- abs(exp(logH - log_variance / 2) - exp(logH0 - log_variance / 2))
+  }
+  if (method == "fixed") {
+    # Split numerical ties equally between the two directions.
+    q <- mean(contrast > 0) + 0.5 * mean(contrast == 0)
+    return(2 * min(q, 1 - q))
+  }
+  2 * pnorm(Z, lower.tail = FALSE)
+}
+
+# The augmented treatment effect still uses empirical variances across draws,
+# since draw-specific borrowing produces a mixture rather than one Gamma law.
+bdp_survival_effect <- function(treatment, control) {
+  log_hazard <- function(arm) {
+    if (!is.null(arm$posterior_log_hazard)) return(arm$posterior_log_hazard)
+    log(arm$posterior_hazard) # Fits saved before log hazards were retained.
+  }
+  contrast <- log_hazard(treatment) - log_hazard(control)
+  variance <- apply(contrast, 2, var)
+  if (any(!is.finite(variance) | variance <= 0)) {
+    stop("Cannot estimate the log hazard ratio: interval variances must be positive and finite.", call. = FALSE)
+  }
+  weights <- min(variance) / variance
+  contrast %*% (weights / sum(weights))
 }

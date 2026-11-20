@@ -1,3 +1,18 @@
+# bayesDP 1.3.12
+
+## Bug fixes
+
+* Corrected survival Monte Carlo borrowing to standardize log survival differences by their posterior SDs and apply the two-sided normal-tail transformation once (#16).
+* Current–historical comparisons within each arm now use analytic log-Gamma variances and inverse-variance interval weights. This changes two-arm borrowing under both `method = "fixed"` and `method = "mc"` (#16).
+* Removed the artificial hazard offset and retained log-Gamma draws for stable comparisons and two-arm effects with sparse or zero-event intervals. One-arm comparisons use cumulative hazards directly, avoiding loss of information when survival probabilities round to zero or one. The changed sampling calculations also change results obtained with a previous random seed.
+* Made `p_hat` consistent with the chosen comparison method when `fix_alpha = TRUE`, while preserving the prescribed weight. Added checks for invalid prior, horizon, and borrowing settings, and corrected interval handling for a single constant hazard and intervals with no observations.
+* The historical-posterior augmentation, including its additional baseline-prior contribution, is unchanged and remains under review in #17.
+
+## Documentation and tests
+
+* Updated the survival vignette with the corrected formulas, a comparison of fixed and draw-specific borrowing, numerical considerations, and the limitations of normal-tail comparisons with sparse events.
+* Added independent calculation checks, distributional checks for log-Gamma draws, and tests covering time-unit changes, interval and draw ordering, zero events, extreme survival probabilities, all discount functions, and prescribed weights.
+
 # bayesDP 1.3.11
 
 ## Bug fixes

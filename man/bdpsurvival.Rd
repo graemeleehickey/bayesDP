@@ -36,19 +36,20 @@ required structure.}
 \item{data0}{optional. A data frame containing the historical data variables
 in the model. If present, the column labels of data and data0 must match.}
 
-\item{breaks}{vector. Breaks (interval starts) used to compose the breaks of
-the piecewise exponential model. Do not include zero. Default breaks are
-the quantiles of the input times.}
+\item{breaks}{numeric vector. Positive, finite internal cutpoints of the
+piecewise exponential model, without zero or infinity. Values are sorted
+and duplicates removed. Use \code{numeric(0)} for one constant hazard.
+Default cutpoints are pooled observed-time quantiles.}
 
-\item{a0}{scalar. Prior value for the gamma shape of the piecewise
+\item{a0}{positive, finite scalar. Prior value for the gamma shape of the piecewise
 exponential hazards. Default is 0.1.}
 
-\item{b0}{scalar. Prior value for the gamma rate of the piecewise exponential
+\item{b0}{positive, finite scalar. Prior value for the gamma rate of the piecewise exponential
 hazards. Default is 0.1.}
 
-\item{surv_time}{scalar. Survival time of interest for computing the
+\item{surv_time}{positive, finite scalar. Time of interest for computing the
 probability of survival for a single arm (OPC) trial. Default is overall,
-i.e., current+historical, median survival time.}
+i.e., current+historical, median observed event-or-censoring time.}
 
 \item{discount_function}{character. Specify the discount function to use.
 Currently supports \code{weibull}, \code{scaledweibull}, and
@@ -57,15 +58,15 @@ output of the Weibull CDF to have a max value of 1. The \code{identity}
 discount function uses the transformed comparison directly as the discount
 weight. Default value is "\code{identity}".}
 
-\item{alpha_max}{scalar. Maximum weight the discount function can apply.
+\item{alpha_max}{scalar in [0, 1]. Maximum weight the discount function can apply.
 Default is 1. For a two-arm trial, users may specify a vector of two values
 where the first value is used to weight the historical treatment group and
 the second value is used to weight the historical control group.}
 
 \item{fix_alpha}{logical. Fix alpha at alpha_max? Default value is FALSE.}
 
-\item{number_mcmc}{scalar. Number of Monte Carlo simulations. Default is
-10000.}
+\item{number_mcmc}{integer of at least 2. Number of Monte Carlo simulations.
+Default is 10000.}
 
 \item{weibull_scale}{scalar. Scale parameter of the Weibull discount function
 used to compute alpha, the weight parameter of the historical data. Default
@@ -118,32 +119,38 @@ the following components:
      \item \code{alpha_discount}
        numeric. Alpha value, the weighting parameter of the historical data.
      \item \code{p_hat}
-       numeric. The current-historical comparison
-       between the current and historical data.
+       numeric. The two-sided current-historical comparison in [0, 1]:
+       one value for \code{method = "fixed"}, or \code{number_mcmc} values
+       for \code{method = "mc"}. See Details for the transformation.
      \item \code{posterior_survival}
-       vector. If one-arm trial, a vector of length \code{number_mcmc}
+       matrix. If one-arm trial, one column with \code{number_mcmc} rows
        containing the posterior probability draws of survival at
        \code{surv_time}.
      \item \code{posterior_flat_survival}
-       vector. If one-arm trial, a vector of length \code{number_mcmc}
+       matrix. If one-arm trial, one column with \code{number_mcmc} rows
        containing the probability draws of survival at \code{surv_time}
        for the current treatment not augmented by historical treatment.
      \item \code{prior_survival}
-       vector. If one-arm trial, a vector of length \code{number_mcmc}
+       matrix. If one-arm trial, one column with \code{number_mcmc} rows
        containing the probability draws of survival at \code{surv_time}
        for the historical treatment.
      \item \code{posterior_hazard}
-       matrix. A matrix with \code{number_mcmc} rows and \code{length(breaks)}
+       matrix. A matrix with \code{number_mcmc} rows and \code{length(breaks) + 1}
        columns containing the posterior draws of the piecewise hazards
        for each interval break point.
      \item \code{posterior_flat_hazard}
-       matrix. A matrix with \code{number_mcmc} rows and \code{length(breaks)}
+       matrix. A matrix with \code{number_mcmc} rows and \code{length(breaks) + 1}
        columns containing the draws of piecewise hazards for each interval
        break point for current treatment not augmented by historical treatment.
      \item \code{prior_hazard}
-       matrix. A matrix with \code{number_mcmc} rows and \code{length(breaks)}
+       matrix. A matrix with \code{number_mcmc} rows and \code{length(breaks) + 1}
        columns containing the draws of piecewise hazards for each interval break point
        for historical treatment.
+     \item \code{posterior_log_hazard}, \code{posterior_flat_log_hazard},
+       \code{prior_log_hazard}
+       matrices. Log hazards corresponding to the three hazard matrices.
+       These retain finite log draws when very small hazards round to zero
+       and are used for borrowing comparisons and the two-arm effect.
    }
  }
  \item{\code{posterior_control}}{
@@ -196,11 +203,19 @@ Historical borrowing is assessed separately within each arm by
 
   For one arm, q compares survival at \code{surv_time}; for two arms it
   compares current and historical hazards separately within treatment and
-  control. The default Monte Carlo calculation and historical Gamma update
-  have unresolved limitations documented in the survival vignette. The
-  vignette uses the fixed method and describes the implemented prior update.
-  With one arm and \code{fix_alpha = TRUE}, the returned \code{p_hat}
-  is the directional q rather than the transformed p.
+  control using analytic inverse-variance weights for the interval log
+  hazard differences. With \code{method = "mc"}, each draw's difference
+  is divided by its posterior standard deviation and mapped to
+  \code{2 * pnorm(abs(Z), lower.tail = FALSE)}. The variance is calculated
+  from exact Gamma moments: hazard variances for log survival differences,
+  and trigamma log-hazard variances for two-arm comparisons. The normal-tail
+  mapping remains an approximation, especially with sparse events.
+  The returned \code{p_hat} uses the selected method's transformation even
+  with \code{fix_alpha = TRUE}; the prescribed weight is unaffected.
+
+  The historical Gamma update includes the baseline prior in both source
+  posteriors before discounting. This differs from discounting the historical
+  likelihood alone and remains under review; see the survival vignette.
 
   In the second stage, posterior estimation is performed where the discount
   function parameter, \code{alpha}, is incorporated in all posterior
