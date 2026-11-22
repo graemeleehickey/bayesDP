@@ -44,6 +44,8 @@ The possible data sources form a two-by-two arrangement:
 
 The binomial and normal functions allow several combinations of these sources, including a historical-only control. Such a comparison is not a concurrent randomized comparison: interpretation depends on comparability across studies. Regression requires both arms in both studies. The survival vignette describes its data requirements and modeling assumptions.
 
+Neither `bdplm()` nor `bdplogit()` supports formula offsets. Including `offset(...)` or `stats::offset(...)` causes an error before fitting, even when offsets are zero or cancel each other. This restriction applies to every supported method, including prescribed weights, no borrowing, and supplied historical priors. Earlier versions could silently omit offsets, so existing analyses that specified them need to be reconsidered.
+
 Logistic regression with `bdplogit()` requires `method = "fixed"`. The function checks for rank deficiency and complete or quasi-complete separation in each arm's borrowing comparison, in the historical regression when estimating arm priors, and in the current-data regression. Separation makes the flat-prior comparison posterior improper and can make historical maximum likelihood estimates infinite. The current-data restriction also reflects the sampler's reliance on unpenalized logistic estimates; it does not imply that a posterior with proper coefficient priors is improper. See `help("bdplogit")` for the fitting conditions.
 
 # Choosing the historical weight

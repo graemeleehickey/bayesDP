@@ -164,6 +164,11 @@ details.}
   formula) and both data and data0 must be present. The column names of data
   and data0 must match. See \code{examples} below for example usage.
 
+  Formula offsets are not supported. Calls to \code{offset()} or
+  \code{stats::offset()} cause an error before fitting, including offsets
+  that are zero or cancel each other. This restriction applies with either
+  method, prescribed weights, no borrowing, or supplied historical priors.
+
   Internally, the model is parameterized without a fixed intercept, using
   separate treatment and control means rather than an intercept plus a
   treatment effect. In this parameterization the arm means are the fitted

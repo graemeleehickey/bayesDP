@@ -96,6 +96,11 @@
 #'   The column names of data and data0 must match. See \code{examples} below for
 #'   example usage.
 #'
+#'   Formula offsets are not supported. Calls to \code{offset()} or
+#'   \code{stats::offset()} cause an error before fitting, including offsets
+#'   that are zero or cancel each other. Prescribing weights, disabling
+#'   borrowing, or supplying historical priors does not bypass this restriction.
+#'
 #'   Internally, the model is parameterized without a fixed intercept, using
 #'   separate treatment and control (log-odds) means rather than an intercept
 #'   plus a treatment effect. In this parameterization the arm means are the
@@ -281,6 +286,7 @@ setMethod(
     }
 
     ### Parse current data
+    bdp_check_no_offsets(formula, data, "bdplogit")
     mf <- mf0 <- match.call(expand.dots = FALSE)
     m <- match(c("formula", "data"), names(mf), 0L)
     mf <- mf[c(1L, m)]

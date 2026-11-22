@@ -83,3 +83,25 @@ model.matrixBayes <- function(object, data = environment(object), contrasts.arg 
   attr(ans, "contrasts") <- cons
   ans
 }
+
+# Reject unsupported offsets before evaluating their values or fitting a model.
+bdp_check_no_offsets <- function(formula, data, model) {
+  model_terms <- stats::terms(stats::as.formula(formula), data = data)
+  has_offset_call <- function(expr) {
+    if (!is.call(expr)) return(FALSE)
+    fun <- expr[[1L]]
+    qualified_offset <- is.call(fun) && length(fun) == 3L &&
+      (identical(fun[[1L]], quote(`::`)) || identical(fun[[1L]], quote(`:::`))) &&
+      identical(fun[[2L]], quote(stats)) && identical(fun[[3L]], quote(offset))
+    if (identical(fun, quote(offset)) || qualified_offset) return(TRUE)
+    any(vapply(as.list(expr)[-1L], has_offset_call, logical(1)))
+  }
+
+  # R records ordinary offset terms, but can treat stats::offset() as a covariate.
+  if (length(attr(model_terms, "offset")) > 0L ||
+      has_offset_call(stats::formula(model_terms)[[3L]])) {
+    stop(model, "() does not support offset() terms. No model has been fitted.",
+         call. = FALSE)
+  }
+  invisible(NULL)
+}
