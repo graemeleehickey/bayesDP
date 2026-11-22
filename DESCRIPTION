@@ -39,14 +39,17 @@ NeedsCompilation: yes
 Repository: CRAN
 Imports:
     detectseparation,
+    generics,
     MCMCpack,
-    Rcpp
+    Rcpp,
+    tibble
 LinkingTo:
     Rcpp,
     RcppArmadillo
 RoxygenNote: 7.3.3
 Encoding: UTF-8
 Suggests:
+    broom,
     covr,
     knitr,
     rmarkdown,

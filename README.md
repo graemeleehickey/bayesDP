@@ -5,26 +5,11 @@
 
 <!-- badges: start -->
 
-[![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/bayesDP)](https://CRAN.R-project.org/package=bayesDP)
-[![DOI](https://img.shields.io/badge/DOI-10.32614%2FCRAN.package.bayesDP-blue)](https://doi.org/10.32614/CRAN.package.bayesDP)
-[![](https://cranlogs.r-pkg.org/badges/bayesDP)](https://CRAN.R-project.org/package=bayesDP)
-[![Downloads](https://cranlogs.r-pkg.org/badges/grand-total/bayesDP?color=brightgreen)](https://www.r-pkg.org:443/pkg/bayesDP)
-[![License](https://img.shields.io/badge/license-GPL%20%28%3E=%203%29-brightgreen.svg?style=flat)](https://www.gnu.org/licenses/gpl-3.0.html)
-[![R-CMD-check](https://github.com/graemeleehickey/bayesDP/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/graemeleehickey/bayesDP/actions/workflows/R-CMD-check.yaml)
-[![Codecov test
-coverage](https://codecov.io/gh/graemeleehickey/bayesDP/graph/badge.svg)](https://app.codecov.io/gh/graemeleehickey/bayesDP)
-<!-- badges: end -->
+[![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/bayesDP)](https://CRAN.R-project.org/package=bayesDP) [![DOI](https://img.shields.io/badge/DOI-10.32614%2FCRAN.package.bayesDP-blue)](https://doi.org/10.32614/CRAN.package.bayesDP) [![](https://cranlogs.r-pkg.org/badges/bayesDP)](https://CRAN.R-project.org/package=bayesDP) [![Downloads](https://cranlogs.r-pkg.org/badges/grand-total/bayesDP?color=brightgreen)](https://www.r-pkg.org:443/pkg/bayesDP) [![License](https://img.shields.io/badge/license-GPL%20%28%3E=%203%29-brightgreen.svg?style=flat)](https://www.gnu.org/licenses/gpl-3.0.html) [![R-CMD-check](https://github.com/graemeleehickey/bayesDP/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/graemeleehickey/bayesDP/actions/workflows/R-CMD-check.yaml) [![Codecov test coverage](https://codecov.io/gh/graemeleehickey/bayesDP/graph/badge.svg)](https://app.codecov.io/gh/graemeleehickey/bayesDP) <!-- badges: end -->
 
-`bayesDP` implements the Bayesian discount prior approach for borrowing
-historical information in one-arm and two-arm clinical trials. The
-package supports binomial, normal, survival, linear-model, and
-logistic-regression settings, and provides plotting and summary methods
-for inspecting posterior estimates and discount weights.
+`bayesDP` implements the Bayesian discount prior approach for borrowing historical information in one-arm and two-arm clinical trials. The package supports binomial, normal, survival, linear-model, and logistic-regression settings, and provides plotting and summary methods for inspecting posterior estimates and discount weights.
 
-The method adaptively discounts historical information according to the
-agreement between current and historical data. See [Haddad et
-al. (2017)](https://www.tandfonline.com/doi/full/10.1080/10543406.2017.1300907)
-for methodological details.
+The method adaptively discounts historical information according to the agreement between current and historical data. See [Haddad et al. (2017)](https://www.tandfonline.com/doi/full/10.1080/10543406.2017.1300907) for methodological details.
 
 ## Links
 
@@ -64,8 +49,6 @@ remotes::install_github("graemeleehickey/bayesDP")
 
 ``` r
 library(bayesDP)
-#> Loading required package: ggplot2
-#> Loading required package: survival
 
 fit_bin <- bdpbinomial(
   y_t = 10, N_t = 500,
@@ -81,9 +64,9 @@ summary(fit_bin)
 #> Historical treatment data: 25 and 250
 #> Stochastic comparison (p_hat) - treatment (current vs. historical data): 0
 #> Discount function value (alpha) - treatment: 0
-#> 95 percent CI: 
-#>  0.011  0.0362
-#> sample estimates:
+#> 95 percent equal-tailed credible interval:
+#>  0.0109  0.0363
+#> Posterior medians:
 #>  0.0211
 ```
 
@@ -105,11 +88,11 @@ summary(fit_norm)
 #>   Historical treatment: mu0_t = 50, sigma0_t = 5, N0_t = 250
 #> Stochastic comparison (p_hat) - treatment (current vs. historical data): 0
 #> Discount function value (alpha) - treatment: 0
-#> 95 percent CI: 
-#>  28.7373  31.2483
-#> posterior sample estimate:
-#> mean of treatment group
-#>  29.9928
+#> 95 percent equal-tailed credible interval:
+#>  28.7736  31.2335
+#> Posterior median:
+#> population mean of treatment group
+#>  30.0068
 ```
 
 ### Individual-level linear model
@@ -139,8 +122,8 @@ summary(fit_lm)
 #> bdplm(formula = Y ~ treatment + x, data = df, data0 = df0, method = "fixed")
 #> 
 #> Residuals:
-#>      Min     1Q Median    3Q   Max
-#>  -11.455 -1.249  2.773 6.652 14.12
+#>      Min     1Q Median    3Q    Max
+#>  -13.725 -3.519  0.504 4.383 11.851
 #> 
 #> Coefficients:
 #>             Estimate Std. Error
@@ -155,10 +138,24 @@ summary(fit_lm)
 #> Residual standard error: 5.4394
 ```
 
+## Tabular results
+
+`tidy()` returns posterior estimates and SDs, with optional equal-tailed credible limits. `glance()` returns one row containing current and historical sample sizes, retained draw counts, and discount weights. Both functions also work when called through broom.
+
+``` r
+tidy(fit_bin, conf.int = TRUE, conf.level = 0.95)
+glance(fit_bin)
+tidy(fit_lm, conf.int = TRUE)
+tidy(fit_lm, effects = "sigma", conf.int = TRUE)
+```
+
+The conventional `std.error` column contains posterior SDs, and `conf.low` and `conf.high` contain credible limits. Estimates follow `summary()`: posterior medians for binomial, normal, and one-arm survival results, and posterior means for regression coefficients and the two-arm log hazard ratio. Binomial and normal results include treatment-minus-control differences when a control arm is present.
+
+For logistic and two-arm survival fits, `exponentiate = TRUE` reports the exponential of the posterior mean log effect and exponentiated credible limits, with posterior SDs calculated on the ratio scale. For one-arm survival fits, `time` selects the survival time of interest and defaults to the fit’s `surv_time`. See `?tidy` and `?glance` for definitions and examples. These functions summarise saved draws without refitting. `augment()` is not currently provided.
+
 ## Citation
 
-If you use `bayesDP`, please cite the package and the methodological
-paper:
+If you use `bayesDP`, please cite the package and the methodological paper:
 
 ``` r
 citation("bayesDP")

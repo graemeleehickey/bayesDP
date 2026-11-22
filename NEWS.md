@@ -23,6 +23,9 @@
 
 ## New features
 
+* Added `tidy()` and `glance()` methods for all fitted models, also available through broom. `tidy()` reports posterior estimates, SDs, and optional equal-tailed credible limits; logistic and two-arm survival effects can be exponentiated. `glance()` reports current and historical sample sizes, retained draw counts, and arm-specific discount weights, with event counts for survival fits.
+* Numerical summaries are shared with `summary()`. The new methods use saved draws without refitting or changing the random-number state. Participant-level `augment()` methods are not provided.
+
 * Added `type = "effect"` plots for binomial and normal treatment-minus-control contrasts. Posterior plots now use explicit parameter labels and consistent information-source colours and line types.
 * Added a light/dark mode switch to the pkgdown website, including matching colours for R code.
 
