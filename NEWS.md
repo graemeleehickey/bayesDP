@@ -1,3 +1,9 @@
+# bayesDP (development version)
+
+## Tests
+
+* Expanded checks for incomplete inputs, historical-only controls, factor contrasts, regression discount functions, plot options, and survival calculations at interval boundaries and numerical limits. Added comparisons with analytical posterior moments and integrated hazards.
+
 # bayesDP 1.3.13
 
 ## Bug fixes

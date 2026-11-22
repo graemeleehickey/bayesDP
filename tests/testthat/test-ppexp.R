@@ -55,3 +55,26 @@ test_that("ppexp_times matches per-time ppexp evaluation", {
     expect_equal(vectorized[[i]], as.numeric(per_time[[i]]))
   }
 })
+
+test_that("piecewise-exponential probabilities agree with integrated hazards", {
+  cuts <- c(0, 2, 5)
+  hazards <- rbind(c(0.2, 0.4, 0.1), c(0.5, 0, 0.3))
+  times <- c(0, 1, 2, 3, 5, 8)
+  duration <- cbind(pmin(times, 2), pmax(0, pmin(times, 5) - 2),
+    pmax(0, times - 5))
+  expected <- -expm1(-duration %*% t(hazards))
+  observed <- bayesDP:::ppexp_times(times, hazards, cuts)
+  expect_equal(do.call(rbind, observed), unname(expected), tolerance = 1e-12)
+  for (i in seq_along(times)) {
+    expect_equal(as.numeric(ppexp(times[i], hazards, cuts)), expected[i, ])
+    expect_equal(ppexp(times[i], hazards[1, ], cuts), expected[i, 1])
+  }
+})
+
+test_that("a single interval gives the exponential CDF, including zero hazard", {
+  for (rate in c(0, 0.2, 2)) {
+    for (time in c(0, 1, 5)) {
+      expect_equal(ppexp(time, rate, 0), -expm1(-rate * time), tolerance = 1e-12)
+    }
+  }
+})

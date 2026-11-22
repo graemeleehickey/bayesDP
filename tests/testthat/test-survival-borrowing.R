@@ -260,3 +260,51 @@ test_that("invalid survival comparison settings give informative errors", {
   expect_error(fit(discount_function = "weibull", weibull_shape = 0), "weibull_shape must")
   expect_error(fit(discount_function = "weibull", weibull_scale = Inf), "weibull_scale must")
 })
+
+test_that("survival comparisons can be omitted without changing arm posteriors", {
+  withr::local_seed(2611)
+  for (two_arm in c(FALSE, TRUE)) {
+    d <- survival_borrowing_data(two_arm)
+    formula <- if (two_arm) Surv(time, status) ~ treatment else Surv(time, status) ~ 1
+    set.seed(2611)
+    included <- bdpsurvival(formula, data = d, data0 = d,
+      breaks = c(2, 4), number_mcmc = 200)
+    set.seed(2611)
+    omitted <- bdpsurvival(formula, data = d, data0 = d,
+      breaks = c(2, 4), number_mcmc = 200, compare = FALSE)
+    expect_null(omitted$final)
+    expect_equal(omitted$posterior_treatment, included$posterior_treatment)
+    expect_equal(omitted$posterior_control, included$posterior_control)
+  }
+})
+
+test_that("survival calculations reject invalid or numerically unresolved hazards", {
+  withr::local_seed(2612)
+  for (value in c(0, -1, Inf, NA_real_)) {
+    expect_error(bdp_log_gamma(10, shape = value, rate = 1),
+      "Gamma shapes and rates must be positive and finite")
+    expect_error(bdp_log_gamma(10, shape = 1, rate = value),
+      "Gamma shapes and rates must be positive and finite")
+  }
+  expect_error(bdp_log_gamma(10, shape = 1e-320, rate = 1),
+    "Log-Gamma draws exceed numerical precision")
+  extreme <- list(shape = 1e-200, log_hazard = matrix(0, 10, 1))
+  expect_error(suppressWarnings(
+    bdp_survival_comparison(extreme, extreme, NULL, numeric(), TRUE, "mc")),
+    "Log-hazard variances exceed numerical precision")
+  constant <- list(posterior_log_hazard = matrix(0, 10, 1))
+  expect_error(bdp_survival_effect(constant, constant),
+    "interval variances must be positive and finite")
+})
+
+test_that("survival effects from older saved hazards agree with stored log hazards", {
+  treatment <- matrix(c(0.1, 0.2, 0.4, 0.3, 0.6, 0.5), ncol = 2)
+  control <- matrix(c(0.3, 0.2, 0.1, 0.5, 0.4, 0.2), ncol = 2)
+  contrast <- log(treatment / control)
+  weights <- 1 / apply(contrast, 2, var)
+  expected <- contrast %*% (weights / sum(weights))
+  expect_equal(bdp_survival_effect(list(posterior_hazard = treatment),
+    list(posterior_hazard = control)), expected)
+  expect_equal(bdp_survival_effect(list(posterior_log_hazard = log(treatment)),
+    list(posterior_log_hazard = log(control))), expected)
+})
