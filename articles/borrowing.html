@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">bayesDP</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.13</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.13.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -124,6 +124,12 @@ calculated afterwards.</p>
 <td align="left">Adjusted treatment minus control mean</td>
 </tr>
 <tr class="even">
+<td align="left"><code><a href="../reference/bdplogit.html">bdplogit()</a></code></td>
+<td align="left">Individual binary outcomes and covariates</td>
+<td align="left">Not supported</td>
+<td align="left">Adjusted treatment minus control log odds</td>
+</tr>
+<tr class="odd">
 <td align="left"><code><a href="../reference/bdpsurvival.html">bdpsurvival()</a></code></td>
 <td align="left">Follow-up times and event indicators</td>
 <td align="left">Survival probability at a specified time</td>
@@ -157,6 +163,16 @@ concurrent randomized comparison: interpretation depends on
 comparability across studies. Regression requires both arms in both
 studies. The survival vignette describes its data requirements and
 modeling assumptions.</p>
+<p>Logistic regression with <code><a href="../reference/bdplogit.html">bdplogit()</a></code> requires
+<code>method = "fixed"</code>. The function checks for rank deficiency
+and complete or quasi-complete separation in each arm’s borrowing
+comparison, in the historical regression when estimating arm priors, and
+in the current-data regression. Separation makes the flat-prior
+comparison posterior improper and can make historical maximum likelihood
+estimates infinite. The current-data restriction also reflects the
+sampler’s reliance on unpenalized logistic estimates; it does not imply
+that a posterior with proper coefficient priors is improper. See
+<code><a href="../reference/bdplogit.html">help("bdplogit")</a></code> for the fitting conditions.</p>
 </div>
 <div class="section level2">
 <h2 id="choosing-the-historical-weight">Choosing the historical weight<a class="anchor" aria-label="anchor" href="#choosing-the-historical-weight"></a>
@@ -194,6 +210,12 @@ no borrowing, or <code>alpha_max = 1</code> for full borrowing. In
 two-arm analyses a vector supplies treatment and control limits, in that
 order. <code><a href="../reference/bdplm.html">bdplm()</a></code> requires <code>method = "fixed"</code> when
 <code>fix_alpha = TRUE</code>.</p>
+<p>For <code><a href="../reference/bdplogit.html">bdplogit()</a></code>, prescribing weights with
+<code>fix_alpha = TRUE</code> skips the comparison fits entirely. It
+does not bypass checks on historical-prior estimation or the
+current-data model. The historical regression is unnecessary only when
+all four historical arm-prior means and SDs are supplied; the
+current-data checks always apply.</p>
 <p>For survival outcomes, <span class="math inline">\alpha</span>
 weights historical events and exposure; the baseline Gamma shape and
 rate, <code>a0</code> and <code>b0</code>, enter the augmented

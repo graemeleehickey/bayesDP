@@ -13,6 +13,7 @@ contrast is calculated afterwards.
 | [`bdpbinomial()`](https://graemeleehickey.github.io/bayesDP/reference/bdpbinomial.md) | Event counts and sample sizes | Event probability | Treatment minus control probability |
 | [`bdpnormal()`](https://graemeleehickey.github.io/bayesDP/reference/bdpnormal.md) | Sample means, SDs, and sample sizes | Population mean | Treatment minus control mean |
 | [`bdplm()`](https://graemeleehickey.github.io/bayesDP/reference/bdplm.md) | Individual outcomes and covariates | Not supported | Adjusted treatment minus control mean |
+| [`bdplogit()`](https://graemeleehickey.github.io/bayesDP/reference/bdplogit.md) | Individual binary outcomes and covariates | Not supported | Adjusted treatment minus control log odds |
 | [`bdpsurvival()`](https://graemeleehickey.github.io/bayesDP/reference/bdpsurvival.md) | Follow-up times and event indicators | Survival probability at a specified time | Approximate common log hazard ratio |
 
 The possible data sources form a two-by-two arrangement:
@@ -29,6 +30,19 @@ comparability across studies. Regression requires both arms in both
 studies. The survival vignette describes its data requirements and
 modeling assumptions.
 
+Logistic regression with
+[`bdplogit()`](https://graemeleehickey.github.io/bayesDP/reference/bdplogit.md)
+requires `method = "fixed"`. The function checks for rank deficiency and
+complete or quasi-complete separation in each arm’s borrowing
+comparison, in the historical regression when estimating arm priors, and
+in the current-data regression. Separation makes the flat-prior
+comparison posterior improper and can make historical maximum likelihood
+estimates infinite. The current-data restriction also reflects the
+sampler’s reliance on unpenalized logistic estimates; it does not imply
+that a posterior with proper coefficient priors is improper. See
+[`help("bdplogit")`](https://graemeleehickey.github.io/bayesDP/reference/bdplogit.md)
+for the fitting conditions.
+
 ## Choosing the historical weight
 
 Three choices have different meanings:
@@ -44,6 +58,14 @@ Use `alpha_max = 0` with `fix_alpha = TRUE` for no borrowing, or
 supplies treatment and control limits, in that order.
 [`bdplm()`](https://graemeleehickey.github.io/bayesDP/reference/bdplm.md)
 requires `method = "fixed"` when `fix_alpha = TRUE`.
+
+For
+[`bdplogit()`](https://graemeleehickey.github.io/bayesDP/reference/bdplogit.md),
+prescribing weights with `fix_alpha = TRUE` skips the comparison fits
+entirely. It does not bypass checks on historical-prior estimation or
+the current-data model. The historical regression is unnecessary only
+when all four historical arm-prior means and SDs are supplied; the
+current-data checks always apply.
 
 For survival outcomes, \alpha weights historical events and exposure;
 the baseline Gamma shape and rate, `a0` and `b0`, enter the augmented

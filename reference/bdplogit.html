@@ -17,7 +17,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">bayesDP</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.13</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.13.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -174,14 +174,17 @@ weight. Default value is "<code>identity</code>".</p></dd>
 
 
 <dt id="arg-alpha-max">alpha_max<a class="anchor" aria-label="anchor" href="#arg-alpha-max"></a></dt>
-<dd><p>scalar. Maximum weight the discount function can apply.
+<dd><p>scalar in [0, 1]. Maximum weight the discount function can apply.
 Default is 1. Users may specify a vector of two values where the first
 value is used to weight the historical treatment group and
 the second value is used to weight the historical control group.</p></dd>
 
 
 <dt id="arg-fix-alpha">fix_alpha<a class="anchor" aria-label="anchor" href="#arg-fix-alpha"></a></dt>
-<dd><p>logical. Fix alpha at alpha_max? Default value is FALSE.</p></dd>
+<dd><p>logical. Fix alpha at alpha_max? Default value is FALSE.
+If TRUE, comparison models are not fitted and the prescribed weights are
+used directly. Historical-prior estimation and current-data model checks
+still apply.</p></dd>
 
 
 <dt id="arg-weibull-scale">weibull_scale<a class="anchor" aria-label="anchor" href="#arg-weibull-scale"></a></dt>
@@ -204,10 +207,10 @@ historical control group. Not used when <code>discount_function</code> = "identi
 
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
-<dd><p>character. Analysis method with respect to estimation of the weight
-paramter alpha. Default method "<code>mc</code>" estimates alpha for each
-Monte Carlo iteration. Alternate value "<code>fixed</code>" estimates alpha once and
-holds it fixed throughout the analysis.  See the the <code>bdplm</code> vignette <br><code><a href="../articles/bdplm-vignette.html">vignette("bdplm-vignette", package = "bayesDP")</a></code> for more details.</p></dd>
+<dd><p>character. Set to <code>"fixed"</code>, the only supported method.
+It estimates each historical weight once and holds it fixed throughout
+the analysis, unless <code>fix_alpha = TRUE</code> prescribes the weights.
+The legacy default <code>"mc"</code> is not supported and raises an error.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -219,19 +222,17 @@ holds it fixed throughout the analysis.  See the the <code>bdplm</code> vignette
   without these means must be refitted before summarising residuals.</p>
 <p>The returned object is a list containing at least
 the following components:</p><dl><dt><code>posterior</code></dt>
-<dd><p>data frame. The posterior draws of the covariates, the intercept, and
-    the treatment effect. The grid of sigma values are included.</p></dd>
+<dd><p>data frame. Posterior draws of the intercept, treatment effect, and
+    covariate effects on the log-odds scale.</p></dd>
 
   <dt><code>alpha_discount</code></dt>
-<dd><p>vector. The posterior probability of the stochastic comparison
-    between the current and historical data for each of the treatment
-    and control arms. If <code>method = "mc"</code>, the result is a matrix of
-    estimates, otherwise for <code>method = "fixed"</code>, the result is a vector
-    of estimates.</p></dd>
+<dd><p>data frame. One row of estimated or prescribed historical weights,
+    with columns <code>treatment</code> and <code>control</code>. These weights are
+    not posterior probabilities of equality.</p></dd>
 
   <dt><code>estimates</code></dt>
-<dd><p>list. The posterior means and standard errors of the intercept,
-    treatment effect, covariate effect(s) and error variance.</p></dd>
+<dd><p>list. Posterior means and posterior SDs of the intercept, treatment
+    effect, and covariate effects.</p></dd>
 
 
 </dl></div>
@@ -240,15 +241,15 @@ the following components:</p><dl><dt><code>posterior</code></dt>
     <p><code>bdplogit</code> uses a two-stage approach for determining the
   strength of historical data in estimation of an adjusted mean or covariate
   effect. In the first stage, a <em>discount function</em> is used that
-  that defines the maximum strength of the
+  defines the maximum strength of the
   historical data and discounts based on disagreement with the current data.
-  Disagreement between current and historical data is determined by stochastically
-  comparing the respective posterior distributions under noninformative priors.
-  Here with a two-arm regression analysis, the comparison is the
-  proability (<code>p</code>) that the covariate effect of an historical data indicator is
-  significantly different from zero. The comparison metric <code>p</code> is then
-  input into the discount function and the final strength of the
-  historical data is returned (<code>alpha</code>).</p>
+  Disagreement between current and historical data is assessed by fitting
+  a logistic regression separately within each arm, with a historical
+  indicator and the covariates, using flat coefficient priors. If \(q\)
+  is the posterior probability that the historical-indicator coefficient is
+  positive, the comparison is \(p = 2\min(q, 1-q)\). The discount function
+  transforms \(p\) into the historical weight <code>alpha</code>. This is not
+  a posterior probability of equality or equivalence.</p>
 <p>In the second stage, posterior estimation is performed where the discount
   function parameter, <code>alpha</code>, is used to weight the historical data
   effects.</p>
@@ -275,8 +276,27 @@ the following components:</p><dl><dt><code>posterior</code></dt>
   at covariate = 0 on the original scale. As a result, estimates are
   invariant to a location shift of any covariate, and users do not need to
   center covariates themselves.</p>
-<p>The underlying model uses the <code>MCMClogit</code> function of the MCMCpack
-  package to carryout posterior estimation. Add more.</p>
+<p>Posterior sampling uses <code><a href="https://rdrr.io/pkg/MCMCpack/man/MCMClogit.html" class="external-link">MCMCpack::MCMClogit()</a></code>. Before fitting,
+  model matrices are checked for rank deficiency, and complete or
+  quasi-complete separation is detected using <code>detectseparation</code>.
+  These checks include separation caused by covariates, as well as groups
+  with no events or with all events. An error identifies the affected stage:</p><ul><li><p>Each arm's comparison model must have a proper posterior under
+      its flat coefficient priors. Separation or rank deficiency prevents
+      estimation of that arm's borrowing weight.</p></li>
+<li><p>When any historical arm-prior mean or SD is estimated from the
+      historical regression, that regression must have a full-rank design
+      and no separation. Numerically large but finite estimates from a
+      separated regression are not used as historical priors.</p></li>
+<li><p>The current-data regression must also have a full-rank design
+      and no separation because the sampler uses an unpenalized logistic
+      regression to construct starting values and proposals. This is a
+      limitation of the supported sampling procedure, not a claim that
+      separation makes a posterior with proper coefficient priors improper.</p></li>
+</ul><p>With <code>fix_alpha = TRUE</code>, the comparison models and their checks are
+  skipped; their internal <code>p_hat</code> values are <code>NA_real_</code>.
+  Historical regression checks are skipped only when all four arm-prior
+  means and SDs are supplied. Current-data checks always apply. Prescribing
+  weights alone therefore does not make separated datasets supported.</p>
     </div>
 
     <div class="section level2">

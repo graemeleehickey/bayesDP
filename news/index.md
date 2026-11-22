@@ -1,6 +1,24 @@
 # Changelog
 
-## bayesDP (development version)
+## bayesDP 1.3.13.9000
+
+### Bug fixes
+
+- [`bdplogit()`](https://graemeleehickey.github.io/bayesDP/reference/bdplogit.md)
+  now stops with a stage-specific explanation when complete or
+  quasi-complete separation, or a rank-deficient model matrix, prevents
+  a supported analysis. Checks cover each arm’s borrowing comparison,
+  the historical regression when arm priors are estimated, and the
+  current-data regression. This prevents borrowing weights from improper
+  comparison posteriors and historical priors derived from infinite
+  maximum likelihood estimates. The current-data check reflects a
+  limitation of the sampler, including when proper priors are supplied.
+- With `fix_alpha = TRUE`,
+  [`bdplogit()`](https://graemeleehickey.github.io/bayesDP/reference/bdplogit.md)
+  now uses the prescribed arm weights without fitting comparison models;
+  internal comparison probabilities are recorded as missing.
+  Historical-prior estimation and current-data checks still apply.
+  Prescribed weights must be finite values in \[0, 1\].
 
 ### Tests
 
@@ -9,6 +27,16 @@
   survival calculations at interval boundaries and numerical limits.
   Added comparisons with analytical posterior moments and integrated
   hazards.
+- Added logistic regression checks for zero-event and all-event groups,
+  covariate separation, quasi-complete separation, rank deficiency,
+  prescribed weights, and supplied historical priors.
+
+### Housekeeping
+
+- Added `detectseparation` for logistic separation checks and documented
+  the supported fitting conditions and the distinction between
+  prescribed and estimated weights. Logistic sampling still requires
+  `method = "fixed"`.
 
 ## bayesDP 1.3.13
 

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">bayesDP</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.13</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.13.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -47,10 +47,21 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="development version" id="bayesdp-development-version">bayesDP (development version)<a class="anchor" aria-label="anchor" href="#bayesdp-development-version"></a></h2>
+<h2 class="pkg-version" data-toc-text="1.3.13.9000" id="bayesdp-13139000">bayesDP 1.3.13.9000<a class="anchor" aria-label="anchor" href="#bayesdp-13139000"></a></h2>
 <div class="section level3">
-<h3 id="tests-development-version">Tests<a class="anchor" aria-label="anchor" href="#tests-development-version"></a></h3>
+<h3 id="bug-fixes-1-3-13-9000">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-3-13-9000"></a></h3>
+<ul><li>
+<code><a href="../reference/bdplogit.html">bdplogit()</a></code> now stops with a stage-specific explanation when complete or quasi-complete separation, or a rank-deficient model matrix, prevents a supported analysis. Checks cover each arm’s borrowing comparison, the historical regression when arm priors are estimated, and the current-data regression. This prevents borrowing weights from improper comparison posteriors and historical priors derived from infinite maximum likelihood estimates. The current-data check reflects a limitation of the sampler, including when proper priors are supplied.</li>
+<li>With <code>fix_alpha = TRUE</code>, <code><a href="../reference/bdplogit.html">bdplogit()</a></code> now uses the prescribed arm weights without fitting comparison models; internal comparison probabilities are recorded as missing. Historical-prior estimation and current-data checks still apply. Prescribed weights must be finite values in [0, 1].</li>
+</ul></div>
+<div class="section level3">
+<h3 id="tests-1-3-13-9000">Tests<a class="anchor" aria-label="anchor" href="#tests-1-3-13-9000"></a></h3>
 <ul><li>Expanded checks for incomplete inputs, historical-only controls, factor contrasts, regression discount functions, plot options, and survival calculations at interval boundaries and numerical limits. Added comparisons with analytical posterior moments and integrated hazards.</li>
+<li>Added logistic regression checks for zero-event and all-event groups, covariate separation, quasi-complete separation, rank deficiency, prescribed weights, and supplied historical priors.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="housekeeping-1-3-13-9000">Housekeeping<a class="anchor" aria-label="anchor" href="#housekeeping-1-3-13-9000"></a></h3>
+<ul><li>Added <code>detectseparation</code> for logistic separation checks and documented the supported fitting conditions and the distinction between prescribed and estimated weights. Logistic sampling still requires <code>method = "fixed"</code>.</li>
 </ul></div>
 </div>
     <div class="section level2">
