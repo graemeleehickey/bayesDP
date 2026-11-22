@@ -1,4 +1,4 @@
-# bayesDP ![](reference/figures/hex.png)
+# bayesDP ![bayesDP hex badge](reference/figures/bayesDP.svg)
 
 `bayesDP` implements the Bayesian discount prior approach for borrowing
 historical information in one-arm and two-arm clinical trials. The
