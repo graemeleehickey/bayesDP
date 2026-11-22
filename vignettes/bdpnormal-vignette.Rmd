@@ -1,5 +1,5 @@
 ---
-title: "Normal outcomes with bayesDP"
+title: "Normal outcomes"
 author:
   - "Donnie Musgrove"
   - "Graeme L. Hickey"
@@ -13,7 +13,7 @@ output:
       url: https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js
 bibliography: references.bib
 vignette: >
-  %\VignetteIndexEntry{Normal outcomes with bayesDP}
+  %\VignetteIndexEntry{Normal outcomes}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

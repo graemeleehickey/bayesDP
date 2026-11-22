@@ -1,5 +1,5 @@
 ---
-title: "Binomial outcomes with bayesDP"
+title: "Binomial outcomes"
 author:
   - "Donnie Musgrove"
   - "Graeme L. Hickey"
@@ -13,7 +13,7 @@ output:
       url: https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js
 bibliography: references.bib
 vignette: >
-  %\VignetteIndexEntry{Binomial outcomes with bayesDP}
+  %\VignetteIndexEntry{Binomial outcomes}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

@@ -1,5 +1,5 @@
 ---
-title: "Survival outcomes with bayesDP"
+title: "Survival outcomes"
 author:
   - "Donnie Musgrove"
   - "Graeme L. Hickey"
@@ -13,7 +13,7 @@ output:
       url: https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js
 bibliography: references.bib
 vignette: >
-  %\VignetteIndexEntry{Survival outcomes with bayesDP}
+  %\VignetteIndexEntry{Survival outcomes}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

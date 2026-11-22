@@ -1,5 +1,5 @@
 ---
-title: "Linear regression with bayesDP"
+title: "Linear regression"
 author:
   - "Donnie Musgrove"
   - "Graeme L. Hickey"
@@ -13,7 +13,7 @@ output:
       url: https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js
 bibliography: references.bib
 vignette: >
-  %\VignetteIndexEntry{Linear regression with bayesDP}
+  %\VignetteIndexEntry{Linear regression}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
