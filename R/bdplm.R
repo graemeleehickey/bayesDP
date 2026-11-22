@@ -596,7 +596,7 @@ setMethod(
       )
       colnames(alpha0) <- c("alpha_treatment", "alpha_control")
 
-      for (i in 1:n_covs) {
+      for (i in seq_len(n_covs)) {
         alpha0 <- cbind(alpha0, 0)
         colnames(alpha0)[i + 2] <- paste0("x", i)
       }
@@ -679,8 +679,7 @@ setMethod(
     beta_samples$sigma <- sqrt(beta_samples$sigma)
 
     ### Format posterior table
-    m <- ncol(beta_samples)
-    beta_samples <- beta_samples[, c(m, 1, 3:(m - 1))]
+    beta_samples <- beta_samples[, c("intercept", "treatment", covs_df, "sigma"), drop = FALSE]
 
     ### Format alpha_discount values
     alpha_discount <- data.frame(

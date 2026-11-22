@@ -61,7 +61,7 @@ output of the Weibull CDF to have a max value of 1. The \code{identity}
 discount function uses the transformed comparison directly as the discount
 weight. Default value is "\code{identity}".}
 
-\item{alpha_max}{scalar. Maximum weight the discount function can apply.
+\item{alpha_max}{scalar in [0, 1]. Maximum weight the discount function can apply.
 Default is 1. For a two-arm trial, users may specify a vector of two values
 where the first value is used to weight the historical treatment group and
 the second value is used to weight the historical control group.}
@@ -84,7 +84,7 @@ treatment group and the second value is used to estimate the weight of the
 historical control group. Not used when \code{discount_function} =
 "identity".}
 
-\item{number_mcmc}{scalar. Number of Monte Carlo simulations. Default is
+\item{number_mcmc}{integer of at least 2. Number of Monte Carlo simulations. Default is
 10000.}
 
 \item{method}{character. Analysis method with respect to estimation of the
@@ -195,6 +195,14 @@ Historical borrowing is assessed separately within each arm by
   \code{alpha_max * W(p)} for the selected discount function W. This
   comparison is not a posterior probability of equality or equivalence.
   Choosing \code{fix_alpha = TRUE} prespecifies the weight instead.
+
+  Each supplied group requires a scalar finite mean, a positive finite
+  SD, and an integer sample size of at least 2. Zero SDs are not supported
+  by the variance posterior used here. Omit an optional group by leaving
+  all three inputs \code{NULL}; zero sample size does not denote an absent
+  group. Inputs and borrowing settings are checked before sampling,
+  including when weights are prescribed. Weibull parameters must be
+  positive and finite when used to estimate a weight.
 
   In the second stage, posterior estimation is performed where the discount
   function parameter, \code{alpha}, is incorporated in all posterior

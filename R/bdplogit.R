@@ -70,10 +70,10 @@
 #'   historical treatment group and the second value is used to estimate the
 #'   weight of the historical control group.
 #'   Not used when \code{discount_function} = "identity".
-#' @param method character. Set to \code{"fixed"}, the only supported method.
+#' @param method character. Default is \code{"fixed"}, the only supported method.
 #'   It estimates each historical weight once and holds it fixed throughout
 #'   the analysis, unless \code{fix_alpha = TRUE} prescribes the weights.
-#'   The legacy default \code{"mc"} is not supported and raises an error.
+#'   An explicit \code{"mc"} request is not supported and raises an error.
 #' @details \code{bdplogit} uses a two-stage approach for determining the
 #'   strength of historical data in estimation of an adjusted mean or covariate
 #'   effect. In the first stage, a \emph{discount function} is used that
@@ -145,6 +145,13 @@
 #'   Historical regression checks are skipped only when all four arm-prior
 #'   means and SDs are supplied. Current-data checks always apply. Prescribing
 #'   weights alone therefore does not make separated datasets supported.
+#'
+#'   Use \code{set.seed()} before fitting for reproducible sampling. Three
+#'   distinct seeds are drawn from R's random-number state for the treatment
+#'   comparison, control comparison, and final fit, and saved in
+#'   \code{args1$mcmc_seeds}. All three are allocated even when prescribed
+#'   weights skip the comparisons. Different R seeds generate different chains;
+#'   earlier versions always used MCMCpack's default seed.
 #'
 #' @return \code{bdplogit} returns an object of class "bdplm", reusing its
 #'   print and summary methods. Residual summaries use observed binary outcomes
@@ -238,7 +245,7 @@ setGeneric(
            fix_alpha = FALSE,
            weibull_scale = 0.135,
            weibull_shape = 3,
-           method = "mc") {
+           method = "fixed") {
     standardGeneric("bdplogit")
   }
 )
@@ -262,7 +269,7 @@ setMethod(
            fix_alpha = FALSE,
            weibull_scale = 0.135,
            weibull_shape = 3,
-           method = "mc") {
+           method = "fixed") {
 
     ### Check validity of data input
     call <- match.call()
@@ -274,6 +281,10 @@ setMethod(
       stop("Historical data not input correctly.")
     }
 
+    if (!is.character(method) || length(method) != 1L || is.na(method) ||
+        !method %in% c("fixed", "mc")) {
+      stop("method must be 'fixed'; 'mc' is not supported.", call. = FALSE)
+    }
     if (method == "mc") {
       stop("Method 'mc' not currently supported.")
     }
@@ -470,6 +481,9 @@ setMethod(
     # Estimate discount weights for each of the treatment and control arms
     ##############################################################################
 
+    mcmc_seeds <- stats::setNames(sample.int(.Machine$integer.max, 3L),
+      c("comparison_treatment", "comparison_control", "final"))
+
     discount_treatment <- discount_logit(
       df = df_t,
       discount_function = discount_function,
@@ -479,7 +493,8 @@ setMethod(
       weibull_shape = weibull_shape[1],
       weibull_scale = weibull_scale[1],
       method = method,
-      arm = "treatment"
+      arm = "treatment",
+      seed = mcmc_seeds[["comparison_treatment"]]
     )
 
     discount_control <- discount_logit(
@@ -491,7 +506,8 @@ setMethod(
       weibull_shape = weibull_shape[2],
       weibull_scale = weibull_scale[2],
       method = method,
-      arm = "control"
+      arm = "control",
+      seed = mcmc_seeds[["comparison_control"]]
     )
 
     ##############################################################################
@@ -574,7 +590,8 @@ setMethod(
                                  data = df_analysis,
                                  mcmc = number_mcmc_beta,
                                  b0 = mu0,
-                                 B0 = B0
+                                 B0 = B0,
+                                 seed = mcmc_seeds[["final"]]
       )
 
       beta_samples <- data.frame(fit)
@@ -597,8 +614,7 @@ setMethod(
     beta_samples$treatment <- beta_samples$treatment - beta_samples$control
 
     ### Format posterior table
-    m <- ncol(beta_samples)
-    beta_samples <- beta_samples[, c(m, 1, 3:(m - 1))]
+    beta_samples <- beta_samples[, c("intercept", "treatment", covs_df), drop = FALSE]
 
     ### Format alpha_discount values
     alpha_discount <- data.frame(
@@ -618,7 +634,8 @@ setMethod(
       call = call,
       data = df,
       covariate_means = covariate_means,
-      family = "binomial"
+      family = "binomial",
+      mcmc_seeds = mcmc_seeds
     )
 
     ### Format output
@@ -647,7 +664,7 @@ setMethod(
 discount_logit <- function(df, discount_function, alpha_max, fix_alpha,
                            number_mcmc_alpha,
                            weibull_shape, weibull_scale,
-                           method, arm = NULL) {
+                           method, arm = NULL, seed = NULL) {
 
   if (fix_alpha) {
     return(list(p_hat = NA_real_, alpha_discount = alpha_max))
@@ -668,7 +685,8 @@ discount_logit <- function(df, discount_function, alpha_max, fix_alpha,
     separation_reason = "the comparison posterior under flat coefficient priors is improper.")
 
   ### Get Bayesian fit
-  fit <- MCMCpack::MCMClogit(f, data = df, mcmc = number_mcmc_alpha, B0 = 0)
+  if (is.null(seed)) seed <- sample.int(.Machine$integer.max, 1L)
+  fit <- MCMCpack::MCMClogit(f, data = df, mcmc = number_mcmc_alpha, B0 = 0, seed = seed)
   posterior <- data.frame(fit)
 
   ### Monte Carlo simulations of historical effect

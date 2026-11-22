@@ -3,19 +3,23 @@
 #' @description \code{bdpsurvival} is used to estimate the survival probability
 #'   (single arm trial; OPC) or hazard ratio (two-arm trial; RCT) for
 #'   right-censored data using the survival analysis implementation of the
-#'   Bayesian discount prior. In the current implementation, a two-arm analysis
-#'   requires all of current treatment, current control, historical treatment,
-#'   and historical control data. This code is modeled after the methodologies
+#'   Bayesian discount prior. Current treatment data are required; control data
+#'   in a two-arm analysis can be current, historical, or both. This code is modeled after the methodologies
 #'   developed in Haddad et al. (2017).
 #'
 #' @param formula an object of class "formula." Must have a survival object on
 #'   the left side and at most one input on the right side, treatment. See
-#'   "Details" for more information.
+#'   "Details" for more information. Response expressions such as
+#'   \code{Surv(followup / 12, status == 1)} and \code{survival::Surv()}
+#'   are supported. Only right-censored responses are supported.
 #' @param data a data frame containing the current data variables in the model.
-#'   Columns denoting 'time' and 'status' must be present. See "Details" for
-#'   required structure.
+#'   Supply the variables used in the formula. Evaluated times must be finite
+#'   and non-negative, with no missing outcomes. If treatment is specified,
+#'   use numeric 0/1 or logical values, with no missing values; factors and
+#'   character codes are not converted automatically.
 #' @param data0 optional. A data frame containing the historical data variables
-#'   in the model. If present, the column labels of data and data0 must match.
+#'   in the model, subject to the same response and treatment checks as current
+#'   data. It must supply the variables used in the same formula.
 #' @param breaks numeric vector. Positive, finite internal cutpoints of the
 #'   piecewise exponential model, without zero or infinity. Values are sorted
 #'   and duplicates removed. Use \code{numeric(0)} for one constant hazard.
@@ -104,17 +108,18 @@
 #'
 #'   To carry out a single arm (OPC) analysis, data for the current and
 #'   historical treatments are specified in separate data frames, data and
-#'   data0, respectively. The data frames must have matching columns denoting
-#'   time and status. The 'time' column is the survival (censor) time of the
-#'   event and the 'status' column is the event indicator. The results are then
+#'   data0, respectively. The formula is evaluated separately in each data
+#'   frame to obtain the survival (censor) time and event indicator. Missing
+#'   outcomes or treatment values cause an error rather than dropping rows.
+#'   Counting-process, interval-censored, and multistate responses are not
+#'   supported. The results are then
 #'   based on the posterior probability of survival at \code{surv_time} for the
 #'   current data augmented by the historical data.
 #'
-#'   Two-arm (RCT) analyses are specified similarly to a single arm trial. Again
-#'   the input data frames must have columns denoting time and status, but now
-#'   an additional column named 'treatment' is required to denote treatment and
-#'   control data. The 'treatment' column must use 0 to indicate the control
-#'   group. The current data are augmented by historical data (if present) and
+#'   Two-arm (RCT) analyses use the same response specification, with an
+#'   additional column named 'treatment' to denote treatment and control data.
+#'   Use 1 (or TRUE) for treatment and 0 (or FALSE) for control in each data
+#'   frame. The current data are augmented by historical data (if present) and
 #'   the results are then based on the posterior distribution of the hazard
 #'   ratio between the treatment and control groups.
 #'
@@ -368,50 +373,11 @@ setMethod(
     ### Parse current data
     ##############################################################################
 
-    ### Check data frame and ensure it has the correct column names
-    mf <- mf0 <- match.call(expand.dots = FALSE)
-    m <- match(c("formula", "data"), names(mf), 0L)
-    mf <- mf[c(1L, m)]
-    mf$na.action <- NULL
-    mf[[1L]] <- quote(stats::model.frame)
-    mf <- eval(mf, parent.frame())
-    mt <- attr(mf, "terms")
-    Y <- model.response(mf, "any")
-    if (length(dim(Y)) == 1L) {
-      nm <- rownames(Y)
-      dim(Y) <- NULL
-      if (!is.null(nm)) {
-        names(Y) <- nm
-      }
-    }
-
-    if (!is.Surv(Y)) stop("Data input incorrectly.")
-
-    ##############################################################################
-    ### Parse historical data
-    ##############################################################################
-
-    ### Parse historical data
-    if (!is.null(data0)) {
-      m00 <- match("data0", names(mf0), 0L)
-      m01 <- match("data", names(mf0), 0L)
-      mf0[m01] <- mf0[m00]
-      m0 <- match(c("formula", "data"), names(mf0), 0L)
-      mf0 <- mf0[c(1L, m0)]
-      mf0$na.action <- NULL
-      mf0[[1L]] <- quote(stats::model.frame)
-      mf0 <- eval(mf0, parent.frame())
-      mt0 <- attr(mf0, "terms")
-      Y0 <- model.response(mf0, "any")
-      if (length(dim(Y0)) == 1L) {
-        nm0 <- rownames(Y0)
-        dim(Y0) <- NULL
-        if (!is.null(nm0)) {
-          names(Y0) <- nm0
-        }
-      }
+    dataCurrent <- bdp_survival_data(formula, data, "Current", 0)
+    dataHistorical <- if (!is.null(data0)) {
+      bdp_survival_data(formula, data0, "Historical", 1)
     } else {
-      Y0 <- NULL
+      NULL
     }
 
     # Check that discount_function is input correctly
@@ -455,7 +421,7 @@ setMethod(
     ##############################################################################
     ### If no breaks input, create intervals along quantiles
     if (is.null(breaks)) {
-      breaks <- quantile(c(Y[, 1], Y0[, 1]), probs = c(0.2, 0.4, 0.6, 0.8))
+      breaks <- quantile(c(dataCurrent$time, dataHistorical$time), probs = c(0.2, 0.4, 0.6, 0.8))
     }
     if (!is.numeric(breaks) || any(!is.finite(breaks)) || any(breaks < 0)) {
       stop("breaks must contain finite, non-negative cutpoints.", call. = FALSE)
@@ -468,54 +434,16 @@ setMethod(
       warning("Breaks vector included 0. The zero value was removed.")
     }
 
-    ### Combine current and historical data, and format for analysis
-    dataCurrent <- data
-    dataCurrent$historical <- 0
-
-    if (!is.null(data0)) {
-      dataHistorical <- data0
-      dataHistorical$historical <- 1
-    } else {
-      dataHistorical <- NULL
-    }
-
+    ### Combine evaluated responses and retain the original participant records.
     dataALL <- rbind(dataCurrent, dataHistorical)
-
-    ### Update formula
-    formula <- update(formula, ~ . + historical)
-
-    ### Mark artificial interval endpoints so reports retain each participant once.
-    split_marker <- utils::tail(make.unique(c(names(dataALL), ".bayesDP_added")), 1)
-    # A cut at the last observation leaves all records in one interval and
-    # avoids empty-cut errors in recent versions of survival::survSplit().
-    split_cuts <- if (length(breaks)) breaks else max(c(Y[, 1], Y0[, 1]))
-    dataSplit <- survSplit(formula,
-                           cut = split_cuts,
-                           start = "start",
-                           episode = "interval",
-                           added = split_marker,
-                           data = dataALL
-    )
-    original_record <- !dataSplit[[split_marker]]
-    dataSplit[[split_marker]] <- NULL
-
-    ### Change time and status column names
-    vars <- as.character(attr(mt, "variables"))[2]
-    vars <- strsplit(vars, "Surv\\(|, |\\)")[[1]]
-    var_time <- vars[2]
-    var_status <- vars[3]
-
-    names(dataSplit)[match(var_time, names(dataSplit))] <- "time"
-    names(dataSplit)[match(var_status, names(dataSplit))] <- "status"
-
-    # Look for treatment column, if missing, add it and set to 1
-    if (!any(names(dataSplit) == "treatment")) {
-      dataSplit$treatment <- 1
-    }
-
-    participants <- dataSplit[original_record,
-                              c("time", "status", "treatment", "historical")]
+    participants <- dataALL
     rownames(participants) <- NULL
+
+    # A cut at the last observation also handles a constant-hazard model.
+    split_cuts <- if (length(breaks)) breaks else max(dataALL$time)
+    dataSplit <- survSplit(Surv(time, status) ~ treatment + historical,
+      cut = split_cuts, start = "start", end = "time", event = "status",
+      episode = "interval", data = dataALL, na.action = stats::na.fail)
 
     ### Compute exposure time within each interval
     dataSplit$exposure <- dataSplit$time - dataSplit$start
@@ -548,7 +476,7 @@ setMethod(
     ### If surv_time is null, replace with median of combined
     ### current + historical times
     if (is.null(surv_time) & !arm2) {
-      all_times <- if (!is.null(Y0)) c(Y[, 1], Y0[, 1]) else Y[, 1]
+      all_times <- dataALL$time
       surv_time <- median(all_times)
     }
     if (!arm2 && (!is.finite(surv_time) || surv_time <= 0)) {

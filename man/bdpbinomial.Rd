@@ -51,18 +51,18 @@ output of the Weibull CDF to have a max value of 1. The \code{identity}
 discount function uses the transformed comparison directly as the discount
 weight. Default value is "\code{identity}".}
 
-\item{alpha_max}{scalar. Maximum weight the discount function can apply.
+\item{alpha_max}{scalar in [0, 1]. Maximum weight the discount function can apply.
 Default is 1. For a two-arm trial, users may specify a vector of two values
 where the first value is used to weight the historical treatment group and
 the second value is used to weight the historical control group.}
 
 \item{fix_alpha}{logical. Fix alpha at alpha_max? Default value is FALSE.}
 
-\item{a0}{scalar. Prior value for a beta shape parameter. Default is 1.}
+\item{a0}{positive, finite scalar. Prior value for a beta shape parameter. Default is 1.}
 
-\item{b0}{scalar. Prior value for a beta shape parameter. Default is 1.}
+\item{b0}{positive, finite scalar. Prior value for a beta shape parameter. Default is 1.}
 
-\item{number_mcmc}{scalar. Number of Monte Carlo simulations. Default is
+\item{number_mcmc}{integer of at least 2. Number of Monte Carlo simulations. Default is
 10000.}
 
 \item{weibull_scale}{scalar. Scale parameter of the Weibull discount function
@@ -178,6 +178,14 @@ Historical borrowing is assessed separately within each arm by
   \code{alpha_max * W(p)} for the selected discount function W. This
   comparison is not a posterior probability of equality or equivalence.
   Choosing \code{fix_alpha = TRUE} prespecifies the weight instead.
+
+  Each supplied group requires scalar, finite integer event counts and
+  sample sizes, with \eqn{N \geq 1} and \eqn{0 \leq y \leq N}.
+  Both zero-event and all-event groups are allowed. Omit an optional group
+  by leaving both inputs \code{NULL}; zero sample size does not denote an
+  absent group. Inputs and borrowing settings are checked before sampling,
+  including when weights are prescribed. Weibull parameters must be
+  positive and finite when used to estimate a weight.
 
   In the second stage, posterior estimation is performed where the discount
   function parameter, \code{alpha}, is incorporated in all posterior

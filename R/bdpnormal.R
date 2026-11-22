@@ -23,7 +23,7 @@
 #'   output of the Weibull CDF to have a max value of 1. The \code{identity}
 #'   discount function uses the transformed comparison directly as the discount
 #'   weight. Default value is "\code{identity}".
-#' @param alpha_max scalar. Maximum weight the discount function can apply.
+#' @param alpha_max scalar in [0, 1]. Maximum weight the discount function can apply.
 #'   Default is 1. For a two-arm trial, users may specify a vector of two values
 #'   where the first value is used to weight the historical treatment group and
 #'   the second value is used to weight the historical control group.
@@ -42,7 +42,7 @@
 #'   historical treatment group and the second value is used to estimate the
 #'   weight of the historical control group. Not used when
 #'   \code{discount_function} = "identity".
-#' @param number_mcmc scalar. Number of Monte Carlo simulations. Default is
+#' @param number_mcmc integer of at least 2. Number of Monte Carlo simulations. Default is
 #'   10000.
 #' @param method character. Analysis method with respect to estimation of the
 #'   weight parameter alpha. Default method "\code{mc}" estimates alpha for each
@@ -68,6 +68,14 @@
 #'   \code{alpha_max * W(p)} for the selected discount function W. This
 #'   comparison is not a posterior probability of equality or equivalence.
 #'   Choosing \code{fix_alpha = TRUE} prespecifies the weight instead.
+#'
+#'   Each supplied group requires a scalar finite mean, a positive finite
+#'   SD, and an integer sample size of at least 2. Zero SDs are not supported
+#'   by the variance posterior used here. Omit an optional group by leaving
+#'   all three inputs \code{NULL}; zero sample size does not denote an absent
+#'   group. Inputs and borrowing settings are checked before sampling,
+#'   including when weights are prescribed. Weibull parameters must be
+#'   positive and finite when used to estimate a weight.
 #'
 #'   In the second stage, posterior estimation is performed where the discount
 #'   function parameter, \code{alpha}, is incorporated in all posterior
@@ -269,85 +277,16 @@ setMethod(
     # Check Input                                                                  #
     ################################################################################
 
-    intent <- c()
-    if (length(mu_t + sigma_t + N_t) != 0) {
-      intent <- c(intent, "current treatment")
-    } else {
-      if (is.null(mu_t) == TRUE) {
-        cat("mu_t missing\n")
-      }
-      if (is.null(sigma_t) == TRUE) {
-        cat("sigma_t missing\n")
-      }
-      if (is.null(N_t) == TRUE) {
-        cat("N_t missing\n")
-      }
-      stop("Current treatment not provided/incomplete.")
-    }
-
-    if (length(mu0_t + sigma0_t + N0_t) != 0) {
-      intent <- c(intent, "historical treatment")
-    } else {
-      if (length(c(mu0_t, sigma0_t, N0_t)) > 0) {
-        if (is.null(mu0_t) == TRUE) {
-          cat("mu0_t missing\n")
-        }
-        if (is.null(sigma0_t) == TRUE) {
-          cat("sigma0_t missing\n")
-        }
-        if (is.null(N0_t) == TRUE) {
-          cat("N0_t missing\n")
-        }
-        stop("Historical treatment incomplete.")
-      }
-    }
-
-    if (length(mu_c + sigma_c + N_c) != 0) {
-      intent <- c(intent, "current control")
-    } else {
-      if (length(c(mu_c, sigma_c, N_c)) > 0) {
-        if (is.null(mu_c) == TRUE) {
-          cat("mu_c missing\n")
-        }
-        if (is.null(sigma_c) == TRUE) {
-          cat("sigma_c missing\n")
-        }
-        if (is.null(N_c) == TRUE) {
-          cat("N_c missing\n")
-        }
-        stop("Current control not provided/incomplete.")
-      }
-    }
-
-    if (length(mu0_c + sigma0_c + N0_c) != 0) {
-      intent <- c(intent, "historical control")
-    } else {
-      if (length(c(mu0_c, sigma0_c, N0_c)) > 0) {
-        if (is.null(mu0_c) == TRUE) {
-          cat("mu0_c missing\n")
-        }
-        if (is.null(sigma0_c) == TRUE) {
-          cat("sigma0_c missing\n")
-        }
-        if (is.null(N0_c) == TRUE) {
-          cat("N0_c missing\n")
-        }
-        stop("Historical Control not provided/incomplete.")
-      }
-    }
-
-    if (!is.null(N_c) | !is.null(N0_c)) {
-      arm2 <- TRUE
-    } else {
-      arm2 <- FALSE
-    }
-
-    # Check that discount_function is input correctly
-    all_functions <- c("weibull", "scaledweibull", "identity")
-    function_match <- match(discount_function, all_functions)
-    if (is.na(function_match)) {
-      stop("discount_function input incorrectly.")
-    }
+    supplied <- c(
+      bdp_summary_group(list(mu_t = mu_t, sigma_t = sigma_t, N_t = N_t), "Current treatment", normal = TRUE, required = TRUE),
+      bdp_summary_group(list(mu0_t = mu0_t, sigma0_t = sigma0_t, N0_t = N0_t), "Historical treatment", normal = TRUE),
+      bdp_summary_group(list(mu_c = mu_c, sigma_c = sigma_c, N_c = N_c), "Current control", normal = TRUE),
+      bdp_summary_group(list(mu0_c = mu0_c, sigma0_c = sigma0_c, N0_c = N0_c), "Historical Control", normal = TRUE)
+    )
+    intent <- c("current treatment", "historical treatment", "current control", "historical control")[supplied]
+    arm2 <- any(supplied[3:4])
+    bdp_summary_settings(method, discount_function, alpha_max, fix_alpha,
+      compare, number_mcmc, weibull_shape, weibull_scale)
 
     ##############################################################################
     # Quick check, if alpha_max, weibull_scale, or weibull_shape have length 1,

@@ -27,14 +27,19 @@ bdpsurvival(
 \arguments{
 \item{formula}{an object of class "formula." Must have a survival object on
 the left side and at most one input on the right side, treatment. See
-"Details" for more information.}
+"Details" for more information. Response expressions such as
+\code{Surv(followup / 12, status == 1)} and \code{survival::Surv()}
+are supported. Only right-censored responses are supported.}
 
 \item{data}{a data frame containing the current data variables in the model.
-Columns denoting 'time' and 'status' must be present. See "Details" for
-required structure.}
+Supply the variables used in the formula. Evaluated times must be finite
+and non-negative, with no missing outcomes. If treatment is specified,
+use numeric 0/1 or logical values, with no missing values; factors and
+character codes are not converted automatically.}
 
 \item{data0}{optional. A data frame containing the historical data variables
-in the model. If present, the column labels of data and data0 must match.}
+in the model, subject to the same response and treatment checks as current
+data. It must supply the variables used in the same formula.}
 
 \item{breaks}{numeric vector. Positive, finite internal cutpoints of the
 piecewise exponential model, without zero or infinity. Values are sorted
@@ -187,9 +192,8 @@ the following components:
 \code{bdpsurvival} is used to estimate the survival probability
   (single arm trial; OPC) or hazard ratio (two-arm trial; RCT) for
   right-censored data using the survival analysis implementation of the
-  Bayesian discount prior. In the current implementation, a two-arm analysis
-  requires all of current treatment, current control, historical treatment,
-  and historical control data. This code is modeled after the methodologies
+  Bayesian discount prior. Current treatment data are required; control data
+  in a two-arm analysis can be current, historical, or both. This code is modeled after the methodologies
   developed in Haddad et al. (2017).
 }
 \details{
@@ -226,17 +230,18 @@ Historical borrowing is assessed separately within each arm by
 
   To carry out a single arm (OPC) analysis, data for the current and
   historical treatments are specified in separate data frames, data and
-  data0, respectively. The data frames must have matching columns denoting
-  time and status. The 'time' column is the survival (censor) time of the
-  event and the 'status' column is the event indicator. The results are then
+  data0, respectively. The formula is evaluated separately in each data
+  frame to obtain the survival (censor) time and event indicator. Missing
+  outcomes or treatment values cause an error rather than dropping rows.
+  Counting-process, interval-censored, and multistate responses are not
+  supported. The results are then
   based on the posterior probability of survival at \code{surv_time} for the
   current data augmented by the historical data.
 
-  Two-arm (RCT) analyses are specified similarly to a single arm trial. Again
-  the input data frames must have columns denoting time and status, but now
-  an additional column named 'treatment' is required to denote treatment and
-  control data. The 'treatment' column must use 0 to indicate the control
-  group. The current data are augmented by historical data (if present) and
+  Two-arm (RCT) analyses use the same response specification, with an
+  additional column named 'treatment' to denote treatment and control data.
+  Use 1 (or TRUE) for treatment and 0 (or FALSE) for control in each data
+  frame. The current data are augmented by historical data (if present) and
   the results are then based on the posterior distribution of the hazard
   ratio between the treatment and control groups.
 

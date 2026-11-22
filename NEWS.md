@@ -2,6 +2,10 @@
 
 ## Bug fixes
 
+* Fixed treatment-only regression formulas: `bdplm()` no longer adds unintended covariate columns under `method = "mc"`, and logistic posterior draws contain only the intercept and treatment effect. Posterior columns are selected by name in both regressions.
+* `bdplogit()` now defaults to its supported `"fixed"` method and uses distinct seeds drawn from R's random-number state for its two comparisons and final fit. `set.seed()` controls reproducibility, and stage seeds are retained in `args1$mcmc_seeds`. Results will differ from earlier versions that always used MCMCpack's default seed.
+* `bdpsurvival()` now uses evaluated survival responses, supporting transformed times, event expressions, named arguments, and `survival::Surv()`. Missing responses, unsupported censoring types, and invalid treatment codes cause explicit errors before interval splitting. Valid one-arm and historical-only-control analyses remain supported.
+* Added validation of binomial and normal summaries and borrowing settings before sampling. Impossible counts, invalid sample sizes or SDs, non-finite values, incomplete groups, and unintended vector inputs now cause errors.
 * `bdplogit()` now stops with a stage-specific explanation when complete or quasi-complete separation, or a rank-deficient model matrix, prevents a supported analysis. Checks cover each arm's borrowing comparison, the historical regression when arm priors are estimated, and the current-data regression. This prevents borrowing weights from improper comparison posteriors and historical priors derived from infinite maximum likelihood estimates. The current-data check reflects a limitation of the sampler, including when proper priors are supplied.
 * With `fix_alpha = TRUE`, `bdplogit()` now uses the prescribed arm weights without fitting comparison models; internal comparison probabilities are recorded as missing. Historical-prior estimation and current-data checks still apply. Prescribed weights must be finite values in [0, 1].
 * `bdplm()` and `bdplogit()` now reject formula offsets before fitting instead of silently omitting them. This includes `stats::offset()`, zero offsets, and cancelling offsets, regardless of the borrowing settings or supplied historical priors. Offset models fitted with earlier versions must be reconsidered; their results do not represent the specified model.
@@ -31,6 +35,7 @@
 
 ## Tests
 
+* Added tests for treatment-only models, logistic seed control and method defaults, equivalent survival-response expressions, preservation of participant counts, invalid treatment coding, and summary-data input boundaries.
 * Expanded checks for incomplete inputs, historical-only controls, factor contrasts, regression discount functions, plot options, and survival calculations at interval boundaries and numerical limits. Added comparisons with analytical posterior moments and integrated hazards.
 * Added logistic regression checks for zero-event and all-event groups, covariate separation, quasi-complete separation, rank deficiency, prescribed weights, and supplied historical priors.
 * Added checks that regression offsets are rejected before sampling across supported fitting settings and that ordinary covariates named `offset` remain supported.

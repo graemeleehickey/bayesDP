@@ -23,7 +23,7 @@ bdplogit(
   fix_alpha = FALSE,
   weibull_scale = 0.135,
   weibull_shape = 3,
-  method = "mc"
+  method = "fixed"
 )
 }
 \arguments{
@@ -108,10 +108,10 @@ where the first value is used to estimate the weight of the historical
 treatment group and the second value is used to estimate the weight of the
 historical control group. Not used when \code{discount_function} = "identity".}
 
-\item{method}{character. Set to \code{"fixed"}, the only supported method.
+\item{method}{character. Default is \code{"fixed"}, the only supported method.
 It estimates each historical weight once and holds it fixed throughout
 the analysis, unless \code{fix_alpha = TRUE} prescribes the weights.
-The legacy default \code{"mc"} is not supported and raises an error.}
+An explicit \code{"mc"} request is not supported and raises an error.}
 }
 \value{
 \code{bdplogit} returns an object of class "bdplm", reusing its
@@ -215,6 +215,13 @@ the following components:
   Historical regression checks are skipped only when all four arm-prior
   means and SDs are supplied. Current-data checks always apply. Prescribing
   weights alone therefore does not make separated datasets supported.
+
+  Use \code{set.seed()} before fitting for reproducible sampling. Three
+  distinct seeds are drawn from R's random-number state for the treatment
+  comparison, control comparison, and final fit, and saved in
+  \code{args1$mcmc_seeds}. All three are allocated even when prescribed
+  weights skip the comparisons. Different R seeds generate different chains;
+  earlier versions always used MCMCpack's default seed.
 }
 \examples{
 # Set sample sizes
