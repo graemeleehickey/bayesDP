@@ -93,10 +93,11 @@ bdpnormal(
 
 - alpha_max:
 
-  scalar. Maximum weight the discount function can apply. Default is 1.
-  For a two-arm trial, users may specify a vector of two values where
-  the first value is used to weight the historical treatment group and
-  the second value is used to weight the historical control group.
+  scalar in \[0, 1\]. Maximum weight the discount function can apply.
+  Default is 1. For a two-arm trial, users may specify a vector of two
+  values where the first value is used to weight the historical
+  treatment group and the second value is used to weight the historical
+  control group.
 
 - fix_alpha:
 
@@ -124,7 +125,8 @@ bdpnormal(
 
 - number_mcmc:
 
-  scalar. Number of Monte Carlo simulations. Default is 10000.
+  integer of at least 2. Number of Monte Carlo simulations. Default is
+  10000.
 
 - method:
 
@@ -239,6 +241,14 @@ selected discount function W. This comparison is not a posterior
 probability of equality or equivalence. Choosing `fix_alpha = TRUE`
 prespecifies the weight instead.
 
+Each supplied group requires a scalar finite mean, a positive finite SD,
+and an integer sample size of at least 2. Zero SDs are not supported by
+the variance posterior used here. Omit an optional group by leaving all
+three inputs `NULL`; zero sample size does not denote an absent group.
+Inputs and borrowing settings are checked before sampling, including
+when weights are prescribed. Weibull parameters must be positive and
+finite when used to estimate a weight.
+
 In the second stage, posterior estimation is performed where the
 discount function parameter, `alpha`, is incorporated in all posterior
 estimation procedures.
@@ -289,13 +299,13 @@ summary(fit)
 #> data:
 #>   Current treatment: mu_t = 30, sigma_t = 10, N_t = 50
 #>   Historical treatment: mu0_t = 32, sigma0_t = 10, N0_t = 50
-#> Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.326
-#> Discount function value (alpha) - treatment: 0.326
+#> Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.325
+#> Discount function value (alpha) - treatment: 0.325
 #> 95 percent equal-tailed credible interval: 
-#>  27.9583  33.0088
+#>  27.9417  32.9627
 #> Posterior median:
 #> population mean of treatment group
-#>  30.4735
+#>  30.4703
 if (FALSE) { # \dontrun{
 plot(fit)
 } # }
@@ -317,16 +327,16 @@ summary(fit2)
 #>   Current control: mu_c = 25, sigma_c = 10, N_c = 50
 #>   Historical treatment: mu0_t = 32, sigma0_t = 10, N0_t = 50
 #>   Historical control: mu0_c = 25, sigma0_c = 10, N0_c = 50
-#> Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.33
+#> Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.3258
 #> Stochastic comparison (p_hat) - control (current vs. historical data): 0.993
-#> Discount function value (alpha) - treatment: 0.33
+#> Discount function value (alpha) - treatment: 0.3258
 #> Discount function value (alpha) - control: 0.993
 #> Treatment effect: treatment - control
 #> 95 percent equal-tailed credible interval: 
-#>  2.3734  8.6811
+#>  2.3154  8.6246
 #> Posterior medians:
 #> treatment group  control group
-#>           30.5022          25.0027
+#>           30.5076          25.0031
 if (FALSE) { # \dontrun{
 plot(fit2)
 } # }

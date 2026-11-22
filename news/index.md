@@ -4,6 +4,29 @@
 
 ### Bug fixes
 
+- Fixed treatment-only regression formulas:
+  [`bdplm()`](https://graemeleehickey.github.io/bayesDP/reference/bdplm.md)
+  no longer adds unintended covariate columns under `method = "mc"`, and
+  logistic posterior draws contain only the intercept and treatment
+  effect. Posterior columns are selected by name in both regressions.
+- [`bdplogit()`](https://graemeleehickey.github.io/bayesDP/reference/bdplogit.md)
+  now defaults to its supported `"fixed"` method and uses distinct seeds
+  drawn from R’s random-number state for its two comparisons and final
+  fit. [`set.seed()`](https://rdrr.io/r/base/Random.html) controls
+  reproducibility, and stage seeds are retained in `args1$mcmc_seeds`.
+  Results will differ from earlier versions that always used MCMCpack’s
+  default seed.
+- [`bdpsurvival()`](https://graemeleehickey.github.io/bayesDP/reference/bdpsurvival.md)
+  now uses evaluated survival responses, supporting transformed times,
+  event expressions, named arguments, and
+  [`survival::Surv()`](https://rdrr.io/pkg/survival/man/Surv.html).
+  Missing responses, unsupported censoring types, and invalid treatment
+  codes cause explicit errors before interval splitting. Valid one-arm
+  and historical-only-control analyses remain supported.
+- Added validation of binomial and normal summaries and borrowing
+  settings before sampling. Impossible counts, invalid sample sizes or
+  SDs, non-finite values, incomplete groups, and unintended vector
+  inputs now cause errors.
 - [`bdplogit()`](https://graemeleehickey.github.io/bayesDP/reference/bdplogit.md)
   now stops with a stage-specific explanation when complete or
   quasi-complete separation, or a rank-deficient model matrix, prevents
@@ -125,6 +148,10 @@
 
 ### Tests
 
+- Added tests for treatment-only models, logistic seed control and
+  method defaults, equivalent survival-response expressions,
+  preservation of participant counts, invalid treatment coding, and
+  summary-data input boundaries.
 - Expanded checks for incomplete inputs, historical-only controls,
   factor contrasts, regression discount functions, plot options, and
   survival calculations at interval boundaries and numerical limits.

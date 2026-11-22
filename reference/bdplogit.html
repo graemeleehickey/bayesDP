@@ -85,7 +85,7 @@
 <span>  fix_alpha <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  weibull_scale <span class="op">=</span> <span class="fl">0.135</span>,</span>
 <span>  weibull_shape <span class="op">=</span> <span class="fl">3</span>,</span>
-<span>  method <span class="op">=</span> <span class="st">"mc"</span></span>
+<span>  method <span class="op">=</span> <span class="st">"fixed"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -207,10 +207,10 @@ historical control group. Not used when <code>discount_function</code> = "identi
 
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
-<dd><p>character. Set to <code>"fixed"</code>, the only supported method.
+<dd><p>character. Default is <code>"fixed"</code>, the only supported method.
 It estimates each historical weight once and holds it fixed throughout
 the analysis, unless <code>fix_alpha = TRUE</code> prescribes the weights.
-The legacy default <code>"mc"</code> is not supported and raises an error.</p></dd>
+An explicit <code>"mc"</code> request is not supported and raises an error.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -301,6 +301,12 @@ the following components:</p><dl><dt><code>posterior</code></dt>
   Historical regression checks are skipped only when all four arm-prior
   means and SDs are supplied. Current-data checks always apply. Prescribing
   weights alone therefore does not make separated datasets supported.</p>
+<p>Use <code><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed()</a></code> before fitting for reproducible sampling. Three
+  distinct seeds are drawn from R's random-number state for the treatment
+  comparison, control comparison, and final fit, and saved in
+  <code>args1$mcmc_seeds</code>. All three are allocated even when prescribed
+  weights skip the comparisons. Different R seeds generate different chains;
+  earlier versions always used MCMCpack's default seed.</p>
     </div>
 
     <div class="section level2">
@@ -347,17 +353,17 @@ the following components:</p><dl><dt><code>posterior</code></dt>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Residuals:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     Min     1Q Median    3Q   Max</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  -0.591 -0.378 -0.265 0.491 0.723</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  -0.592 -0.375 -0.263 0.495 0.724</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Coefficients:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             Estimate Std. Error</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept)  -1.0822     0.3901</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> treatment     0.8140     0.4008</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> x             0.2548     0.2830</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept)  -1.0956     0.3842</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> treatment     0.7940     0.3703</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> x             0.2689     0.2831</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Discount function value (alpha):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  treatment control</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      0.244   0.422</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     0.2808  0.4724</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -368,12 +374,12 @@ the following components:</p><dl><dt><code>posterior</code></dt>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Coefficients:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  (Intercept) treatment     x</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       -1.082     0.814 0.255</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       -1.096     0.794 0.269</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Discount function value (alpha):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  treatment control</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      0.244   0.422</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     0.2808  0.4724</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 </code></pre></div>
     </div>

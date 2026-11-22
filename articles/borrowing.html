@@ -163,6 +163,19 @@ concurrent randomized comparison: interpretation depends on
 comparability across studies. Regression requires both arms in both
 studies. The survival vignette describes its data requirements and
 modeling assumptions.</p>
+<p>Summary-data inputs are checked before sampling. Binomial groups need
+integer counts with <code>N &gt;= 1</code> and
+<code>0 &lt;= y &lt;= N</code>. Normal groups need a finite mean, a
+positive finite SD, and integer <code>N &gt;= 2</code>. Leave all inputs
+for an absent group as <code>NULL</code>; zero sample size is not an
+absence indicator. The simulation count must be an integer of at least
+two.</p>
+<p>Survival formulas can contain evaluated expressions, such as
+<code>survival::Surv(followup / 12, status == 1)</code>. Only
+right-censored responses are supported, with finite non-negative times
+and no missing outcomes. If treatment is specified, each dataset must
+use numeric 0/1 or logical values without missing values. Invalid coding
+causes an error before participants are split into intervals.</p>
 <p>Neither <code><a href="../reference/bdplm.html">bdplm()</a></code> nor <code><a href="../reference/bdplogit.html">bdplogit()</a></code> supports
 formula offsets. Including <code>offset(...)</code> or
 <code>stats::offset(...)</code> causes an error before fitting, even
@@ -171,16 +184,17 @@ every supported method, including prescribed weights, no borrowing, and
 supplied historical priors. Earlier versions could silently omit
 offsets, so existing analyses that specified them need to be
 reconsidered.</p>
-<p>Logistic regression with <code><a href="../reference/bdplogit.html">bdplogit()</a></code> requires
-<code>method = "fixed"</code>. The function checks for rank deficiency
-and complete or quasi-complete separation in each arm’s borrowing
-comparison, in the historical regression when estimating arm priors, and
-in the current-data regression. Separation makes the flat-prior
-comparison posterior improper and can make historical maximum likelihood
-estimates infinite. The current-data restriction also reflects the
-sampler’s reliance on unpenalized logistic estimates; it does not imply
-that a posterior with proper coefficient priors is improper. See
-<code><a href="../reference/bdplogit.html">help("bdplogit")</a></code> for the fitting conditions.</p>
+<p>Logistic regression with <code><a href="../reference/bdplogit.html">bdplogit()</a></code> defaults to
+<code>method = "fixed"</code>, its only supported method. The function
+checks for rank deficiency and complete or quasi-complete separation in
+each arm’s borrowing comparison, in the historical regression when
+estimating arm priors, and in the current-data regression. Separation
+makes the flat-prior comparison posterior improper and can make
+historical maximum likelihood estimates infinite. The current-data
+restriction also reflects the sampler’s reliance on unpenalized logistic
+estimates; it does not imply that a posterior with proper coefficient
+priors is improper. See <code><a href="../reference/bdplogit.html">help("bdplogit")</a></code> for the fitting
+conditions.</p>
 </div>
 <div class="section level2">
 <h2 id="choosing-the-historical-weight">Choosing the historical weight<a class="anchor" aria-label="anchor" href="#choosing-the-historical-weight"></a>
@@ -203,8 +217,9 @@ the final draws.</td>
 </tr>
 <tr class="even">
 <td align="left"><code>method = "mc", fix_alpha = FALSE</code></td>
-<td align="left">Recalculate a weight for each simulation draw; this is
-the function default.</td>
+<td align="left">Recalculate a weight for each simulation draw; the
+default except for <code><a href="../reference/bdplogit.html">bdplogit()</a></code>, which does not support
+it.</td>
 </tr>
 <tr class="odd">
 <td align="left"><code>method = "fixed", fix_alpha = TRUE</code></td>
@@ -234,10 +249,10 @@ prior and interval boundaries. The regression and normal models have
 their own borrowing constructions, described in their vignettes.</p>
 <p>The main worked examples explicitly choose
 <code>method = "fixed"</code> so that their borrowing weights are easy
-to interpret. This is a choice for exposition, not the default and not
-evidence that one procedure is universally preferable. The survival
-vignette also compares the two procedures using the same data and
-analysis settings.</p>
+to interpret. Except for logistic regression, this is a choice for
+exposition rather than the default; it is not evidence that one
+procedure is universally preferable. The survival vignette also compares
+the two procedures using the same data and analysis settings.</p>
 <div class="section level3">
 <h3 id="an-estimated-fixed-weight">An estimated fixed weight<a class="anchor" aria-label="anchor" href="#an-estimated-fixed-weight"></a>
 </h3>
@@ -284,12 +299,20 @@ disappear. Report a distributional summary of the weights, and check
 whether scientific conclusions change between procedures. Do not
 describe the weight draws as a posterior from an explicitly specified
 model for <span class="math inline">\alpha</span>.</p>
-<p>Despite the argument names <code>number_mcmc</code> and
-<code>number_mcmc_*</code>, these four functions use direct simulation
-and, for regression, sampling from a numerical variance grid. They do
-not require Markov-chain burn-in. Numerical stability should be checked
-using more draws, independent seeds, and, for regression, a finer
-variance grid.</p>
+<p><code><a href="../reference/bdpbinomial.html">bdpbinomial()</a></code>, <code><a href="../reference/bdpnormal.html">bdpnormal()</a></code>, and
+<code><a href="../reference/bdpsurvival.html">bdpsurvival()</a></code> use direct simulation, while
+<code><a href="../reference/bdplm.html">bdplm()</a></code> samples from a numerical variance grid. These
+functions do not require Markov-chain burn-in. Numerical stability
+should be checked using more draws, independent seeds, and, for linear
+regression, a finer variance grid.</p>
+<p><code><a href="../reference/bdplogit.html">bdplogit()</a></code> uses Markov-chain sampling through MCMCpack.
+Use <code><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed()</a></code> before fitting to reproduce the complete
+analysis. Each fit allocates separate seeds for the treatment
+comparison, control comparison, and final regression, retained in
+<code>args1$mcmc_seeds</code>. Prescribing weights skips the comparison
+fits while retaining the same final-stage seed allocation. Earlier
+package versions reused MCMCpack’s default seed, so their draws will
+differ from those generated now.</p>
 </div>
 </div>
 <div class="section level2">

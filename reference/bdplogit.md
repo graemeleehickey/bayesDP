@@ -27,7 +27,7 @@ bdplogit(
   fix_alpha = FALSE,
   weibull_scale = 0.135,
   weibull_shape = 3,
-  method = "mc"
+  method = "fixed"
 )
 ```
 
@@ -145,10 +145,10 @@ bdplogit(
 
 - method:
 
-  character. Set to `"fixed"`, the only supported method. It estimates
-  each historical weight once and holds it fixed throughout the
-  analysis, unless `fix_alpha = TRUE` prescribes the weights. The legacy
-  default `"mc"` is not supported and raises an error.
+  character. Default is `"fixed"`, the only supported method. It
+  estimates each historical weight once and holds it fixed throughout
+  the analysis, unless `fix_alpha = TRUE` prescribes the weights. An
+  explicit `"mc"` request is not supported and raises an error.
 
 ## Value
 
@@ -256,6 +256,14 @@ regression checks are skipped only when all four arm-prior means and SDs
 are supplied. Current-data checks always apply. Prescribing weights
 alone therefore does not make separated datasets supported.
 
+Use [`set.seed()`](https://rdrr.io/r/base/Random.html) before fitting
+for reproducible sampling. Three distinct seeds are drawn from R's
+random-number state for the treatment comparison, control comparison,
+and final fit, and saved in `args1$mcmc_seeds`. All three are allocated
+even when prescribed weights skip the comparisons. Different R seeds
+generate different chains; earlier versions always used MCMCpack's
+default seed.
+
 ## Examples
 
 ``` r
@@ -301,17 +309,17 @@ summary(fit)
 #> 
 #> Residuals:
 #>     Min     1Q Median    3Q   Max
-#>  -0.591 -0.378 -0.265 0.491 0.723
+#>  -0.592 -0.375 -0.263 0.495 0.724
 #> 
 #> Coefficients:
 #>             Estimate Std. Error
-#> (Intercept)  -1.0822     0.3901
-#> treatment     0.8140     0.4008
-#> x             0.2548     0.2830
+#> (Intercept)  -1.0956     0.3842
+#> treatment     0.7940     0.3703
+#> x             0.2689     0.2831
 #> 
 #> Discount function value (alpha):
 #>  treatment control
-#>      0.244   0.422
+#>     0.2808  0.4724
 #> 
 print(fit)
 #> 
@@ -322,11 +330,11 @@ print(fit)
 #> 
 #> Coefficients:
 #>  (Intercept) treatment     x
-#>       -1.082     0.814 0.255
+#>       -1.096     0.794 0.269
 #> 
 #> 
 #> Discount function value (alpha):
 #>  treatment control
-#>      0.244   0.422
+#>     0.2808  0.4724
 #> 
 ```

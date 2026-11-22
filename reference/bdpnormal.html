@@ -148,7 +148,7 @@ weight. Default value is "<code>identity</code>".</p></dd>
 
 
 <dt id="arg-alpha-max">alpha_max<a class="anchor" aria-label="anchor" href="#arg-alpha-max"></a></dt>
-<dd><p>scalar. Maximum weight the discount function can apply.
+<dd><p>scalar in [0, 1]. Maximum weight the discount function can apply.
 Default is 1. For a two-arm trial, users may specify a vector of two values
 where the first value is used to weight the historical treatment group and
 the second value is used to weight the historical control group.</p></dd>
@@ -179,7 +179,7 @@ historical control group. Not used when <code>discount_function</code> =
 
 
 <dt id="arg-number-mcmc">number_mcmc<a class="anchor" aria-label="anchor" href="#arg-number-mcmc"></a></dt>
-<dd><p>scalar. Number of Monte Carlo simulations. Default is
+<dd><p>integer of at least 2. Number of Monte Carlo simulations. Default is
 10000.</p></dd>
 
 
@@ -282,6 +282,13 @@ the following components:</p><dl><dt><code>posterior_treatment</code></dt>
   <code>alpha_max * W(p)</code> for the selected discount function W. This
   comparison is not a posterior probability of equality or equivalence.
   Choosing <code>fix_alpha = TRUE</code> prespecifies the weight instead.</p>
+<p>Each supplied group requires a scalar finite mean, a positive finite
+  SD, and an integer sample size of at least 2. Zero SDs are not supported
+  by the variance posterior used here. Omit an optional group by leaving
+  all three inputs <code>NULL</code>; zero sample size does not denote an absent
+  group. Inputs and borrowing settings are checked before sampling,
+  including when weights are prescribed. Weibull parameters must be
+  positive and finite when used to estimate a weight.</p>
 <p>In the second stage, posterior estimation is performed where the discount
   function parameter, <code>alpha</code>, is incorporated in all posterior
   estimation procedures.</p>
@@ -327,13 +334,13 @@ the following components:</p><dl><dt><code>posterior_treatment</code></dt>
 <span class="r-out co"><span class="r-pr">#&gt;</span> data:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Current treatment: mu_t = 30, sigma_t = 10, N_t = 50</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Historical treatment: mu0_t = 32, sigma0_t = 10, N0_t = 50</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.326</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Discount function value (alpha) - treatment: 0.326</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.325</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Discount function value (alpha) - treatment: 0.325</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 95 percent equal-tailed credible interval: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  27.9583  33.0088</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  27.9417  32.9627</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Posterior median:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> population mean of treatment group</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  30.4735</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  30.4703</span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
@@ -355,16 +362,16 @@ the following components:</p><dl><dt><code>posterior_treatment</code></dt>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Current control: mu_c = 25, sigma_c = 10, N_c = 50</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Historical treatment: mu0_t = 32, sigma0_t = 10, N0_t = 50</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Historical control: mu0_c = 25, sigma0_c = 10, N0_c = 50</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.33</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.3258</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Stochastic comparison (p_hat) - control (current vs. historical data): 0.993</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Discount function value (alpha) - treatment: 0.33</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Discount function value (alpha) - treatment: 0.3258</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Discount function value (alpha) - control: 0.993</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Treatment effect: treatment - control</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 95 percent equal-tailed credible interval: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  2.3734  8.6811</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  2.3154  8.6246</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Posterior medians:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> treatment group  control group</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           30.5022          25.0027</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           30.5076          25.0031</span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit2</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>

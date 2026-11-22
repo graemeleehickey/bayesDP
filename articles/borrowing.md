@@ -30,6 +30,19 @@ comparability across studies. Regression requires both arms in both
 studies. The survival vignette describes its data requirements and
 modeling assumptions.
 
+Summary-data inputs are checked before sampling. Binomial groups need
+integer counts with `N >= 1` and `0 <= y <= N`. Normal groups need a
+finite mean, a positive finite SD, and integer `N >= 2`. Leave all
+inputs for an absent group as `NULL`; zero sample size is not an absence
+indicator. The simulation count must be an integer of at least two.
+
+Survival formulas can contain evaluated expressions, such as
+`survival::Surv(followup / 12, status == 1)`. Only right-censored
+responses are supported, with finite non-negative times and no missing
+outcomes. If treatment is specified, each dataset must use numeric 0/1
+or logical values without missing values. Invalid coding causes an error
+before participants are split into intervals.
+
 Neither
 [`bdplm()`](https://graemeleehickey.github.io/bayesDP/reference/bdplm.md)
 nor
@@ -44,14 +57,15 @@ reconsidered.
 
 Logistic regression with
 [`bdplogit()`](https://graemeleehickey.github.io/bayesDP/reference/bdplogit.md)
-requires `method = "fixed"`. The function checks for rank deficiency and
-complete or quasi-complete separation in each arm’s borrowing
-comparison, in the historical regression when estimating arm priors, and
-in the current-data regression. Separation makes the flat-prior
-comparison posterior improper and can make historical maximum likelihood
-estimates infinite. The current-data restriction also reflects the
-sampler’s reliance on unpenalized logistic estimates; it does not imply
-that a posterior with proper coefficient priors is improper. See
+defaults to `method = "fixed"`, its only supported method. The function
+checks for rank deficiency and complete or quasi-complete separation in
+each arm’s borrowing comparison, in the historical regression when
+estimating arm priors, and in the current-data regression. Separation
+makes the flat-prior comparison posterior improper and can make
+historical maximum likelihood estimates infinite. The current-data
+restriction also reflects the sampler’s reliance on unpenalized logistic
+estimates; it does not imply that a posterior with proper coefficient
+priors is improper. See
 [`help("bdplogit")`](https://graemeleehickey.github.io/bayesDP/reference/bdplogit.md)
 for the fitting conditions.
 
@@ -62,7 +76,7 @@ Three choices have different meanings:
 | Setting | Meaning |
 |:---|:---|
 | `method = "fixed", fix_alpha = FALSE` | Estimate a weight from the data and hold it fixed for the final draws. |
-| `method = "mc", fix_alpha = FALSE` | Recalculate a weight for each simulation draw; this is the function default. |
+| `method = "mc", fix_alpha = FALSE` | Recalculate a weight for each simulation draw; the default except for [`bdplogit()`](https://graemeleehickey.github.io/bayesDP/reference/bdplogit.md), which does not support it. |
 | `method = "fixed", fix_alpha = TRUE` | Prespecify the weight using `alpha_max`, independently of agreement. |
 
 Use `alpha_max = 0` with `fix_alpha = TRUE` for no borrowing, or
@@ -88,10 +102,11 @@ regression and normal models have their own borrowing constructions,
 described in their vignettes.
 
 The main worked examples explicitly choose `method = "fixed"` so that
-their borrowing weights are easy to interpret. This is a choice for
-exposition, not the default and not evidence that one procedure is
-universally preferable. The survival vignette also compares the two
-procedures using the same data and analysis settings.
+their borrowing weights are easy to interpret. Except for logistic
+regression, this is a choice for exposition rather than the default; it
+is not evidence that one procedure is universally preferable. The
+survival vignette also compares the two procedures using the same data
+and analysis settings.
 
 ### An estimated fixed weight
 
@@ -139,11 +154,26 @@ distributional summary of the weights, and check whether scientific
 conclusions change between procedures. Do not describe the weight draws
 as a posterior from an explicitly specified model for \alpha.
 
-Despite the argument names `number_mcmc` and `number_mcmc_*`, these four
-functions use direct simulation and, for regression, sampling from a
-numerical variance grid. They do not require Markov-chain burn-in.
-Numerical stability should be checked using more draws, independent
-seeds, and, for regression, a finer variance grid.
+[`bdpbinomial()`](https://graemeleehickey.github.io/bayesDP/reference/bdpbinomial.md),
+[`bdpnormal()`](https://graemeleehickey.github.io/bayesDP/reference/bdpnormal.md),
+and
+[`bdpsurvival()`](https://graemeleehickey.github.io/bayesDP/reference/bdpsurvival.md)
+use direct simulation, while
+[`bdplm()`](https://graemeleehickey.github.io/bayesDP/reference/bdplm.md)
+samples from a numerical variance grid. These functions do not require
+Markov-chain burn-in. Numerical stability should be checked using more
+draws, independent seeds, and, for linear regression, a finer variance
+grid.
+
+[`bdplogit()`](https://graemeleehickey.github.io/bayesDP/reference/bdplogit.md)
+uses Markov-chain sampling through MCMCpack. Use
+[`set.seed()`](https://rdrr.io/r/base/Random.html) before fitting to
+reproduce the complete analysis. Each fit allocates separate seeds for
+the treatment comparison, control comparison, and final regression,
+retained in `args1$mcmc_seeds`. Prescribing weights skips the comparison
+fits while retaining the same final-stage seed allocation. Earlier
+package versions reused MCMCpack’s default seed, so their draws will
+differ from those generated now.
 
 ## Discount functions
 

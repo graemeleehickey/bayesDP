@@ -3,10 +3,9 @@
 `bdpsurvival` is used to estimate the survival probability (single arm
 trial; OPC) or hazard ratio (two-arm trial; RCT) for right-censored data
 using the survival analysis implementation of the Bayesian discount
-prior. In the current implementation, a two-arm analysis requires all of
-current treatment, current control, historical treatment, and historical
-control data. This code is modeled after the methodologies developed in
-Haddad et al. (2017).
+prior. Current treatment data are required; control data in a two-arm
+analysis can be current, historical, or both. This code is modeled after
+the methodologies developed in Haddad et al. (2017).
 
 ## Usage
 
@@ -36,18 +35,24 @@ bdpsurvival(
 
   an object of class "formula." Must have a survival object on the left
   side and at most one input on the right side, treatment. See "Details"
-  for more information.
+  for more information. Response expressions such as
+  `Surv(followup / 12, status == 1)` and
+  [`survival::Surv()`](https://rdrr.io/pkg/survival/man/Surv.html) are
+  supported. Only right-censored responses are supported.
 
 - data:
 
   a data frame containing the current data variables in the model.
-  Columns denoting 'time' and 'status' must be present. See "Details"
-  for required structure.
+  Supply the variables used in the formula. Evaluated times must be
+  finite and non-negative, with no missing outcomes. If treatment is
+  specified, use numeric 0/1 or logical values, with no missing values;
+  factors and character codes are not converted automatically.
 
 - data0:
 
   optional. A data frame containing the historical data variables in the
-  model. If present, the column labels of data and data0 must match.
+  model, subject to the same response and treatment checks as current
+  data. It must supply the variables used in the same formula.
 
 - breaks:
 
@@ -264,20 +269,20 @@ is a mixture of Gamma distributions.
 
 To carry out a single arm (OPC) analysis, data for the current and
 historical treatments are specified in separate data frames, data and
-data0, respectively. The data frames must have matching columns denoting
-time and status. The 'time' column is the survival (censor) time of the
-event and the 'status' column is the event indicator. The results are
-then based on the posterior probability of survival at `surv_time` for
-the current data augmented by the historical data.
+data0, respectively. The formula is evaluated separately in each data
+frame to obtain the survival (censor) time and event indicator. Missing
+outcomes or treatment values cause an error rather than dropping rows.
+Counting-process, interval-censored, and multistate responses are not
+supported. The results are then based on the posterior probability of
+survival at `surv_time` for the current data augmented by the historical
+data.
 
-Two-arm (RCT) analyses are specified similarly to a single arm trial.
-Again the input data frames must have columns denoting time and status,
-but now an additional column named 'treatment' is required to denote
-treatment and control data. The 'treatment' column must use 0 to
-indicate the control group. The current data are augmented by historical
-data (if present) and the results are then based on the posterior
-distribution of the hazard ratio between the treatment and control
-groups.
+Two-arm (RCT) analyses use the same response specification, with an
+additional column named 'treatment' to denote treatment and control
+data. Use 1 (or TRUE) for treatment and 0 (or FALSE) for control in each
+data frame. The current data are augmented by historical data (if
+present) and the results are then based on the posterior distribution of
+the hazard ratio between the treatment and control groups.
 
 For more details, see the `bdpsurvival` vignette:  
 [`vignette("bdpsurvival-vignette", package = "bayesDP")`](https://graemeleehickey.github.io/bayesDP/articles/bdpsurvival-vignette.md)
@@ -329,7 +334,7 @@ print(fit1)
 #> 
 #> 
 #>   n events surv_time median lower 95% CrI upper 95% CrI
-#>  50     29         5 0.7945        0.6788        0.8843
+#>  50     31         5 0.7756        0.6608        0.8695
 if (FALSE) { # \dontrun{
 plot(fit1)
 } # }
@@ -366,15 +371,15 @@ summary(fit2)
 #>     Two-armed bdp survival
 #> 
 #> data:
-#>   Current treatment: n = 50, number of events = 37
-#>   Current control: n = 50, number of events = 41
-#> Stochastic comparison (p_hat) - treatment (current vs. historical data): 4e-04
-#> Stochastic comparison (p_hat) - control (current vs. historical data): 0.012
-#> Discount function value (alpha) - treatment: 4e-04
-#> Discount function value (alpha) - control: 0.012
+#>   Current treatment: n = 50, number of events = 35
+#>   Current control: n = 50, number of events = 36
+#> Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.1478
+#> Stochastic comparison (p_hat) - control (current vs. historical data): 4e-04
+#> Discount function value (alpha) - treatment: 0.1478
+#> Discount function value (alpha) - control: 4e-04
 #> 
 #>              coef exp(coef) se(coef) lower 95% CI upper 95% CI
-#> treatment -0.4583    0.6323    0.237      -0.9212        9e-04
+#> treatment -0.5685    0.5664   0.2453      -1.0563      -0.0889
 
 ### Fix alpha at 1
 fit2_1 <- bdpsurvival(Surv(time, status) ~ treatment,
@@ -388,13 +393,13 @@ summary(fit2_1)
 #>     Two-armed bdp survival
 #> 
 #> data:
-#>   Current treatment: n = 50, number of events = 37
-#>   Current control: n = 50, number of events = 41
-#> Stochastic comparison (p_hat) - treatment (current vs. historical data): 4e-04
-#> Stochastic comparison (p_hat) - control (current vs. historical data): 0.013
+#>   Current treatment: n = 50, number of events = 35
+#>   Current control: n = 50, number of events = 36
+#> Stochastic comparison (p_hat) - treatment (current vs. historical data): 0.1592
+#> Stochastic comparison (p_hat) - control (current vs. historical data): 0.0012
 #> Discount function value (alpha) - treatment: 1
 #> Discount function value (alpha) - control: 1
 #> 
 #>              coef exp(coef) se(coef) lower 95% CI upper 95% CI
-#> treatment -1.1137    0.3283   0.1816       -1.465      -0.7566
+#> treatment -1.0445    0.3519   0.1837      -1.4078      -0.6915
 ```

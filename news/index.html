@@ -50,7 +50,13 @@
 <h2 class="pkg-version" data-toc-text="1.3.9" id="bayesdp-139">bayesDP 1.3.9<a class="anchor" aria-label="anchor" href="#bayesdp-139"></a></h2>
 <div class="section level3">
 <h3 id="bug-fixes-1-3-9">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-3-9"></a></h3>
-<ul><li>
+<ul><li>Fixed treatment-only regression formulas: <code><a href="../reference/bdplm.html">bdplm()</a></code> no longer adds unintended covariate columns under <code>method = "mc"</code>, and logistic posterior draws contain only the intercept and treatment effect. Posterior columns are selected by name in both regressions.</li>
+<li>
+<code><a href="../reference/bdplogit.html">bdplogit()</a></code> now defaults to its supported <code>"fixed"</code> method and uses distinct seeds drawn from R’s random-number state for its two comparisons and final fit. <code><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed()</a></code> controls reproducibility, and stage seeds are retained in <code>args1$mcmc_seeds</code>. Results will differ from earlier versions that always used MCMCpack’s default seed.</li>
+<li>
+<code><a href="../reference/bdpsurvival.html">bdpsurvival()</a></code> now uses evaluated survival responses, supporting transformed times, event expressions, named arguments, and <code><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">survival::Surv()</a></code>. Missing responses, unsupported censoring types, and invalid treatment codes cause explicit errors before interval splitting. Valid one-arm and historical-only-control analyses remain supported.</li>
+<li>Added validation of binomial and normal summaries and borrowing settings before sampling. Impossible counts, invalid sample sizes or SDs, non-finite values, incomplete groups, and unintended vector inputs now cause errors.</li>
+<li>
 <code><a href="../reference/bdplogit.html">bdplogit()</a></code> now stops with a stage-specific explanation when complete or quasi-complete separation, or a rank-deficient model matrix, prevents a supported analysis. Checks cover each arm’s borrowing comparison, the historical regression when arm priors are estimated, and the current-data regression. This prevents borrowing weights from improper comparison posteriors and historical priors derived from infinite maximum likelihood estimates. The current-data check reflects a limitation of the sampler, including when proper priors are supplied.</li>
 <li>With <code>fix_alpha = TRUE</code>, <code><a href="../reference/bdplogit.html">bdplogit()</a></code> now uses the prescribed arm weights without fitting comparison models; internal comparison probabilities are recorded as missing. Historical-prior estimation and current-data checks still apply. Prescribed weights must be finite values in [0, 1].</li>
 <li>
@@ -80,7 +86,8 @@
 </ul></div>
 <div class="section level3">
 <h3 id="tests-1-3-9">Tests<a class="anchor" aria-label="anchor" href="#tests-1-3-9"></a></h3>
-<ul><li>Expanded checks for incomplete inputs, historical-only controls, factor contrasts, regression discount functions, plot options, and survival calculations at interval boundaries and numerical limits. Added comparisons with analytical posterior moments and integrated hazards.</li>
+<ul><li>Added tests for treatment-only models, logistic seed control and method defaults, equivalent survival-response expressions, preservation of participant counts, invalid treatment coding, and summary-data input boundaries.</li>
+<li>Expanded checks for incomplete inputs, historical-only controls, factor contrasts, regression discount functions, plot options, and survival calculations at interval boundaries and numerical limits. Added comparisons with analytical posterior moments and integrated hazards.</li>
 <li>Added logistic regression checks for zero-event and all-event groups, covariate separation, quasi-complete separation, rank deficiency, prescribed weights, and supplied historical priors.</li>
 <li>Added checks that regression offsets are rejected before sampling across supported fitting settings and that ordinary covariates named <code>offset</code> remain supported.</li>
 <li>Added checks against analytical Gamma and survival moments, current-only and pooled analyses, different arm weights, draw-specific Gamma mixtures, zero events, and intervals without observations. The tests use influential priors as well as the default prior, so duplicated prior contributions are detected.</li>

@@ -130,7 +130,7 @@ weight. Default value is "<code>identity</code>".</p></dd>
 
 
 <dt id="arg-alpha-max">alpha_max<a class="anchor" aria-label="anchor" href="#arg-alpha-max"></a></dt>
-<dd><p>scalar. Maximum weight the discount function can apply.
+<dd><p>scalar in [0, 1]. Maximum weight the discount function can apply.
 Default is 1. For a two-arm trial, users may specify a vector of two values
 where the first value is used to weight the historical treatment group and
 the second value is used to weight the historical control group.</p></dd>
@@ -141,15 +141,15 @@ the second value is used to weight the historical control group.</p></dd>
 
 
 <dt id="arg-a-">a0<a class="anchor" aria-label="anchor" href="#arg-a-"></a></dt>
-<dd><p>scalar. Prior value for a beta shape parameter. Default is 1.</p></dd>
+<dd><p>positive, finite scalar. Prior value for a beta shape parameter. Default is 1.</p></dd>
 
 
 <dt id="arg-b-">b0<a class="anchor" aria-label="anchor" href="#arg-b-"></a></dt>
-<dd><p>scalar. Prior value for a beta shape parameter. Default is 1.</p></dd>
+<dd><p>positive, finite scalar. Prior value for a beta shape parameter. Default is 1.</p></dd>
 
 
 <dt id="arg-number-mcmc">number_mcmc<a class="anchor" aria-label="anchor" href="#arg-number-mcmc"></a></dt>
-<dd><p>scalar. Number of Monte Carlo simulations. Default is
+<dd><p>integer of at least 2. Number of Monte Carlo simulations. Default is
 10000.</p></dd>
 
 
@@ -261,6 +261,13 @@ accessible in the <code>final</code> slot, else the <code>final</code> slot is
   <code>alpha_max * W(p)</code> for the selected discount function W. This
   comparison is not a posterior probability of equality or equivalence.
   Choosing <code>fix_alpha = TRUE</code> prespecifies the weight instead.</p>
+<p>Each supplied group requires scalar, finite integer event counts and
+  sample sizes, with \(N \geq 1\) and \(0 \leq y \leq N\).
+  Both zero-event and all-event groups are allowed. Omit an optional group
+  by leaving both inputs <code>NULL</code>; zero sample size does not denote an
+  absent group. Inputs and borrowing settings are checked before sampling,
+  including when weights are prescribed. Weibull parameters must be
+  positive and finite when used to estimate a weight.</p>
 <p>In the second stage, posterior estimation is performed where the discount
   function parameter, <code>alpha</code>, is incorporated in all posterior
   estimation procedures.</p>
