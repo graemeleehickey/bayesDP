@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# bayesDP <img src="man/figures/hex.png" width = "175" height = "200" align="right" />
+# bayesDP <img src="man/figures/bayesDP.svg" alt="bayesDP hex badge" width="175" align="right" />
 
 <!-- badges: start -->
 
