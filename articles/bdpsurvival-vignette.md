@@ -1,4 +1,4 @@
-# Survival outcomes with bayesDP
+# Survival outcomes
 
 ## Purpose and scope
 

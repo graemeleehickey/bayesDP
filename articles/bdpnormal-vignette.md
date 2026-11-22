@@ -1,4 +1,4 @@
-# Normal outcomes with bayesDP
+# Normal outcomes
 
 ## Purpose and inputs
 

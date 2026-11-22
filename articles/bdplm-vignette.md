@@ -1,4 +1,4 @@
-# Linear regression with bayesDP
+# Linear regression
 
 ## Purpose and inputs
 

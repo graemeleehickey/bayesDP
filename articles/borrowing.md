@@ -1,4 +1,4 @@
-# Borrowing historical information with bayesDP
+# Borrowing historical information
 
 ## Purpose and analysis choices
 

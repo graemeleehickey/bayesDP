@@ -1,4 +1,4 @@
-# Binomial outcomes with bayesDP
+# Binomial outcomes
 
 ## Purpose and inputs
 
