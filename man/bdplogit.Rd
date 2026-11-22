@@ -83,12 +83,15 @@ the output of the Weibull CDF to have a max value of 1. The \code{identity}
 discount function uses the posterior probability directly as the discount
 weight. Default value is "\code{identity}".}
 
-\item{alpha_max}{scalar. Maximum weight the discount function can apply.
+\item{alpha_max}{scalar in [0, 1]. Maximum weight the discount function can apply.
 Default is 1. Users may specify a vector of two values where the first
 value is used to weight the historical treatment group and
 the second value is used to weight the historical control group.}
 
-\item{fix_alpha}{logical. Fix alpha at alpha_max? Default value is FALSE.}
+\item{fix_alpha}{logical. Fix alpha at alpha_max? Default value is FALSE.
+If TRUE, comparison models are not fitted and the prescribed weights are
+used directly. Historical-prior estimation and current-data model checks
+still apply.}
 
 \item{weibull_scale}{scalar. Scale parameter of the Weibull discount function
 used to compute alpha, the weight parameter of the historical data. Default
@@ -105,11 +108,10 @@ where the first value is used to estimate the weight of the historical
 treatment group and the second value is used to estimate the weight of the
 historical control group. Not used when \code{discount_function} = "identity".}
 
-\item{method}{character. Analysis method with respect to estimation of the weight
-paramter alpha. Default method "\code{mc}" estimates alpha for each
-Monte Carlo iteration. Alternate value "\code{fixed}" estimates alpha once and
-holds it fixed throughout the analysis.  See the the \code{bdplm} vignette \cr
-\code{vignette("bdplm-vignette", package = "bayesDP")} for more details.}
+\item{method}{character. Set to \code{"fixed"}, the only supported method.
+It estimates each historical weight once and holds it fixed throughout
+the analysis, unless \code{fix_alpha = TRUE} prescribes the weights.
+The legacy default \code{"mc"} is not supported and raises an error.}
 }
 \value{
 \code{bdplogit} returns an object of class "bdplm", reusing its
@@ -122,17 +124,15 @@ The returned object is a list containing at least
 the following components:
 \describe{
   \item{\code{posterior}}{
-    data frame. The posterior draws of the covariates, the intercept, and
-    the treatment effect. The grid of sigma values are included.}
+    data frame. Posterior draws of the intercept, treatment effect, and
+    covariate effects on the log-odds scale.}
   \item{\code{alpha_discount}}{
-    vector. The posterior probability of the stochastic comparison
-    between the current and historical data for each of the treatment
-    and control arms. If \code{method = "mc"}, the result is a matrix of
-    estimates, otherwise for \code{method = "fixed"}, the result is a vector
-    of estimates.}
+    data frame. One row of estimated or prescribed historical weights,
+    with columns \code{treatment} and \code{control}. These weights are
+    not posterior probabilities of equality.}
   \item{\code{estimates}}{
-    list. The posterior means and standard errors of the intercept,
-    treatment effect, covariate effect(s) and error variance.}
+    list. Posterior means and posterior SDs of the intercept, treatment
+    effect, and covariate effects.}
 }
 }
 \description{
@@ -147,15 +147,15 @@ the following components:
 \code{bdplogit} uses a two-stage approach for determining the
   strength of historical data in estimation of an adjusted mean or covariate
   effect. In the first stage, a \emph{discount function} is used that
-  that defines the maximum strength of the
+  defines the maximum strength of the
   historical data and discounts based on disagreement with the current data.
-  Disagreement between current and historical data is determined by stochastically
-  comparing the respective posterior distributions under noninformative priors.
-  Here with a two-arm regression analysis, the comparison is the
-  proability (\code{p}) that the covariate effect of an historical data indicator is
-  significantly different from zero. The comparison metric \code{p} is then
-  input into the discount function and the final strength of the
-  historical data is returned (\code{alpha}).
+  Disagreement between current and historical data is assessed by fitting
+  a logistic regression separately within each arm, with a historical
+  indicator and the covariates, using flat coefficient priors. If \eqn{q}
+  is the posterior probability that the historical-indicator coefficient is
+  positive, the comparison is \eqn{p = 2\min(q, 1-q)}. The discount function
+  transforms \eqn{p} into the historical weight \code{alpha}. This is not
+  a posterior probability of equality or equivalence.
 
   In the second stage, posterior estimation is performed where the discount
   function parameter, \code{alpha}, is used to weight the historical data
@@ -186,8 +186,30 @@ the following components:
   invariant to a location shift of any covariate, and users do not need to
   center covariates themselves.
 
-  The underlying model uses the \code{MCMClogit} function of the MCMCpack
-  package to carryout posterior estimation. Add more.
+  Posterior sampling uses \code{MCMCpack::MCMClogit()}. Before fitting,
+  model matrices are checked for rank deficiency, and complete or
+  quasi-complete separation is detected using \code{detectseparation}.
+  These checks include separation caused by covariates, as well as groups
+  with no events or with all events. An error identifies the affected stage:
+  \itemize{
+    \item Each arm's comparison model must have a proper posterior under
+      its flat coefficient priors. Separation or rank deficiency prevents
+      estimation of that arm's borrowing weight.
+    \item When any historical arm-prior mean or SD is estimated from the
+      historical regression, that regression must have a full-rank design
+      and no separation. Numerically large but finite estimates from a
+      separated regression are not used as historical priors.
+    \item The current-data regression must also have a full-rank design
+      and no separation because the sampler uses an unpenalized logistic
+      regression to construct starting values and proposals. This is a
+      limitation of the supported sampling procedure, not a claim that
+      separation makes a posterior with proper coefficient priors improper.
+  }
+  With \code{fix_alpha = TRUE}, the comparison models and their checks are
+  skipped; their internal \code{p_hat} values are \code{NA_real_}.
+  Historical regression checks are skipped only when all four arm-prior
+  means and SDs are supplied. Current-data checks always apply. Prescribing
+  weights alone therefore does not make separated datasets supported.
 }
 \examples{
 # Set sample sizes

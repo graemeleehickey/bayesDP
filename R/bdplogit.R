@@ -45,11 +45,14 @@
 #'   the output of the Weibull CDF to have a max value of 1. The \code{identity}
 #'   discount function uses the posterior probability directly as the discount
 #'   weight. Default value is "\code{identity}".
-#' @param alpha_max scalar. Maximum weight the discount function can apply.
+#' @param alpha_max scalar in [0, 1]. Maximum weight the discount function can apply.
 #'   Default is 1. Users may specify a vector of two values where the first
 #'   value is used to weight the historical treatment group and
 #'   the second value is used to weight the historical control group.
 #' @param fix_alpha logical. Fix alpha at alpha_max? Default value is FALSE.
+#'   If TRUE, comparison models are not fitted and the prescribed weights are
+#'   used directly. Historical-prior estimation and current-data model checks
+#'   still apply.
 #' @param number_mcmc_alpha scalar. Number of Monte Carlo
 #'   simulations for estimating the historical data weight. Default is 5000.
 #' @param number_mcmc_beta scalar. Number of Monte Carlo simulations for
@@ -67,23 +70,22 @@
 #'   historical treatment group and the second value is used to estimate the
 #'   weight of the historical control group.
 #'   Not used when \code{discount_function} = "identity".
-#' @param method character. Analysis method with respect to estimation of the weight
-#'   paramter alpha. Default method "\code{mc}" estimates alpha for each
-#'   Monte Carlo iteration. Alternate value "\code{fixed}" estimates alpha once and
-#'   holds it fixed throughout the analysis.  See the the \code{bdplm} vignette \cr
-#'   \code{vignette("bdplm-vignette", package = "bayesDP")} for more details.
+#' @param method character. Set to \code{"fixed"}, the only supported method.
+#'   It estimates each historical weight once and holds it fixed throughout
+#'   the analysis, unless \code{fix_alpha = TRUE} prescribes the weights.
+#'   The legacy default \code{"mc"} is not supported and raises an error.
 #' @details \code{bdplogit} uses a two-stage approach for determining the
 #'   strength of historical data in estimation of an adjusted mean or covariate
 #'   effect. In the first stage, a \emph{discount function} is used that
-#'   that defines the maximum strength of the
+#'   defines the maximum strength of the
 #'   historical data and discounts based on disagreement with the current data.
-#'   Disagreement between current and historical data is determined by stochastically
-#'   comparing the respective posterior distributions under noninformative priors.
-#'   Here with a two-arm regression analysis, the comparison is the
-#'   proability (\code{p}) that the covariate effect of an historical data indicator is
-#'   significantly different from zero. The comparison metric \code{p} is then
-#'   input into the discount function and the final strength of the
-#'   historical data is returned (\code{alpha}).
+#'   Disagreement between current and historical data is assessed by fitting
+#'   a logistic regression separately within each arm, with a historical
+#'   indicator and the covariates, using flat coefficient priors. If \eqn{q}
+#'   is the posterior probability that the historical-indicator coefficient is
+#'   positive, the comparison is \eqn{p = 2\min(q, 1-q)}. The discount function
+#'   transforms \eqn{p} into the historical weight \code{alpha}. This is not
+#'   a posterior probability of equality or equivalence.
 #'
 #'   In the second stage, posterior estimation is performed where the discount
 #'   function parameter, \code{alpha}, is used to weight the historical data
@@ -114,8 +116,30 @@
 #'   invariant to a location shift of any covariate, and users do not need to
 #'   center covariates themselves.
 #'
-#'   The underlying model uses the \code{MCMClogit} function of the MCMCpack
-#'   package to carryout posterior estimation. Add more.
+#'   Posterior sampling uses \code{MCMCpack::MCMClogit()}. Before fitting,
+#'   model matrices are checked for rank deficiency, and complete or
+#'   quasi-complete separation is detected using \code{detectseparation}.
+#'   These checks include separation caused by covariates, as well as groups
+#'   with no events or with all events. An error identifies the affected stage:
+#'   \itemize{
+#'     \item Each arm's comparison model must have a proper posterior under
+#'       its flat coefficient priors. Separation or rank deficiency prevents
+#'       estimation of that arm's borrowing weight.
+#'     \item When any historical arm-prior mean or SD is estimated from the
+#'       historical regression, that regression must have a full-rank design
+#'       and no separation. Numerically large but finite estimates from a
+#'       separated regression are not used as historical priors.
+#'     \item The current-data regression must also have a full-rank design
+#'       and no separation because the sampler uses an unpenalized logistic
+#'       regression to construct starting values and proposals. This is a
+#'       limitation of the supported sampling procedure, not a claim that
+#'       separation makes a posterior with proper coefficient priors improper.
+#'   }
+#'   With \code{fix_alpha = TRUE}, the comparison models and their checks are
+#'   skipped; their internal \code{p_hat} values are \code{NA_real_}.
+#'   Historical regression checks are skipped only when all four arm-prior
+#'   means and SDs are supplied. Current-data checks always apply. Prescribing
+#'   weights alone therefore does not make separated datasets supported.
 #'
 #' @return \code{bdplogit} returns an object of class "bdplm", reusing its
 #'   print and summary methods. Residual summaries use observed binary outcomes
@@ -127,17 +151,15 @@
 #' the following components:
 #' \describe{
 #'   \item{\code{posterior}}{
-#'     data frame. The posterior draws of the covariates, the intercept, and
-#'     the treatment effect. The grid of sigma values are included.}
+#'     data frame. Posterior draws of the intercept, treatment effect, and
+#'     covariate effects on the log-odds scale.}
 #'   \item{\code{alpha_discount}}{
-#'     vector. The posterior probability of the stochastic comparison
-#'     between the current and historical data for each of the treatment
-#'     and control arms. If \code{method = "mc"}, the result is a matrix of
-#'     estimates, otherwise for \code{method = "fixed"}, the result is a vector
-#'     of estimates.}
+#'     data frame. One row of estimated or prescribed historical weights,
+#'     with columns \code{treatment} and \code{control}. These weights are
+#'     not posterior probabilities of equality.}
 #'   \item{\code{estimates}}{
-#'     list. The posterior means and standard errors of the intercept,
-#'     treatment effect, covariate effect(s) and error variance.}
+#'     list. Posterior means and posterior SDs of the intercept, treatment
+#'     effect, and covariate effects.}
 #' }
 #'
 #' @examples
@@ -249,6 +271,13 @@ setMethod(
 
     if (method == "mc") {
       stop("Method 'mc' not currently supported.")
+    }
+    if (!is.logical(fix_alpha) || length(fix_alpha) != 1L || is.na(fix_alpha)) {
+      stop("fix_alpha must be TRUE or FALSE.", call. = FALSE)
+    }
+    if (!is.numeric(alpha_max) || !length(alpha_max) %in% c(1L, 2L) ||
+        any(!is.finite(alpha_max)) || any(alpha_max < 0 | alpha_max > 1)) {
+      stop("alpha_max must contain one or two finite values in [0, 1].", call. = FALSE)
     }
 
     ### Parse current data
@@ -443,7 +472,8 @@ setMethod(
       number_mcmc_alpha = number_mcmc_alpha,
       weibull_shape = weibull_shape[1],
       weibull_scale = weibull_scale[1],
-      method = method
+      method = method,
+      arm = "treatment"
     )
 
     discount_control <- discount_logit(
@@ -454,7 +484,8 @@ setMethod(
       number_mcmc_alpha = number_mcmc_alpha,
       weibull_shape = weibull_shape[2],
       weibull_scale = weibull_scale[2],
-      method = method
+      method = method,
+      arm = "control"
     )
 
     ##############################################################################
@@ -474,6 +505,9 @@ setMethod(
       cnames0 <- c("treatment", "control", cnames0)
       f0 <- paste0("Y~ -1+", paste0(cnames0, collapse = "+"))
 
+      bdp_check_logit_model(f0, df0_centered,
+        context = "Cannot estimate historical arm priors",
+        separation_reason = "the historical regression has infinite maximum likelihood estimates.")
       fit_0 <- glm(f0, data = df0_centered, family = binomial)
       summ_0 <- summary(fit_0)
 
@@ -510,6 +544,10 @@ setMethod(
     predictors <- c("treatment", "control", covs_df)
     df_analysis <- df_current[, c("Y", predictors)]
     f <- paste0("Y ~ -1 +", paste0(predictors, collapse = "+"))
+
+    bdp_check_logit_model(f, df_analysis,
+      context = "Cannot fit the current-data logistic model",
+      separation_reason = "the sampler requires finite unpenalized logistic estimates for its starting values and proposals.")
 
     ### Estimation scheme differs conditional on discounting method
     if (method == "fixed") {
@@ -596,14 +634,18 @@ setMethod(
 ################################################################################
 # Logistic Regression discount weight estimation
 # 1) Estimate the discount function
-#    - Test that the historical effect is different from zero
-#    - Estimate alpha based on the above comparison
+#    - Compare the historical-indicator coefficient with zero
+#    - Estimate alpha from that directional posterior comparison
 ################################################################################
 
 discount_logit <- function(df, discount_function, alpha_max, fix_alpha,
                            number_mcmc_alpha,
                            weibull_shape, weibull_scale,
-                           method) {
+                           method, arm = NULL) {
+
+  if (fix_alpha) {
+    return(list(p_hat = NA_real_, alpha_discount = alpha_max))
+  }
 
   # Create formula
   cnames <- names(df)
@@ -611,8 +653,16 @@ discount_logit <- function(df, discount_function, alpha_max, fix_alpha,
   cnames <- c("historical", cnames)
   f <- paste0("Y~", paste0(cnames, collapse = "+"))
 
+  context <- if (is.null(arm)) {
+    "Cannot estimate historical borrowing"
+  } else {
+    paste0("Cannot estimate historical borrowing for the ", arm, " arm")
+  }
+  bdp_check_logit_model(f, df, context,
+    separation_reason = "the comparison posterior under flat coefficient priors is improper.")
+
   ### Get Bayesian fit
-  fit <- MCMCpack::MCMClogit(f, data = df, mcmc = number_mcmc_alpha)
+  fit <- MCMCpack::MCMClogit(f, data = df, mcmc = number_mcmc_alpha, B0 = 0)
   posterior <- data.frame(fit)
 
   ### Monte Carlo simulations of historical effect
@@ -629,26 +679,20 @@ discount_logit <- function(df, discount_function, alpha_max, fix_alpha,
   }
 
   ### Compute alpha, the discount weight
-  if (fix_alpha) {
-    alpha_discount <- alpha_max
-  } else {
+  if (discount_function == "weibull") {
+    alpha_discount <- pweibull(p_hat,
+                               shape = weibull_shape,
+                               scale = weibull_scale
+    ) * alpha_max
+  } else if (discount_function == "scaledweibull") {
+    max_p <- pweibull(1, shape = weibull_shape, scale = weibull_scale)
 
-    # Compute alpha discount based on distribution
-    if (discount_function == "weibull") {
-      alpha_discount <- pweibull(p_hat,
-                                 shape = weibull_shape,
-                                 scale = weibull_scale
-      ) * alpha_max
-    } else if (discount_function == "scaledweibull") {
-      max_p <- pweibull(1, shape = weibull_shape, scale = weibull_scale)
-
-      alpha_discount <- pweibull(p_hat,
-                                 shape = weibull_shape,
-                                 scale = weibull_scale
-      ) * alpha_max / max_p
-    } else if (discount_function == "identity") {
-      alpha_discount <- p_hat * alpha_max
-    }
+    alpha_discount <- pweibull(p_hat,
+                               shape = weibull_shape,
+                               scale = weibull_scale
+    ) * alpha_max / max_p
+  } else if (discount_function == "identity") {
+    alpha_discount <- p_hat * alpha_max
   }
 
   res <- list(
@@ -656,4 +700,37 @@ discount_logit <- function(df, discount_function, alpha_max, fix_alpha,
     alpha_discount = alpha_discount
   )
   res
+}
+
+# Check the exact model used at each logistic fitting stage before estimation.
+bdp_check_logit_model <- function(formula, data, context, separation_reason) {
+  mf <- stats::model.frame(stats::as.formula(formula), data = data,
+                          na.action = stats::na.fail)
+  X <- stats::model.matrix(attr(mf, "terms"), data = mf)
+  y <- stats::model.response(mf)
+  if (!nrow(X) || any(!is.finite(X)) ||
+      !(is.numeric(y) || is.logical(y)) || any(!y %in% c(0, 1))) {
+    stop(context, ": finite predictors and binary outcomes coded 0/1 are required.", call. = FALSE)
+  }
+
+  # Rescale columns for the numerical checks without changing the fitted model.
+  column_scale <- apply(abs(X), 2, max)
+  column_scale[column_scale == 0] <- 1
+  X <- sweep(X, 2, column_scale, "/")
+  if (qr(X)$rank < ncol(X)) {
+    stop(context, ": model matrix is rank deficient; check treatment groups and redundant covariates.", call. = FALSE)
+  }
+
+  check <- detectseparation::detect_separation(x = X, y = as.numeric(y),
+    family = stats::binomial(), intercept = attr(attr(mf, "terms"), "intercept") == 1,
+    control = detectseparation::detect_separation_control(
+      implementation = "lpSolveAPI", purpose = "test"))
+  if (!is.logical(check$outcome) || length(check$outcome) != 1L || is.na(check$outcome)) {
+    stop(context, ": separation could not be determined.", call. = FALSE)
+  }
+  if (check$outcome) {
+    stop(context, ": complete or quasi-complete separation detected; ",
+         separation_reason, call. = FALSE)
+  }
+  invisible(NULL)
 }
