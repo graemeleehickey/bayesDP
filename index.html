@@ -148,8 +148,6 @@
 </h3>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/graemeleehickey/bayesDP" class="external-link">bayesDP</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; Loading required package: ggplot2</span></span>
-<span><span class="co">#&gt; Loading required package: survival</span></span>
 <span></span>
 <span><span class="va">fit_bin</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/bdpbinomial.html">bdpbinomial</a></span><span class="op">(</span></span>
 <span>  y_t <span class="op">=</span> <span class="fl">10</span>, N_t <span class="op">=</span> <span class="fl">500</span>,</span>
@@ -165,9 +163,9 @@
 <span><span class="co">#&gt; Historical treatment data: 25 and 250</span></span>
 <span><span class="co">#&gt; Stochastic comparison (p_hat) - treatment (current vs. historical data): 0</span></span>
 <span><span class="co">#&gt; Discount function value (alpha) - treatment: 0</span></span>
-<span><span class="co">#&gt; 95 percent CI: </span></span>
-<span><span class="co">#&gt;  0.011  0.0362</span></span>
-<span><span class="co">#&gt; sample estimates:</span></span>
+<span><span class="co">#&gt; 95 percent equal-tailed credible interval:</span></span>
+<span><span class="co">#&gt;  0.0109  0.0363</span></span>
+<span><span class="co">#&gt; Posterior medians:</span></span>
 <span><span class="co">#&gt;  0.0211</span></span></code></pre></div>
 </div>
 <div class="section level3">
@@ -189,11 +187,11 @@
 <span><span class="co">#&gt;   Historical treatment: mu0_t = 50, sigma0_t = 5, N0_t = 250</span></span>
 <span><span class="co">#&gt; Stochastic comparison (p_hat) - treatment (current vs. historical data): 0</span></span>
 <span><span class="co">#&gt; Discount function value (alpha) - treatment: 0</span></span>
-<span><span class="co">#&gt; 95 percent CI: </span></span>
-<span><span class="co">#&gt;  28.7373  31.2483</span></span>
-<span><span class="co">#&gt; posterior sample estimate:</span></span>
-<span><span class="co">#&gt; mean of treatment group</span></span>
-<span><span class="co">#&gt;  29.9928</span></span></code></pre></div>
+<span><span class="co">#&gt; 95 percent equal-tailed credible interval:</span></span>
+<span><span class="co">#&gt;  28.7736  31.2335</span></span>
+<span><span class="co">#&gt; Posterior median:</span></span>
+<span><span class="co">#&gt; population mean of treatment group</span></span>
+<span><span class="co">#&gt;  30.0068</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="individual-level-linear-model">Individual-level linear model<a class="anchor" aria-label="anchor" href="#individual-level-linear-model"></a>
@@ -223,8 +221,8 @@
 <span><span class="co">#&gt; bdplm(formula = Y ~ treatment + x, data = df, data0 = df0, method = "fixed")</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Residuals:</span></span>
-<span><span class="co">#&gt;      Min     1Q Median    3Q   Max</span></span>
-<span><span class="co">#&gt;  -11.455 -1.249  2.773 6.652 14.12</span></span>
+<span><span class="co">#&gt;      Min     1Q Median    3Q    Max</span></span>
+<span><span class="co">#&gt;  -13.725 -3.519  0.504 4.383 11.851</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Coefficients:</span></span>
 <span><span class="co">#&gt;             Estimate Std. Error</span></span>
@@ -240,10 +238,22 @@
 </div>
 </div>
 <div class="section level2">
+<h2 id="tabular-results">Tabular results<a class="anchor" aria-label="anchor" href="#tabular-results"></a>
+</h2>
+<p><code><a href="reference/tidy.html">tidy()</a></code> returns posterior estimates and SDs, with optional equal-tailed credible limits. <code><a href="reference/glance.html">glance()</a></code> returns one row containing current and historical sample sizes, retained draw counts, and discount weights. Both functions also work when called through broom.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/tidy.html">tidy</a></span><span class="op">(</span><span class="va">fit_bin</span>, conf.int <span class="op">=</span> <span class="cn">TRUE</span>, conf.level <span class="op">=</span> <span class="fl">0.95</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/glance.html">glance</a></span><span class="op">(</span><span class="va">fit_bin</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/tidy.html">tidy</a></span><span class="op">(</span><span class="va">fit_lm</span>, conf.int <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/tidy.html">tidy</a></span><span class="op">(</span><span class="va">fit_lm</span>, effects <span class="op">=</span> <span class="st">"sigma"</span>, conf.int <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p>The conventional <code>std.error</code> column contains posterior SDs, and <code>conf.low</code> and <code>conf.high</code> contain credible limits. Estimates follow <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code>: posterior medians for binomial, normal, and one-arm survival results, and posterior means for regression coefficients and the two-arm log hazard ratio. Binomial and normal results include treatment-minus-control differences when a control arm is present.</p>
+<p>For logistic and two-arm survival fits, <code>exponentiate = TRUE</code> reports the exponential of the posterior mean log effect and exponentiated credible limits, with posterior SDs calculated on the ratio scale. For one-arm survival fits, <code>time</code> selects the survival time of interest and defaults to the fit’s <code>surv_time</code>. See <code><a href="reference/tidy.html">?tidy</a></code> and <code><a href="reference/glance.html">?glance</a></code> for definitions and examples. These functions summarise saved draws without refitting. <code>augment()</code> is not currently provided.</p>
+</div>
+<div class="section level2">
 <h2 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
 </h2>
 <p>If you use <code>bayesDP</code>, please cite the package and the methodological paper:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/citation.html" class="external-link">citation</a></span><span class="op">(</span><span class="st">"bayesDP"</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>

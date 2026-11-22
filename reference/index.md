@@ -14,6 +14,8 @@
   : Bayesian Discount Prior: Gaussian mean values
 - [`bdpsurvival()`](https://graemeleehickey.github.io/bayesDP/reference/bdpsurvival.md)
   : Bayesian Discount Prior: Survival Analysis
+- [`glance()`](https://graemeleehickey.github.io/bayesDP/reference/glance.md)
+  : Glance at a Bayesian discount prior fit
 - [`plot(`*`<bdpbinomial>`*`)`](https://graemeleehickey.github.io/bayesDP/reference/plot-bdpbinomial-method.md)
   : bdpbinomial Object Plot
 - [`plot(`*`<bdpnormal>`*`)`](https://graemeleehickey.github.io/bayesDP/reference/plot-bdpnormal-method.md)
@@ -41,3 +43,5 @@
   : bdpnormal Object Summary
 - [`summary(`*`<bdpsurvival>`*`)`](https://graemeleehickey.github.io/bayesDP/reference/summary-bdpsurvival-method.md)
   : bdpsurvival Object Summary
+- [`tidy()`](https://graemeleehickey.github.io/bayesDP/reference/tidy.md)
+  : Tidy posterior summaries

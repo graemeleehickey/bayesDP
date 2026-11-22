@@ -73,8 +73,10 @@
 </ul></div>
 <div class="section level3">
 <h3 id="new-features-1-3-9">New features<a class="anchor" aria-label="anchor" href="#new-features-1-3-9"></a></h3>
-<ul><li>Added <code>type = "effect"</code> plots for binomial and normal treatment-minus-control contrasts. Posterior plots now use explicit parameter labels and consistent information-source colours and line types.</li>
-<li>Added a light/dark mode switch to the pkgdown website, including matching colours for R code.</li>
+<ul><li><p>Added <code><a href="../reference/tidy.html">tidy()</a></code> and <code><a href="../reference/glance.html">glance()</a></code> methods for all fitted models, also available through broom. <code><a href="../reference/tidy.html">tidy()</a></code> reports posterior estimates, SDs, and optional equal-tailed credible limits; logistic and two-arm survival effects can be exponentiated. <code><a href="../reference/glance.html">glance()</a></code> reports current and historical sample sizes, retained draw counts, and arm-specific discount weights, with event counts for survival fits.</p></li>
+<li><p>Numerical summaries are shared with <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code>. The new methods use saved draws without refitting or changing the random-number state. Participant-level <code>augment()</code> methods are not provided.</p></li>
+<li><p>Added <code>type = "effect"</code> plots for binomial and normal treatment-minus-control contrasts. Posterior plots now use explicit parameter labels and consistent information-source colours and line types.</p></li>
+<li><p>Added a light/dark mode switch to the pkgdown website, including matching colours for R code.</p></li>
 </ul></div>
 <div class="section level3">
 <h3 id="tests-1-3-9">Tests<a class="anchor" aria-label="anchor" href="#tests-1-3-9"></a></h3>

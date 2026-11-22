@@ -52,8 +52,6 @@ remotes::install_github("graemeleehickey/bayesDP")
 ``` r
 
 library(bayesDP)
-#> Loading required package: ggplot2
-#> Loading required package: survival
 
 fit_bin <- bdpbinomial(
   y_t = 10, N_t = 500,
@@ -69,9 +67,9 @@ summary(fit_bin)
 #> Historical treatment data: 25 and 250
 #> Stochastic comparison (p_hat) - treatment (current vs. historical data): 0
 #> Discount function value (alpha) - treatment: 0
-#> 95 percent CI: 
-#>  0.011  0.0362
-#> sample estimates:
+#> 95 percent equal-tailed credible interval:
+#>  0.0109  0.0363
+#> Posterior medians:
 #>  0.0211
 ```
 
@@ -94,11 +92,11 @@ summary(fit_norm)
 #>   Historical treatment: mu0_t = 50, sigma0_t = 5, N0_t = 250
 #> Stochastic comparison (p_hat) - treatment (current vs. historical data): 0
 #> Discount function value (alpha) - treatment: 0
-#> 95 percent CI: 
-#>  28.7373  31.2483
-#> posterior sample estimate:
-#> mean of treatment group
-#>  29.9928
+#> 95 percent equal-tailed credible interval:
+#>  28.7736  31.2335
+#> Posterior median:
+#> population mean of treatment group
+#>  30.0068
 ```
 
 ### Individual-level linear model
@@ -129,8 +127,8 @@ summary(fit_lm)
 #> bdplm(formula = Y ~ treatment + x, data = df, data0 = df0, method = "fixed")
 #> 
 #> Residuals:
-#>      Min     1Q Median    3Q   Max
-#>  -11.455 -1.249  2.773 6.652 14.12
+#>      Min     1Q Median    3Q    Max
+#>  -13.725 -3.519  0.504 4.383 11.851
 #> 
 #> Coefficients:
 #>             Estimate Std. Error
@@ -144,6 +142,43 @@ summary(fit_lm)
 #> 
 #> Residual standard error: 5.4394
 ```
+
+## Tabular results
+
+[`tidy()`](https://graemeleehickey.github.io/bayesDP/reference/tidy.md)
+returns posterior estimates and SDs, with optional equal-tailed credible
+limits.
+[`glance()`](https://graemeleehickey.github.io/bayesDP/reference/glance.md)
+returns one row containing current and historical sample sizes, retained
+draw counts, and discount weights. Both functions also work when called
+through broom.
+
+``` r
+
+tidy(fit_bin, conf.int = TRUE, conf.level = 0.95)
+glance(fit_bin)
+tidy(fit_lm, conf.int = TRUE)
+tidy(fit_lm, effects = "sigma", conf.int = TRUE)
+```
+
+The conventional `std.error` column contains posterior SDs, and
+`conf.low` and `conf.high` contain credible limits. Estimates follow
+[`summary()`](https://rdrr.io/r/base/summary.html): posterior medians
+for binomial, normal, and one-arm survival results, and posterior means
+for regression coefficients and the two-arm log hazard ratio. Binomial
+and normal results include treatment-minus-control differences when a
+control arm is present.
+
+For logistic and two-arm survival fits, `exponentiate = TRUE` reports
+the exponential of the posterior mean log effect and exponentiated
+credible limits, with posterior SDs calculated on the ratio scale. For
+one-arm survival fits, `time` selects the survival time of interest and
+defaults to the fit’s `surv_time`. See
+[`?tidy`](https://graemeleehickey.github.io/bayesDP/reference/tidy.md)
+and
+[`?glance`](https://graemeleehickey.github.io/bayesDP/reference/glance.md)
+for definitions and examples. These functions summarise saved draws
+without refitting. `augment()` is not currently provided.
 
 ## Citation
 
@@ -171,6 +206,8 @@ citation("bayesDP")
   : Bayesian Discount Prior: Gaussian mean values
 - [`bdpsurvival()`](https://graemeleehickey.github.io/bayesDP/reference/bdpsurvival.md)
   : Bayesian Discount Prior: Survival Analysis
+- [`glance()`](https://graemeleehickey.github.io/bayesDP/reference/glance.md)
+  : Glance at a Bayesian discount prior fit
 - [`plot(`*`<bdpbinomial>`*`)`](https://graemeleehickey.github.io/bayesDP/reference/plot-bdpbinomial-method.md)
   : bdpbinomial Object Plot
 - [`plot(`*`<bdpnormal>`*`)`](https://graemeleehickey.github.io/bayesDP/reference/plot-bdpnormal-method.md)
@@ -198,6 +235,8 @@ citation("bayesDP")
   : bdpnormal Object Summary
 - [`summary(`*`<bdpsurvival>`*`)`](https://graemeleehickey.github.io/bayesDP/reference/summary-bdpsurvival-method.md)
   : bdpsurvival Object Summary
+- [`tidy()`](https://graemeleehickey.github.io/bayesDP/reference/tidy.md)
+  : Tidy posterior summaries
 
 # Articles
 
