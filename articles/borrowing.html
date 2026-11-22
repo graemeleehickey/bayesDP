@@ -163,6 +163,14 @@ concurrent randomized comparison: interpretation depends on
 comparability across studies. Regression requires both arms in both
 studies. The survival vignette describes its data requirements and
 modeling assumptions.</p>
+<p>Neither <code><a href="../reference/bdplm.html">bdplm()</a></code> nor <code><a href="../reference/bdplogit.html">bdplogit()</a></code> supports
+formula offsets. Including <code>offset(...)</code> or
+<code>stats::offset(...)</code> causes an error before fitting, even
+when offsets are zero or cancel each other. This restriction applies to
+every supported method, including prescribed weights, no borrowing, and
+supplied historical priors. Earlier versions could silently omit
+offsets, so existing analyses that specified them need to be
+reconsidered.</p>
 <p>Logistic regression with <code><a href="../reference/bdplogit.html">bdplogit()</a></code> requires
 <code>method = "fixed"</code>. The function checks for rank deficiency
 and complete or quasi-complete separation in each arm’s borrowing

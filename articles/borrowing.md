@@ -30,6 +30,18 @@ comparability across studies. Regression requires both arms in both
 studies. The survival vignette describes its data requirements and
 modeling assumptions.
 
+Neither
+[`bdplm()`](https://graemeleehickey.github.io/bayesDP/reference/bdplm.md)
+nor
+[`bdplogit()`](https://graemeleehickey.github.io/bayesDP/reference/bdplogit.md)
+supports formula offsets. Including `offset(...)` or
+`stats::offset(...)` causes an error before fitting, even when offsets
+are zero or cancel each other. This restriction applies to every
+supported method, including prescribed weights, no borrowing, and
+supplied historical priors. Earlier versions could silently omit
+offsets, so existing analyses that specified them need to be
+reconsidered.
+
 Logistic regression with
 [`bdplogit()`](https://graemeleehickey.github.io/bayesDP/reference/bdplogit.md)
 requires `method = "fixed"`. The function checks for rank deficiency and

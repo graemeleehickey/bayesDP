@@ -266,6 +266,10 @@ details.</p></dd>
 <p>The formula must include an intercept (i.e., do not use <code>-1</code> in the
   formula) and both data and data0 must be present. The column names of data
   and data0 must match. See <code>examples</code> below for example usage.</p>
+<p>Formula offsets are not supported. Calls to <code><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset()</a></code> or
+  <code><a href="https://rdrr.io/r/stats/offset.html" class="external-link">stats::offset()</a></code> cause an error before fitting, including offsets
+  that are zero or cancel each other. This restriction applies with either
+  method, prescribed weights, no borrowing, or supplied historical priors.</p>
 <p>Internally, the model is parameterized without a fixed intercept, using
   separate treatment and control means rather than an intercept plus a
   treatment effect. In this parameterization the arm means are the fitted

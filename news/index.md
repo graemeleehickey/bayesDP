@@ -19,6 +19,16 @@
   internal comparison probabilities are recorded as missing.
   Historical-prior estimation and current-data checks still apply.
   Prescribed weights must be finite values in \[0, 1\].
+- [`bdplm()`](https://graemeleehickey.github.io/bayesDP/reference/bdplm.md)
+  and
+  [`bdplogit()`](https://graemeleehickey.github.io/bayesDP/reference/bdplogit.md)
+  now reject formula offsets before fitting instead of silently omitting
+  them. This includes
+  [`stats::offset()`](https://rdrr.io/r/stats/offset.html), zero
+  offsets, and cancelling offsets, regardless of the borrowing settings
+  or supplied historical priors. Offset models fitted with earlier
+  versions must be reconsidered; their results do not represent the
+  specified model.
 - Corrected survival augmentation to discount historical event counts
   and exposure while including the baseline Gamma prior once
   ([\#17](https://github.com/graemeleehickey/bayesDP/issues/17)). The
@@ -105,6 +115,9 @@
 - Added logistic regression checks for zero-event and all-event groups,
   covariate separation, quasi-complete separation, rank deficiency,
   prescribed weights, and supplied historical priors.
+- Added checks that regression offsets are rejected before sampling
+  across supported fitting settings and that ordinary covariates named
+  `offset` remain supported.
 - Added checks against analytical Gamma and survival moments,
   current-only and pooled analyses, different arm weights, draw-specific
   Gamma mixtures, zero events, and intervals without observations. The
