@@ -27,9 +27,10 @@ describes a few conventions to follow when submitting changes.
 
 ## NEWS.md
 
-User-facing changes must be recorded in `NEWS.md` under the current
-development version heading (the top-most `# bayesDP x.y.z.9000`
-section).
+User-facing changes must be recorded in `NEWS.md` under the top-most
+version heading, matching the version in `DESCRIPTION`. Keep changes for
+the same unreleased version together rather than creating a new version
+for each change.
 
 Within each version, entries are grouped under level-two (`##`)
 subsection headings so the changelog is easy to scan. Use the following
@@ -42,8 +43,9 @@ sections, in this order, and include only those that apply:
   documentation tidy-ups, deprecation fixes, and other internal changes
   with no direct effect on results.
 
-Each entry is a single bullet point. Reference the relevant GitHub issue
-or pull request number where helpful. For example:
+Each entry is a single bullet point ending with a period. Keep each
+entry on one source line, and reference the relevant GitHub issue or
+pull request number where helpful. For example:
 
 ``` markdown
 # bayesDP 1.3.7.9000

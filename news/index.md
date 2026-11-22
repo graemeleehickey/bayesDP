@@ -1,6 +1,6 @@
 # Changelog
 
-## bayesDP 1.3.13.9000
+## bayesDP 1.3.9
 
 ### Bug fixes
 
@@ -19,29 +19,6 @@
   internal comparison probabilities are recorded as missing.
   Historical-prior estimation and current-data checks still apply.
   Prescribed weights must be finite values in \[0, 1\].
-
-### Tests
-
-- Expanded checks for incomplete inputs, historical-only controls,
-  factor contrasts, regression discount functions, plot options, and
-  survival calculations at interval boundaries and numerical limits.
-  Added comparisons with analytical posterior moments and integrated
-  hazards.
-- Added logistic regression checks for zero-event and all-event groups,
-  covariate separation, quasi-complete separation, rank deficiency,
-  prescribed weights, and supplied historical priors.
-
-### Housekeeping
-
-- Added `detectseparation` for logistic separation checks and documented
-  the supported fitting conditions and the distinction between
-  prescribed and estimated weights. Logistic sampling still requires
-  `method = "fixed"`.
-
-## bayesDP 1.3.13
-
-### Bug fixes
-
 - Corrected survival augmentation to discount historical event counts
   and exposure while including the baseline Gamma prior once
   ([\#17](https://github.com/graemeleehickey/bayesDP/issues/17)). The
@@ -54,23 +31,6 @@
   prior and interval boundaries. Survival estimates and treatment
   effects may change, especially with sparse events or influential
   priors; refit earlier analyses to use the corrected update.
-
-### Documentation and tests
-
-- Updated the survival and borrowing vignettes to explain historical
-  likelihood discounting, distinguish the historical weight `alpha` from
-  the Gamma shape `a0`, and interpret current-only and full-borrowing
-  limits. Regenerated the worked examples with the corrected update.
-- Added checks against analytical Gamma and survival moments,
-  current-only and pooled analyses, different arm weights, draw-specific
-  Gamma mixtures, zero events, and intervals without observations. The
-  tests use influential priors as well as the default prior, so
-  duplicated prior contributions are detected.
-
-## bayesDP 1.3.12
-
-### Bug fixes
-
 - Corrected survival Monte Carlo borrowing to standardize log survival
   differences by their posterior SDs and apply the two-sided normal-tail
   transformation once
@@ -91,25 +51,6 @@
   checks for invalid prior, horizon, and borrowing settings, and
   corrected interval handling for a single constant hazard and intervals
   with no observations.
-- The historical-posterior augmentation, including its additional
-  baseline-prior contribution, is unchanged and remains under review in
-  [\#17](https://github.com/graemeleehickey/bayesDP/issues/17).
-
-### Documentation and tests
-
-- Updated the survival vignette with the corrected formulas, a
-  comparison of fixed and draw-specific borrowing, numerical
-  considerations, and the limitations of normal-tail comparisons with
-  sparse events.
-- Added independent calculation checks, distributional checks for
-  log-Gamma draws, and tests covering time-unit changes, interval and
-  draw ordering, zero events, extreme survival probabilities, all
-  discount functions, and prescribed weights.
-
-## bayesDP 1.3.11
-
-### Bug fixes
-
 - Corrected survival summaries to count participants and calculate risk
   sets from their observed follow-up, rather than treating split hazard
   intervals as separate participants
@@ -128,20 +69,6 @@
   fits retain covariate centering means. Older saved fits must be
   refitted before using the affected summaries; the functions explain
   when this is necessary.
-
-### Documentation and tests
-
-- Updated the regression and survival vignettes to demonstrate the
-  corrected summaries, and labelled one-arm survival uncertainty as
-  posterior SDs and equal-tailed credible intervals.
-- Added tests for participant counts, risk sets, tied and censored
-  observations, events at interval boundaries, historical-only controls,
-  and regression residuals with shifted and factor covariates.
-
-## bayesDP 1.3.10
-
-### Bug fixes
-
 - Corrected the normal-data
   [`probability_discount()`](https://graemeleehickey.github.io/bayesDP/reference/probability_discount.md)
   helper to standardize Monte Carlo mean differences by their
@@ -154,9 +81,66 @@
   vignette’s treatment-effect conclusion
   ([\#19](https://github.com/graemeleehickey/bayesDP/issues/19),
   [\#20](https://github.com/graemeleehickey/bayesDP/issues/20)).
+- Fixed equation rendering in the pkgdown articles with KaTeX and
+  updated the standalone HTML vignettes to MathJax 3.
+- Corrected the diagonal-matrix notation in the linear regression
+  vignette so that it renders correctly on the website.
 
-### Presentation and documentation
+### New features
 
+- Added `type = "effect"` plots for binomial and normal
+  treatment-minus-control contrasts. Posterior plots now use explicit
+  parameter labels and consistent information-source colours and line
+  types.
+- Added a light/dark mode switch to the pkgdown website, including
+  matching colours for R code.
+
+### Tests
+
+- Expanded checks for incomplete inputs, historical-only controls,
+  factor contrasts, regression discount functions, plot options, and
+  survival calculations at interval boundaries and numerical limits.
+  Added comparisons with analytical posterior moments and integrated
+  hazards.
+- Added logistic regression checks for zero-event and all-event groups,
+  covariate separation, quasi-complete separation, rank deficiency,
+  prescribed weights, and supplied historical priors.
+- Added checks against analytical Gamma and survival moments,
+  current-only and pooled analyses, different arm weights, draw-specific
+  Gamma mixtures, zero events, and intervals without observations. The
+  tests use influential priors as well as the default prior, so
+  duplicated prior contributions are detected.
+- Added independent calculation checks, distributional checks for
+  log-Gamma draws, and tests covering time-unit changes, interval and
+  draw ordering, zero events, extreme survival probabilities, all
+  discount functions, and prescribed weights.
+- Added tests for participant counts, risk sets, tied and censored
+  observations, events at interval boundaries, historical-only controls,
+  and regression residuals with shifted and factor covariates.
+- Added checks against numerical integration, outcome-unit changes, the
+  model’s comparison draws, discount-plot limits, treatment-effect
+  plots, numerical summary labels, and the documented regression
+  covariate-prior behaviour.
+- Included the test suite in source packages so `R CMD check` runs it,
+  and declared the existing `withr` test dependency.
+
+### Housekeeping
+
+- Added `detectseparation` for logistic separation checks and documented
+  the supported fitting conditions and the distinction between
+  prescribed and estimated weights. Logistic sampling still requires
+  `method = "fixed"`.
+- Updated the survival and borrowing vignettes to explain historical
+  likelihood discounting, distinguish the historical weight `alpha` from
+  the Gamma shape `a0`, and interpret current-only and full-borrowing
+  limits. Regenerated the worked examples with the corrected update.
+- Updated the survival vignette with the corrected formulas, a
+  comparison of fixed and draw-specific borrowing, numerical
+  considerations, and the limitations of normal-tail comparisons with
+  sparse events.
+- Updated the regression and survival vignettes to demonstrate the
+  corrected summaries, and labelled one-arm survival uncertainty as
+  posterior SDs and equal-tailed credible intervals.
 - Reorganised the four model vignettes around worked examples,
   interpretation, assumptions, and model details, with a shared
   historical-borrowing overview and formal references.
@@ -167,43 +151,8 @@
   weights, conditional and marginal distributions, baseline priors,
   regression covariate-prior precision, and posterior medians versus
   means.
-- Added `type = "effect"` plots for binomial and normal
-  treatment-minus-control contrasts. Posterior plots now use explicit
-  parameter labels and consistent information-source colours and line
-  types.
 - Labelled binomial and normal summary intervals as equal-tailed
   credible intervals and retained four decimal places for arm estimates.
-- Documented the unresolved survival Monte Carlo calculation,
-  Gamma-prior augmentation, and summary-output problems
-  ([\#16](https://github.com/graemeleehickey/bayesDP/issues/16)–#18).
-  These calculations are not changed in this release; affected examples
-  identify the limitations and avoid the incorrect summary output.
-
-### Tests
-
-- Added checks against numerical integration, outcome-unit changes, the
-  model’s comparison draws, discount-plot limits, treatment-effect
-  plots, numerical summary labels, and the documented regression
-  covariate-prior behaviour.
-- Included the test suite in source packages so `R CMD check` runs it,
-  and declared the existing `withr` test dependency.
-
-## bayesDP 1.3.9
-
-### Bug fixes
-
-- Fixed equation rendering in the pkgdown articles with KaTeX and
-  updated the standalone HTML vignettes to MathJax 3.
-- Corrected the diagonal-matrix notation in the linear regression
-  vignette so that it renders correctly on the website.
-
-### New features
-
-- Added a light/dark mode switch to the pkgdown website, including
-  matching colours for R code.
-
-### Housekeeping
-
 - Added strict KaTeX validation to the website build so unsupported
   LaTeX commands and invalid equations prevent deployment.
 - Improved equation spacing and alignment, split long equations across
@@ -211,6 +160,7 @@
   easier to read.
 - Standardised spacing in R examples and documented function calls
   throughout the vignettes, README, and help pages.
+- Added the CRAN DOI badge to the README and package website.
 
 ## bayesDP 1.3.8
 
@@ -231,23 +181,23 @@ CRAN release: 2026-06-25
   automatically mean-center covariates on their pooled (current plus
   historical) mean and back-transform the reported intercept, so
   estimates are invariant to covariate location shifts
-  ([\#1](https://github.com/graemeleehickey/bayesDP/issues/1))
+  ([\#1](https://github.com/graemeleehickey/bayesDP/issues/1)).
 - Fixed a bug where the `summary` methods for `bdpnormal` and
   `bdpbinomial` read the one-/two-arm indicator from the wrong list
   element (`args` instead of `args1`), causing two-arm fits to be
-  summarised as one-arm
+  summarised as one-arm.
 - Fixed a bug in the two-arm `bdpsurvival` summary that errored when
-  current control data were absent
+  current control data were absent.
 - Fixed an invalid matrix index (`Y[, 0]`) used when computing the
-  default `surv_time` in `bdpsurvival`
+  default `surv_time` in `bdpsurvival`.
 - Fixed the `compare` argument being silently dropped (passed into
   [`paste()`](https://rdrr.io/r/base/paste.html)) rather than stored in
-  the `bdpnormal` and `bdpbinomial` fit objects
+  the `bdpnormal` and `bdpbinomial` fit objects.
 - Fixed the `mc` discount-weight Z-statistic in `bdplm` to divide by the
-  standard error rather than the variance
+  standard error rather than the variance.
 - Fixed `plot` methods hanging on the interactive “Hit ” prompt in
   non-interactive sessions (e.g. tests, CI); `par(ask = ...)` now
-  respects [`interactive()`](https://rdrr.io/r/base/interactive.html)
+  respects [`interactive()`](https://rdrr.io/r/base/interactive.html).
 - Fixed
   [`bdplogit()`](https://graemeleehickey.github.io/bayesDP/reference/bdplogit.md)
   failing during its main model fit because the analysis data passed to
@@ -269,7 +219,7 @@ CRAN release: 2026-06-25
 
 ### Tests
 
-- Re-enabled the `testthat` test harness (`tests/testthat.R`)
+- Re-enabled the `testthat` test harness (`tests/testthat.R`).
 - Rewrote the test suite with `expect_*()` assertions: augmented one-arm
   binomial and normal posterior means are pinned against their
   closed-form conjugate values, and the fixed bugs (one-/two-arm
@@ -289,17 +239,17 @@ CRAN release: 2026-06-25
   [`bdplm()`](https://graemeleehickey.github.io/bayesDP/reference/bdplm.md)
   and
   [`bdplogit()`](https://graemeleehickey.github.io/bayesDP/reference/bdplogit.md),
-  and the `mc` discounting method for `bdpnormal` and `bdpbinomial`
+  and the `mc` discounting method for `bdpnormal` and `bdpbinomial`.
 - Added regression tests pinning the `bdpnormal` flat-prior draw of the
   mean (`posterior_flat_mu`) and the fixed current-only `posterior_mu`
-  against their closed-form conjugate (Student-t) variance
+  against their closed-form conjugate (Student-t) variance.
 - Expanded `method="mc"` documentation in the binomial, normal, and
   survival interfaces/vignettes to note that per-iteration recomputation
   of the stochastic comparison yields a random `alpha_discount` sequence
   that can show noticeable Monte Carlo variability
-  ([\#4](https://github.com/graemeleehickey/bayesDP/issues/4))
+  ([\#4](https://github.com/graemeleehickey/bayesDP/issues/4)).
 - Guarded the plotting tests with a null graphics device so they no
-  longer write a stray `Rplots.pdf`
+  longer write a stray `Rplots.pdf`.
 
 ### Documentation
 
@@ -311,114 +261,114 @@ CRAN release: 2026-06-25
   weight, making their priors effectively flat. The supplied value has
   negligible influence on the posterior, and the effective prior
   standard deviation is roughly 1e6 larger than the nominal value at the
-  default ([\#2](https://github.com/graemeleehickey/bayesDP/issues/2))
+  default ([\#2](https://github.com/graemeleehickey/bayesDP/issues/2)).
 
 ### Housekeeping
 
-- Removed AppVeyor continuous integration
+- Removed AppVeyor continuous integration.
 - Updated GitHub Actions workflows to the latest `r-lib/actions`
   examples (`actions/checkout@v6`, `codecov/codecov-action@v6`,
-  `actions/upload-artifact@v7`)
+  `actions/upload-artifact@v7`).
 - Made Codecov upload issues non-fatal in the coverage workflow so tests
   and coverage generation remain the CI gate while Codecov
-  service/signature failures do not fail the build
-- Added a `pkgdown` website and accompanying GitHub Actions workflow
+  service/signature failures do not fail the build.
+- Added a `pkgdown` website and accompanying GitHub Actions workflow.
 - Replaced deprecated
   [`ggplot2::aes_string()`](https://ggplot2.tidyverse.org/reference/aes_.html)
   with [`aes()`](https://ggplot2.tidyverse.org/reference/aes.html) and
-  the `.data` pronoun in all `plot` methods
+  the `.data` pronoun in all `plot` methods.
 - Replaced deprecated `size` aesthetic with `linewidth` in
   [`geom_line()`](https://ggplot2.tidyverse.org/reference/geom_path.html)
-  calls
+  calls.
 - De-duplicated the internal `model.matrixBayes()` helper (previously
   defined identically in both `bdplm` and `bdplogit`) into a single
-  internal file
-- Removed leftover commented-out debugging code
+  internal file.
+- Removed leftover commented-out debugging code.
 - Collapsed a redundant conditional in `posterior_survival()` where both
   branches initialized identical hazard matrices
-  ([\#8](https://github.com/graemeleehickey/bayesDP/issues/8))
+  ([\#8](https://github.com/graemeleehickey/bayesDP/issues/8)).
 - Tidied the `mc` sigma2 sampling in
   [`bdplm()`](https://graemeleehickey.github.io/bayesDP/reference/bdplm.md)
   and kept the sampling weights aligned with the candidate grid when
   some marginal log-likelihoods are non-finite
-  ([\#9](https://github.com/graemeleehickey/bayesDP/issues/9))
+  ([\#9](https://github.com/graemeleehickey/bayesDP/issues/9)).
 - [`ppexp()`](https://graemeleehickey.github.io/bayesDP/reference/ppexp.md)
   now validates its `x` argument and errors with an informative message
   when it is neither a numeric vector nor a matrix
-  ([\#10](https://github.com/graemeleehickey/bayesDP/issues/10))
+  ([\#10](https://github.com/graemeleehickey/bayesDP/issues/10)).
 - Survival curves in the `plot` and `summary` methods are now computed
   with a vectorised C++ routine (`ppexpMV`) that transposes the hazard
   matrix once across all time points, instead of looping
   [`ppexp()`](https://graemeleehickey.github.io/bayesDP/reference/ppexp.md)
   per time point
-  ([\#11](https://github.com/graemeleehickey/bayesDP/issues/11))
+  ([\#11](https://github.com/graemeleehickey/bayesDP/issues/11)).
 - Avoided recomputing the per-interval sufficient statistics in
   `posterior_survival()`; the augmentation step now reuses the values
   already computed during the discount phase
-  ([\#7](https://github.com/graemeleehickey/bayesDP/issues/7))
-- Removed a redundant `useDynLib()` directive in the package namespace
+  ([\#7](https://github.com/graemeleehickey/bayesDP/issues/7)).
+- Removed a redundant `useDynLib()` directive in the package namespace.
 - Added contributor guidance documenting the `NEWS.md` subsection
-  convention for future releases
+  convention for future releases.
 - Expanded `README.md` with links, supported analyses, examples, and
   citation guidance
-  ([\#13](https://github.com/graemeleehickey/bayesDP/issues/13))
+  ([\#13](https://github.com/graemeleehickey/bayesDP/issues/13)).
 - Added the CRAN package URL to `DESCRIPTION`
-  ([\#14](https://github.com/graemeleehickey/bayesDP/issues/14))
+  ([\#14](https://github.com/graemeleehickey/bayesDP/issues/14)).
 - Clarified in `posterior_normal()` that the flat-prior draw of the mean
   is the conjugate posterior (scale `sqrt(sigma^2 / N)`), not the
-  posterior predictive
+  posterior predictive.
 - Gave each vignette a descriptive title (previously all titled
   “BayesDP”) and removed unused `params`/`EVAL` scaffolding from the
-  vignette headers
+  vignette headers.
 
 ## bayesDP 1.3.7
 
 CRAN release: 2025-01-12
 
-- Updated GitHub actions workflows
-- Updated README badges
+- Updated GitHub actions workflows.
+- Updated README badges.
 - Fixed .Rd file itemize list for `bdpbinomial`, `bdpnormal`, and
-  `bdpsurvival`
-- Fixed logical check in `bdpsurvival`
-- Fixed spelling mistakes in documentation
-- Minor formatting updates
-- Add reverse dependency checks
+  `bdpsurvival`.
+- Fixed logical check in `bdpsurvival`.
+- Fixed spelling mistakes in documentation.
+- Minor formatting updates.
+- Add reverse dependency checks.
 
 ## bayesDP 1.3.6
 
 CRAN release: 2022-01-30
 
-- Fixed CRAN CMD warnings for S4 generics
+- Fixed CRAN CMD warnings for S4 generics.
 
 ## bayesDP 1.3.5
 
 CRAN release: 2021-11-16
 
-- Fixed CRAN CMD warnings for S4 generics
+- Fixed CRAN CMD warnings for S4 generics.
 
 ## bayesDP 1.3.4
 
 CRAN release: 2021-01-06
 
-- Updates to README and DESCRIPTION
-- Updates to .gitignore file
-- Add codecov for coverage checking
-- Updates to R code formatting
-- Added GitHub Actions CI
+- Updates to README and DESCRIPTION.
+- Updates to .gitignore file.
+- Add codecov for coverage checking.
+- Updates to R code formatting.
+- Added GitHub Actions CI.
 
 ## bayesDP 1.3.3
 
 CRAN release: 2020-02-03
 
-- New package maintainer (Graeme L. Hickey) since package was orphaned
-- Updates to README, DESCRIPTION, NAMESPACE
-- Added `stop` break to `discount_logit` for `method = mc`
+- New package maintainer (Graeme L. Hickey) since package was orphaned.
+- Updates to README, DESCRIPTION, NAMESPACE.
+- Added `stop` break to `discount_logit` for `method = mc`.
 
 ## bayesDP 1.3.2
 
 CRAN release: 2018-07-10
 
-- Minor `bdplm` vignette typo fixes
+- Minor `bdplm` vignette typo fixes.
 
 ## bayesDP 1.3.1
 
@@ -426,18 +376,18 @@ CRAN release: 2018-04-11
 
 ### Major new features
 
-- Changes to inputs for `bdpsurvival`
+- Changes to inputs for `bdpsurvival`.
   - Current and (optional) historical data are specified in separate
-    data frames
+    data frames.
 - Updated normal approximation used for `method = "mc"` of the
-  `bdpbinomial` and `bdpnormal` functions
+  `bdpbinomial` and `bdpnormal` functions.
 
 ### Bug fixes and minor improvements
 
-- Summary method for `bdplm` now exists and mimics `lm`
-- Removed `bdpbinomial` vignette language around success (vs event)
+- Summary method for `bdplm` now exists and mimics `lm`.
+- Removed `bdpbinomial` vignette language around success (vs event).
 - Reported one-arm sample size for `bdpsurvival` print method adjusted
-  to current data only
+  to current data only.
 
 ## bayesDP 1.3.0
 
@@ -445,21 +395,21 @@ CRAN release: 2017-12-07
 
 ### Major new features
 
-- Addition of the `bdplm` function for two-arm trials
+- Addition of the `bdplm` function for two-arm trials.
 - Users can now choose between 3 discount functions via the
-  `discount_function` input:
-  - Weibull CDF
+  `discount_function` input.
+  - Weibull CDF.
   - Scaled Weibull CDF - scales the Weibull CDF so that the max possible
-    value is 1
-  - Identity - sets the discount weight to the posterior probability
-- Removal of `bdpregression`
+    value is 1.
+  - Identity - sets the discount weight to the posterior probability.
+- Removal of `bdpregression`.
 
 ### Bug fixes and minor improvements
 
-- Removed two-sided and one-sided function inputs to avoid confusion
+- Removed two-sided and one-sided function inputs to avoid confusion.
 - Posterior probabilities for `method = "mc"` switched from `pshisq` to
-  pnorm
-- Updated vignettes to reflect new features
+  pnorm.
+- Updated vignettes to reflect new features.
 
 ## bayesDP 1.2.0
 
@@ -467,14 +417,14 @@ CRAN release: 2017-07-10
 
 ### Major new features
 
-- Supports one-arm regression analysis
-- Two additional modular functions
-- Implementation of Monte Carlo-based estimation of alpha discount
+- Supports one-arm regression analysis.
+- Two additional modular functions.
+- Implementation of Monte Carlo-based estimation of alpha discount.
 
 ### Bug fixes and minor improvements
 
-- Fixes to class slots
-- Added `print` input to plot method
+- Fixes to class slots.
+- Added `print` input to plot method.
 
 ## bayesDP 1.1.0
 
@@ -482,47 +432,47 @@ CRAN release: 2017-05-03
 
 ### Major new features
 
-- Supports two-arm survival analysis via hazard rate comparisons
+- Supports two-arm survival analysis via hazard rate comparisons.
 - Completely revamped summary and print methods to produce better
-  formatted results
-- Plot method allows users to specify a `type`
+  formatted results.
+- Plot method allows users to specify a `type`.
 - Added vignettes for each of `bdpbinomial`, `bdpnormal`, and
-  `bdpsurvival`
+  `bdpsurvival`.
 - Implemented the `fix_alpha` input which allows users to set the
-  historical data weight at `alpha_max`
+  historical data weight at `alpha_max`.
 
 ### Bug fixes and minor improvements
 
 - Fixed error with two-arm analysis where models did not fit if either
-  the current or historical control data were not input
-- Changed `two_side` input to logical
+  the current or historical control data were not input.
+- Changed `two_side` input to logical.
 - Consolidated several internal functions into a single function for
-  computational efficiency gains
+  computational efficiency gains.
 
 ## bayesDP 1.0.3
 
-- README update
-- Added plot types
-- Added Vignettes
-- Added logo
-- Improved documentation
-- Updated `print`, `summary`, `plot` methods
-- Refactored `bdpnormal` / `bdpbinomial`
+- README update.
+- Added plot types.
+- Added Vignettes.
+- Added logo.
+- Improved documentation.
+- Updated `print`, `summary`, `plot` methods.
+- Refactored `bdpnormal` / `bdpbinomial`.
 
 ## bayesDP 1.0.2
 
 CRAN release: 2017-04-14
 
-- Crucial bugfixes
+- Crucial bugfixes.
 
 ## bayesDP 1.0.1
 
 CRAN release: 2017-04-01
 
-- User requested bugfixes
+- User requested bugfixes.
 
 ## bayesDP 1.0.0
 
 CRAN release: 2017-03-22
 
-- Initial CRAN release with normal, binomial and survival functions
+- Initial CRAN release with normal, binomial and survival functions.

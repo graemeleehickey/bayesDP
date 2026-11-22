@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">bayesDP</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.13.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.9</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -47,295 +47,234 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.3.13.9000" id="bayesdp-13139000">bayesDP 1.3.13.9000<a class="anchor" aria-label="anchor" href="#bayesdp-13139000"></a></h2>
-<div class="section level3">
-<h3 id="bug-fixes-1-3-13-9000">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-3-13-9000"></a></h3>
-<ul><li>
-<code><a href="../reference/bdplogit.html">bdplogit()</a></code> now stops with a stage-specific explanation when complete or quasi-complete separation, or a rank-deficient model matrix, prevents a supported analysis. Checks cover each arm’s borrowing comparison, the historical regression when arm priors are estimated, and the current-data regression. This prevents borrowing weights from improper comparison posteriors and historical priors derived from infinite maximum likelihood estimates. The current-data check reflects a limitation of the sampler, including when proper priors are supplied.</li>
-<li>With <code>fix_alpha = TRUE</code>, <code><a href="../reference/bdplogit.html">bdplogit()</a></code> now uses the prescribed arm weights without fitting comparison models; internal comparison probabilities are recorded as missing. Historical-prior estimation and current-data checks still apply. Prescribed weights must be finite values in [0, 1].</li>
-</ul></div>
-<div class="section level3">
-<h3 id="tests-1-3-13-9000">Tests<a class="anchor" aria-label="anchor" href="#tests-1-3-13-9000"></a></h3>
-<ul><li>Expanded checks for incomplete inputs, historical-only controls, factor contrasts, regression discount functions, plot options, and survival calculations at interval boundaries and numerical limits. Added comparisons with analytical posterior moments and integrated hazards.</li>
-<li>Added logistic regression checks for zero-event and all-event groups, covariate separation, quasi-complete separation, rank deficiency, prescribed weights, and supplied historical priors.</li>
-</ul></div>
-<div class="section level3">
-<h3 id="housekeeping-1-3-13-9000">Housekeeping<a class="anchor" aria-label="anchor" href="#housekeeping-1-3-13-9000"></a></h3>
-<ul><li>Added <code>detectseparation</code> for logistic separation checks and documented the supported fitting conditions and the distinction between prescribed and estimated weights. Logistic sampling still requires <code>method = "fixed"</code>.</li>
-</ul></div>
-</div>
-    <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.3.13" id="bayesdp-1313">bayesDP 1.3.13<a class="anchor" aria-label="anchor" href="#bayesdp-1313"></a></h2>
-<div class="section level3">
-<h3 id="bug-fixes-1-3-13">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-3-13"></a></h3>
-<ul><li>Corrected survival augmentation to discount historical event counts and exposure while including the baseline Gamma prior once (<a href="https://github.com/graemeleehickey/bayesDP/issues/17" class="external-link">#17</a>). The augmented shape is now <code>a0 + D + alpha * D0</code>, and the rate is <code>b0 + T + alpha * T0</code>, removing the extra <code>alpha * a0</code> and <code>alpha * b0</code> contributions.</li>
-<li>Applied the correction to one- and two-arm analyses, including prescribed, estimated fixed, and draw-specific weights. Full borrowing now gives the pooled interval-hazard posterior with the same baseline prior and interval boundaries. Survival estimates and treatment effects may change, especially with sparse events or influential priors; refit earlier analyses to use the corrected update.</li>
-</ul></div>
-<div class="section level3">
-<h3 id="documentation-and-tests-1-3-13">Documentation and tests<a class="anchor" aria-label="anchor" href="#documentation-and-tests-1-3-13"></a></h3>
-<ul><li>Updated the survival and borrowing vignettes to explain historical likelihood discounting, distinguish the historical weight <code>alpha</code> from the Gamma shape <code>a0</code>, and interpret current-only and full-borrowing limits. Regenerated the worked examples with the corrected update.</li>
-<li>Added checks against analytical Gamma and survival moments, current-only and pooled analyses, different arm weights, draw-specific Gamma mixtures, zero events, and intervals without observations. The tests use influential priors as well as the default prior, so duplicated prior contributions are detected.</li>
-</ul></div>
-</div>
-    <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.3.12" id="bayesdp-1312">bayesDP 1.3.12<a class="anchor" aria-label="anchor" href="#bayesdp-1312"></a></h2>
-<div class="section level3">
-<h3 id="bug-fixes-1-3-12">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-3-12"></a></h3>
-<ul><li>Corrected survival Monte Carlo borrowing to standardize log survival differences by their posterior SDs and apply the two-sided normal-tail transformation once (<a href="https://github.com/graemeleehickey/bayesDP/issues/16" class="external-link">#16</a>).</li>
-<li>Current–historical comparisons within each arm now use analytic log-Gamma variances and inverse-variance interval weights. This changes two-arm borrowing under both <code>method = "fixed"</code> and <code>method = "mc"</code> (<a href="https://github.com/graemeleehickey/bayesDP/issues/16" class="external-link">#16</a>).</li>
-<li>Removed the artificial hazard offset and retained log-Gamma draws for stable comparisons and two-arm effects with sparse or zero-event intervals. One-arm comparisons use cumulative hazards directly, avoiding loss of information when survival probabilities round to zero or one. The changed sampling calculations also change results obtained with a previous random seed.</li>
-<li>Made <code>p_hat</code> consistent with the chosen comparison method when <code>fix_alpha = TRUE</code>, while preserving the prescribed weight. Added checks for invalid prior, horizon, and borrowing settings, and corrected interval handling for a single constant hazard and intervals with no observations.</li>
-<li>The historical-posterior augmentation, including its additional baseline-prior contribution, is unchanged and remains under review in <a href="https://github.com/graemeleehickey/bayesDP/issues/17" class="external-link">#17</a>.</li>
-</ul></div>
-<div class="section level3">
-<h3 id="documentation-and-tests-1-3-12">Documentation and tests<a class="anchor" aria-label="anchor" href="#documentation-and-tests-1-3-12"></a></h3>
-<ul><li>Updated the survival vignette with the corrected formulas, a comparison of fixed and draw-specific borrowing, numerical considerations, and the limitations of normal-tail comparisons with sparse events.</li>
-<li>Added independent calculation checks, distributional checks for log-Gamma draws, and tests covering time-unit changes, interval and draw ordering, zero events, extreme survival probabilities, all discount functions, and prescribed weights.</li>
-</ul></div>
-</div>
-    <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.3.11" id="bayesdp-1311">bayesDP 1.3.11<a class="anchor" aria-label="anchor" href="#bayesdp-1311"></a></h2>
-<div class="section level3">
-<h3 id="bug-fixes-1-3-11">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-3-11"></a></h3>
-<ul><li>Corrected survival summaries to count participants and calculate risk sets from their observed follow-up, rather than treating split hazard intervals as separate participants (<a href="https://github.com/graemeleehickey/bayesDP/issues/18" class="external-link">#18</a>). Artificial interval endpoints no longer appear as observation times in the one-arm summary.</li>
-<li>Corrected regression residual summaries to use covariates and the reported intercept on the same original scale, including encoded factor covariates (<a href="https://github.com/graemeleehickey/bayesDP/issues/18" class="external-link">#18</a>).</li>
-<li>Applied the correction to logistic regression, which shares the regression summary method. Its residuals now use fitted probabilities, all coefficient rows are retained, and no residual SD is reported for binary outcomes.</li>
-<li>Survival fits now retain participant-level records, and regression fits retain covariate centering means. Older saved fits must be refitted before using the affected summaries; the functions explain when this is necessary.</li>
-</ul></div>
-<div class="section level3">
-<h3 id="documentation-and-tests-1-3-11">Documentation and tests<a class="anchor" aria-label="anchor" href="#documentation-and-tests-1-3-11"></a></h3>
-<ul><li>Updated the regression and survival vignettes to demonstrate the corrected summaries, and labelled one-arm survival uncertainty as posterior SDs and equal-tailed credible intervals.</li>
-<li>Added tests for participant counts, risk sets, tied and censored observations, events at interval boundaries, historical-only controls, and regression residuals with shifted and factor covariates.</li>
-</ul></div>
-</div>
-    <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.3.10" id="bayesdp-1310">bayesDP 1.3.10<a class="anchor" aria-label="anchor" href="#bayesdp-1310"></a></h2>
-<div class="section level3">
-<h3 id="bug-fixes-1-3-10">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-3-10"></a></h3>
-<ul><li>Corrected the normal-data <code><a href="../reference/probability_discount.html">probability_discount()</a></code> helper to standardize Monte Carlo mean differences by their conditional standard error, matching <code><a href="../reference/bdpnormal.html">bdpnormal()</a></code> and preserving the comparison when outcome units change.</li>
-<li>Corrected discount plots to include <code>alpha_max</code> for each arm and to show a constant weight when <code>fix_alpha = TRUE</code>.</li>
-<li>Corrected the fixed-weight probability definitions and the normal vignette’s treatment-effect conclusion (<a href="https://github.com/graemeleehickey/bayesDP/issues/19" class="external-link">#19</a>, <a href="https://github.com/graemeleehickey/bayesDP/issues/20" class="external-link">#20</a>).</li>
-</ul></div>
-<div class="section level3">
-<h3 id="presentation-and-documentation-1-3-10">Presentation and documentation<a class="anchor" aria-label="anchor" href="#presentation-and-documentation-1-3-10"></a></h3>
-<ul><li>Reorganised the four model vignettes around worked examples, interpretation, assumptions, and model details, with a shared historical-borrowing overview and formal references.</li>
-<li>Added comparisons of current-only, estimated, and full borrowing; generated numerical interpretations from fitted draws; and included a survival example with right censoring.</li>
-<li>Clarified the distinction between estimated fixed and draw-specific weights, conditional and marginal distributions, baseline priors, regression covariate-prior precision, and posterior medians versus means.</li>
-<li>Added <code>type = "effect"</code> plots for binomial and normal treatment-minus-control contrasts. Posterior plots now use explicit parameter labels and consistent information-source colours and line types.</li>
-<li>Labelled binomial and normal summary intervals as equal-tailed credible intervals and retained four decimal places for arm estimates.</li>
-<li>Documented the unresolved survival Monte Carlo calculation, Gamma-prior augmentation, and summary-output problems (<a href="https://github.com/graemeleehickey/bayesDP/issues/16" class="external-link">#16</a>–#18). These calculations are not changed in this release; affected examples identify the limitations and avoid the incorrect summary output.</li>
-</ul></div>
-<div class="section level3">
-<h3 id="tests-1-3-10">Tests<a class="anchor" aria-label="anchor" href="#tests-1-3-10"></a></h3>
-<ul><li>Added checks against numerical integration, outcome-unit changes, the model’s comparison draws, discount-plot limits, treatment-effect plots, numerical summary labels, and the documented regression covariate-prior behaviour.</li>
-<li>Included the test suite in source packages so <code>R CMD check</code> runs it, and declared the existing <code>withr</code> test dependency.</li>
-</ul></div>
-</div>
-    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.3.9" id="bayesdp-139">bayesDP 1.3.9<a class="anchor" aria-label="anchor" href="#bayesdp-139"></a></h2>
 <div class="section level3">
 <h3 id="bug-fixes-1-3-9">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-3-9"></a></h3>
-<ul><li>Fixed equation rendering in the pkgdown articles with KaTeX and updated the standalone HTML vignettes to MathJax 3.</li>
+<ul><li>
+<code><a href="../reference/bdplogit.html">bdplogit()</a></code> now stops with a stage-specific explanation when complete or quasi-complete separation, or a rank-deficient model matrix, prevents a supported analysis. Checks cover each arm’s borrowing comparison, the historical regression when arm priors are estimated, and the current-data regression. This prevents borrowing weights from improper comparison posteriors and historical priors derived from infinite maximum likelihood estimates. The current-data check reflects a limitation of the sampler, including when proper priors are supplied.</li>
+<li>With <code>fix_alpha = TRUE</code>, <code><a href="../reference/bdplogit.html">bdplogit()</a></code> now uses the prescribed arm weights without fitting comparison models; internal comparison probabilities are recorded as missing. Historical-prior estimation and current-data checks still apply. Prescribed weights must be finite values in [0, 1].</li>
+<li>Corrected survival augmentation to discount historical event counts and exposure while including the baseline Gamma prior once (<a href="https://github.com/graemeleehickey/bayesDP/issues/17" class="external-link">#17</a>). The augmented shape is now <code>a0 + D + alpha * D0</code>, and the rate is <code>b0 + T + alpha * T0</code>, removing the extra <code>alpha * a0</code> and <code>alpha * b0</code> contributions.</li>
+<li>Applied the correction to one- and two-arm analyses, including prescribed, estimated fixed, and draw-specific weights. Full borrowing now gives the pooled interval-hazard posterior with the same baseline prior and interval boundaries. Survival estimates and treatment effects may change, especially with sparse events or influential priors; refit earlier analyses to use the corrected update.</li>
+<li>Corrected survival Monte Carlo borrowing to standardize log survival differences by their posterior SDs and apply the two-sided normal-tail transformation once (<a href="https://github.com/graemeleehickey/bayesDP/issues/16" class="external-link">#16</a>).</li>
+<li>Current–historical comparisons within each arm now use analytic log-Gamma variances and inverse-variance interval weights. This changes two-arm borrowing under both <code>method = "fixed"</code> and <code>method = "mc"</code> (<a href="https://github.com/graemeleehickey/bayesDP/issues/16" class="external-link">#16</a>).</li>
+<li>Removed the artificial hazard offset and retained log-Gamma draws for stable comparisons and two-arm effects with sparse or zero-event intervals. One-arm comparisons use cumulative hazards directly, avoiding loss of information when survival probabilities round to zero or one. The changed sampling calculations also change results obtained with a previous random seed.</li>
+<li>Made <code>p_hat</code> consistent with the chosen comparison method when <code>fix_alpha = TRUE</code>, while preserving the prescribed weight. Added checks for invalid prior, horizon, and borrowing settings, and corrected interval handling for a single constant hazard and intervals with no observations.</li>
+<li>Corrected survival summaries to count participants and calculate risk sets from their observed follow-up, rather than treating split hazard intervals as separate participants (<a href="https://github.com/graemeleehickey/bayesDP/issues/18" class="external-link">#18</a>). Artificial interval endpoints no longer appear as observation times in the one-arm summary.</li>
+<li>Corrected regression residual summaries to use covariates and the reported intercept on the same original scale, including encoded factor covariates (<a href="https://github.com/graemeleehickey/bayesDP/issues/18" class="external-link">#18</a>).</li>
+<li>Applied the correction to logistic regression, which shares the regression summary method. Its residuals now use fitted probabilities, all coefficient rows are retained, and no residual SD is reported for binary outcomes.</li>
+<li>Survival fits now retain participant-level records, and regression fits retain covariate centering means. Older saved fits must be refitted before using the affected summaries; the functions explain when this is necessary.</li>
+<li>Corrected the normal-data <code><a href="../reference/probability_discount.html">probability_discount()</a></code> helper to standardize Monte Carlo mean differences by their conditional standard error, matching <code><a href="../reference/bdpnormal.html">bdpnormal()</a></code> and preserving the comparison when outcome units change.</li>
+<li>Corrected discount plots to include <code>alpha_max</code> for each arm and to show a constant weight when <code>fix_alpha = TRUE</code>.</li>
+<li>Corrected the fixed-weight probability definitions and the normal vignette’s treatment-effect conclusion (<a href="https://github.com/graemeleehickey/bayesDP/issues/19" class="external-link">#19</a>, <a href="https://github.com/graemeleehickey/bayesDP/issues/20" class="external-link">#20</a>).</li>
+<li>Fixed equation rendering in the pkgdown articles with KaTeX and updated the standalone HTML vignettes to MathJax 3.</li>
 <li>Corrected the diagonal-matrix notation in the linear regression vignette so that it renders correctly on the website.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="new-features-1-3-9">New features<a class="anchor" aria-label="anchor" href="#new-features-1-3-9"></a></h3>
-<ul><li>Added a light/dark mode switch to the pkgdown website, including matching colours for R code.</li>
+<ul><li>Added <code>type = "effect"</code> plots for binomial and normal treatment-minus-control contrasts. Posterior plots now use explicit parameter labels and consistent information-source colours and line types.</li>
+<li>Added a light/dark mode switch to the pkgdown website, including matching colours for R code.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="tests-1-3-9">Tests<a class="anchor" aria-label="anchor" href="#tests-1-3-9"></a></h3>
+<ul><li>Expanded checks for incomplete inputs, historical-only controls, factor contrasts, regression discount functions, plot options, and survival calculations at interval boundaries and numerical limits. Added comparisons with analytical posterior moments and integrated hazards.</li>
+<li>Added logistic regression checks for zero-event and all-event groups, covariate separation, quasi-complete separation, rank deficiency, prescribed weights, and supplied historical priors.</li>
+<li>Added checks against analytical Gamma and survival moments, current-only and pooled analyses, different arm weights, draw-specific Gamma mixtures, zero events, and intervals without observations. The tests use influential priors as well as the default prior, so duplicated prior contributions are detected.</li>
+<li>Added independent calculation checks, distributional checks for log-Gamma draws, and tests covering time-unit changes, interval and draw ordering, zero events, extreme survival probabilities, all discount functions, and prescribed weights.</li>
+<li>Added tests for participant counts, risk sets, tied and censored observations, events at interval boundaries, historical-only controls, and regression residuals with shifted and factor covariates.</li>
+<li>Added checks against numerical integration, outcome-unit changes, the model’s comparison draws, discount-plot limits, treatment-effect plots, numerical summary labels, and the documented regression covariate-prior behaviour.</li>
+<li>Included the test suite in source packages so <code>R CMD check</code> runs it, and declared the existing <code>withr</code> test dependency.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="housekeeping-1-3-9">Housekeeping<a class="anchor" aria-label="anchor" href="#housekeeping-1-3-9"></a></h3>
-<ul><li>Added strict KaTeX validation to the website build so unsupported LaTeX commands and invalid equations prevent deployment.</li>
+<ul><li>Added <code>detectseparation</code> for logistic separation checks and documented the supported fitting conditions and the distinction between prescribed and estimated weights. Logistic sampling still requires <code>method = "fixed"</code>.</li>
+<li>Updated the survival and borrowing vignettes to explain historical likelihood discounting, distinguish the historical weight <code>alpha</code> from the Gamma shape <code>a0</code>, and interpret current-only and full-borrowing limits. Regenerated the worked examples with the corrected update.</li>
+<li>Updated the survival vignette with the corrected formulas, a comparison of fixed and draw-specific borrowing, numerical considerations, and the limitations of normal-tail comparisons with sparse events.</li>
+<li>Updated the regression and survival vignettes to demonstrate the corrected summaries, and labelled one-arm survival uncertainty as posterior SDs and equal-tailed credible intervals.</li>
+<li>Reorganised the four model vignettes around worked examples, interpretation, assumptions, and model details, with a shared historical-borrowing overview and formal references.</li>
+<li>Added comparisons of current-only, estimated, and full borrowing; generated numerical interpretations from fitted draws; and included a survival example with right censoring.</li>
+<li>Clarified the distinction between estimated fixed and draw-specific weights, conditional and marginal distributions, baseline priors, regression covariate-prior precision, and posterior medians versus means.</li>
+<li>Labelled binomial and normal summary intervals as equal-tailed credible intervals and retained four decimal places for arm estimates.</li>
+<li>Added strict KaTeX validation to the website build so unsupported LaTeX commands and invalid equations prevent deployment.</li>
 <li>Improved equation spacing and alignment, split long equations across lines, and divided dense paragraphs in all four vignettes to make them easier to read.</li>
 <li>Standardised spacing in R examples and documented function calls throughout the vignettes, README, and help pages.</li>
+<li>Added the CRAN DOI badge to the README and package website.</li>
 </ul></div>
 </div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.3.8" id="bayesdp-138">bayesDP 1.3.8<a class="anchor" aria-label="anchor" href="#bayesdp-138"></a></h2><p class="text-muted">CRAN release: 2026-06-25</p>
 <div class="section level3">
 <h3 id="bug-fixes-1-3-8">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-3-8"></a></h3>
-<ul><li>Fixed <code><a href="../reference/bdplm.html">bdplm()</a></code> and <code><a href="../reference/bdplogit.html">bdplogit()</a></code> producing invalid historical borrowing when covariates were not mean-centered. Because the models use an intercept-free parameterization (separate treatment and control means), uncentered covariates made the arm-mean estimators strongly correlated and inflated their standard errors as extrapolation errors at covariate = 0, corrupting the (diagonal) discount prior. Both functions now automatically mean-center covariates on their pooled (current plus historical) mean and back-transform the reported intercept, so estimates are invariant to covariate location shifts (<a href="https://github.com/graemeleehickey/bayesDP/issues/1" class="external-link">#1</a>)</li>
-<li>Fixed a bug where the <code>summary</code> methods for <code>bdpnormal</code> and <code>bdpbinomial</code> read the one-/two-arm indicator from the wrong list element (<code>args</code> instead of <code>args1</code>), causing two-arm fits to be summarised as one-arm</li>
-<li>Fixed a bug in the two-arm <code>bdpsurvival</code> summary that errored when current control data were absent</li>
-<li>Fixed an invalid matrix index (<code>Y[, 0]</code>) used when computing the default <code>surv_time</code> in <code>bdpsurvival</code>
-</li>
-<li>Fixed the <code>compare</code> argument being silently dropped (passed into <code><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste()</a></code>) rather than stored in the <code>bdpnormal</code> and <code>bdpbinomial</code> fit objects</li>
-<li>Fixed the <code>mc</code> discount-weight Z-statistic in <code>bdplm</code> to divide by the standard error rather than the variance</li>
-<li>Fixed <code>plot</code> methods hanging on the interactive “Hit <return>” prompt in non-interactive sessions (e.g. tests, CI); <code>par(ask = ...)</code> now respects <code><a href="https://rdrr.io/r/base/interactive.html" class="external-link">interactive()</a></code></return></li>
+<ul><li>Fixed <code><a href="../reference/bdplm.html">bdplm()</a></code> and <code><a href="../reference/bdplogit.html">bdplogit()</a></code> producing invalid historical borrowing when covariates were not mean-centered. Because the models use an intercept-free parameterization (separate treatment and control means), uncentered covariates made the arm-mean estimators strongly correlated and inflated their standard errors as extrapolation errors at covariate = 0, corrupting the (diagonal) discount prior. Both functions now automatically mean-center covariates on their pooled (current plus historical) mean and back-transform the reported intercept, so estimates are invariant to covariate location shifts (<a href="https://github.com/graemeleehickey/bayesDP/issues/1" class="external-link">#1</a>).</li>
+<li>Fixed a bug where the <code>summary</code> methods for <code>bdpnormal</code> and <code>bdpbinomial</code> read the one-/two-arm indicator from the wrong list element (<code>args</code> instead of <code>args1</code>), causing two-arm fits to be summarised as one-arm.</li>
+<li>Fixed a bug in the two-arm <code>bdpsurvival</code> summary that errored when current control data were absent.</li>
+<li>Fixed an invalid matrix index (<code>Y[, 0]</code>) used when computing the default <code>surv_time</code> in <code>bdpsurvival</code>.</li>
+<li>Fixed the <code>compare</code> argument being silently dropped (passed into <code><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste()</a></code>) rather than stored in the <code>bdpnormal</code> and <code>bdpbinomial</code> fit objects.</li>
+<li>Fixed the <code>mc</code> discount-weight Z-statistic in <code>bdplm</code> to divide by the standard error rather than the variance.</li>
+<li>Fixed <code>plot</code> methods hanging on the interactive “Hit <return>” prompt in non-interactive sessions (e.g. tests, CI); <code>par(ask = ...)</code> now respects <code><a href="https://rdrr.io/r/base/interactive.html" class="external-link">interactive()</a></code>.</return></li>
 <li>Fixed <code><a href="../reference/bdplogit.html">bdplogit()</a></code> failing during its main model fit because the analysis data passed to <code>MCMClogit()</code> omitted the response variable. The discounted prior precision matrix is now also passed to <code>MCMClogit()</code> correctly (<a href="https://github.com/graemeleehickey/bayesDP/issues/12" class="external-link">#12</a>).</li>
 <li>Fixed <code><a href="../reference/alpha_discount.html">alpha_discount()</a></code> so <code>alpha_max</code> is respected when <code>discount_function = "identity"</code> (<a href="https://github.com/graemeleehickey/bayesDP/issues/6" class="external-link">#6</a>).</li>
 <li>Fixed <code><a href="../reference/bdpnormal.html">bdpnormal()</a></code> one-arm normal fits with only one source of data for an arm (current-only or historical-only internally) returning an over-dispersed <code>posterior_mu</code>. These branches now return the conjugate posterior of the mean rather than adding an extra observation-level draw (posterior-predictive-like variance) (<a href="https://github.com/graemeleehickey/bayesDP/issues/15" class="external-link">#15</a>).</li>
 </ul></div>
 <div class="section level3">
 <h3 id="tests-1-3-8">Tests<a class="anchor" aria-label="anchor" href="#tests-1-3-8"></a></h3>
-<ul><li>Re-enabled the <code>testthat</code> test harness (<code>tests/testthat.R</code>)</li>
+<ul><li>Re-enabled the <code>testthat</code> test harness (<code>tests/testthat.R</code>).</li>
 <li>Rewrote the test suite with <code>expect_*()</code> assertions: augmented one-arm binomial and normal posterior means are pinned against their closed-form conjugate values, and the fixed bugs (one-/two-arm dispatch, stored <code>compare</code> flag, default survival time, two-arm survival summary) are now guarded by tests. Plot calls in tests pass an explicit <code>type</code> so they no longer prompt for input.</li>
-<li>Expanded test coverage from ~60% to ~76%, adding tests for <code><a href="../reference/alpha_discount.html">alpha_discount()</a></code> and <code><a href="../reference/probability_discount.html">probability_discount()</a></code> (both now fully covered), the <code><a href="../reference/ppexp.html">ppexp()</a></code> vector and matrix paths, the <code>print</code> methods (now fully covered), additional <code>plot</code> branches, input-validation paths, the <code><a href="../reference/bdplogit.html">bdplogit()</a></code> main fit path, factor-covariate handling in <code><a href="../reference/bdplm.html">bdplm()</a></code> and <code><a href="../reference/bdplogit.html">bdplogit()</a></code>, and the <code>mc</code> discounting method for <code>bdpnormal</code> and <code>bdpbinomial</code>
-</li>
-<li>Added regression tests pinning the <code>bdpnormal</code> flat-prior draw of the mean (<code>posterior_flat_mu</code>) and the fixed current-only <code>posterior_mu</code> against their closed-form conjugate (Student-t) variance</li>
-<li>Expanded <code>method="mc"</code> documentation in the binomial, normal, and survival interfaces/vignettes to note that per-iteration recomputation of the stochastic comparison yields a random <code>alpha_discount</code> sequence that can show noticeable Monte Carlo variability (<a href="https://github.com/graemeleehickey/bayesDP/issues/4" class="external-link">#4</a>)</li>
-<li>Guarded the plotting tests with a null graphics device so they no longer write a stray <code>Rplots.pdf</code>
-</li>
+<li>Expanded test coverage from ~60% to ~76%, adding tests for <code><a href="../reference/alpha_discount.html">alpha_discount()</a></code> and <code><a href="../reference/probability_discount.html">probability_discount()</a></code> (both now fully covered), the <code><a href="../reference/ppexp.html">ppexp()</a></code> vector and matrix paths, the <code>print</code> methods (now fully covered), additional <code>plot</code> branches, input-validation paths, the <code><a href="../reference/bdplogit.html">bdplogit()</a></code> main fit path, factor-covariate handling in <code><a href="../reference/bdplm.html">bdplm()</a></code> and <code><a href="../reference/bdplogit.html">bdplogit()</a></code>, and the <code>mc</code> discounting method for <code>bdpnormal</code> and <code>bdpbinomial</code>.</li>
+<li>Added regression tests pinning the <code>bdpnormal</code> flat-prior draw of the mean (<code>posterior_flat_mu</code>) and the fixed current-only <code>posterior_mu</code> against their closed-form conjugate (Student-t) variance.</li>
+<li>Expanded <code>method="mc"</code> documentation in the binomial, normal, and survival interfaces/vignettes to note that per-iteration recomputation of the stochastic comparison yields a random <code>alpha_discount</code> sequence that can show noticeable Monte Carlo variability (<a href="https://github.com/graemeleehickey/bayesDP/issues/4" class="external-link">#4</a>).</li>
+<li>Guarded the plotting tests with a null graphics device so they no longer write a stray <code>Rplots.pdf</code>.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="documentation-1-3-8">Documentation<a class="anchor" aria-label="anchor" href="#documentation-1-3-8"></a></h3>
-<ul><li>Clarified the <code>prior_covariate_sd</code> documentation in <code><a href="../reference/bdplm.html">bdplm()</a></code> and <code><a href="../reference/bdplogit.html">bdplogit()</a></code> to note that covariate effects carry an intentional near-zero discount weight, making their priors effectively flat. The supplied value has negligible influence on the posterior, and the effective prior standard deviation is roughly 1e6 larger than the nominal value at the default (<a href="https://github.com/graemeleehickey/bayesDP/issues/2" class="external-link">#2</a>)</li>
+<ul><li>Clarified the <code>prior_covariate_sd</code> documentation in <code><a href="../reference/bdplm.html">bdplm()</a></code> and <code><a href="../reference/bdplogit.html">bdplogit()</a></code> to note that covariate effects carry an intentional near-zero discount weight, making their priors effectively flat. The supplied value has negligible influence on the posterior, and the effective prior standard deviation is roughly 1e6 larger than the nominal value at the default (<a href="https://github.com/graemeleehickey/bayesDP/issues/2" class="external-link">#2</a>).</li>
 </ul></div>
 <div class="section level3">
 <h3 id="housekeeping-1-3-8">Housekeeping<a class="anchor" aria-label="anchor" href="#housekeeping-1-3-8"></a></h3>
-<ul><li>Removed AppVeyor continuous integration</li>
-<li>Updated GitHub Actions workflows to the latest <code>r-lib/actions</code> examples (<code>actions/checkout@v6</code>, <code>codecov/codecov-action@v6</code>, <code>actions/upload-artifact@v7</code>)</li>
-<li>Made Codecov upload issues non-fatal in the coverage workflow so tests and coverage generation remain the CI gate while Codecov service/signature failures do not fail the build</li>
-<li>Added a <code>pkgdown</code> website and accompanying GitHub Actions workflow</li>
-<li>Replaced deprecated <code><a href="https://ggplot2.tidyverse.org/reference/aes_.html" class="external-link">ggplot2::aes_string()</a></code> with <code><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes()</a></code> and the <code>.data</code> pronoun in all <code>plot</code> methods</li>
-<li>Replaced deprecated <code>size</code> aesthetic with <code>linewidth</code> in <code><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line()</a></code> calls</li>
-<li>De-duplicated the internal <code>model.matrixBayes()</code> helper (previously defined identically in both <code>bdplm</code> and <code>bdplogit</code>) into a single internal file</li>
-<li>Removed leftover commented-out debugging code</li>
-<li>Collapsed a redundant conditional in <code>posterior_survival()</code> where both branches initialized identical hazard matrices (<a href="https://github.com/graemeleehickey/bayesDP/issues/8" class="external-link">#8</a>)</li>
-<li>Tidied the <code>mc</code> sigma2 sampling in <code><a href="../reference/bdplm.html">bdplm()</a></code> and kept the sampling weights aligned with the candidate grid when some marginal log-likelihoods are non-finite (<a href="https://github.com/graemeleehickey/bayesDP/issues/9" class="external-link">#9</a>)</li>
+<ul><li>Removed AppVeyor continuous integration.</li>
+<li>Updated GitHub Actions workflows to the latest <code>r-lib/actions</code> examples (<code>actions/checkout@v6</code>, <code>codecov/codecov-action@v6</code>, <code>actions/upload-artifact@v7</code>).</li>
+<li>Made Codecov upload issues non-fatal in the coverage workflow so tests and coverage generation remain the CI gate while Codecov service/signature failures do not fail the build.</li>
+<li>Added a <code>pkgdown</code> website and accompanying GitHub Actions workflow.</li>
+<li>Replaced deprecated <code><a href="https://ggplot2.tidyverse.org/reference/aes_.html" class="external-link">ggplot2::aes_string()</a></code> with <code><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes()</a></code> and the <code>.data</code> pronoun in all <code>plot</code> methods.</li>
+<li>Replaced deprecated <code>size</code> aesthetic with <code>linewidth</code> in <code><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line()</a></code> calls.</li>
+<li>De-duplicated the internal <code>model.matrixBayes()</code> helper (previously defined identically in both <code>bdplm</code> and <code>bdplogit</code>) into a single internal file.</li>
+<li>Removed leftover commented-out debugging code.</li>
+<li>Collapsed a redundant conditional in <code>posterior_survival()</code> where both branches initialized identical hazard matrices (<a href="https://github.com/graemeleehickey/bayesDP/issues/8" class="external-link">#8</a>).</li>
+<li>Tidied the <code>mc</code> sigma2 sampling in <code><a href="../reference/bdplm.html">bdplm()</a></code> and kept the sampling weights aligned with the candidate grid when some marginal log-likelihoods are non-finite (<a href="https://github.com/graemeleehickey/bayesDP/issues/9" class="external-link">#9</a>).</li>
 <li>
-<code><a href="../reference/ppexp.html">ppexp()</a></code> now validates its <code>x</code> argument and errors with an informative message when it is neither a numeric vector nor a matrix (<a href="https://github.com/graemeleehickey/bayesDP/issues/10" class="external-link">#10</a>)</li>
-<li>Survival curves in the <code>plot</code> and <code>summary</code> methods are now computed with a vectorised C++ routine (<code>ppexpMV</code>) that transposes the hazard matrix once across all time points, instead of looping <code><a href="../reference/ppexp.html">ppexp()</a></code> per time point (<a href="https://github.com/graemeleehickey/bayesDP/issues/11" class="external-link">#11</a>)</li>
-<li>Avoided recomputing the per-interval sufficient statistics in <code>posterior_survival()</code>; the augmentation step now reuses the values already computed during the discount phase (<a href="https://github.com/graemeleehickey/bayesDP/issues/7" class="external-link">#7</a>)</li>
-<li>Removed a redundant <code>useDynLib()</code> directive in the package namespace</li>
-<li>Added contributor guidance documenting the <code>NEWS.md</code> subsection convention for future releases</li>
-<li>Expanded <code>README.md</code> with links, supported analyses, examples, and citation guidance (<a href="https://github.com/graemeleehickey/bayesDP/issues/13" class="external-link">#13</a>)</li>
-<li>Added the CRAN package URL to <code>DESCRIPTION</code> (<a href="https://github.com/graemeleehickey/bayesDP/issues/14" class="external-link">#14</a>)</li>
-<li>Clarified in <code>posterior_normal()</code> that the flat-prior draw of the mean is the conjugate posterior (scale <code>sqrt(sigma^2 / N)</code>), not the posterior predictive</li>
-<li>Gave each vignette a descriptive title (previously all titled “BayesDP”) and removed unused <code>params</code>/<code>EVAL</code> scaffolding from the vignette headers</li>
+<code><a href="../reference/ppexp.html">ppexp()</a></code> now validates its <code>x</code> argument and errors with an informative message when it is neither a numeric vector nor a matrix (<a href="https://github.com/graemeleehickey/bayesDP/issues/10" class="external-link">#10</a>).</li>
+<li>Survival curves in the <code>plot</code> and <code>summary</code> methods are now computed with a vectorised C++ routine (<code>ppexpMV</code>) that transposes the hazard matrix once across all time points, instead of looping <code><a href="../reference/ppexp.html">ppexp()</a></code> per time point (<a href="https://github.com/graemeleehickey/bayesDP/issues/11" class="external-link">#11</a>).</li>
+<li>Avoided recomputing the per-interval sufficient statistics in <code>posterior_survival()</code>; the augmentation step now reuses the values already computed during the discount phase (<a href="https://github.com/graemeleehickey/bayesDP/issues/7" class="external-link">#7</a>).</li>
+<li>Removed a redundant <code>useDynLib()</code> directive in the package namespace.</li>
+<li>Added contributor guidance documenting the <code>NEWS.md</code> subsection convention for future releases.</li>
+<li>Expanded <code>README.md</code> with links, supported analyses, examples, and citation guidance (<a href="https://github.com/graemeleehickey/bayesDP/issues/13" class="external-link">#13</a>).</li>
+<li>Added the CRAN package URL to <code>DESCRIPTION</code> (<a href="https://github.com/graemeleehickey/bayesDP/issues/14" class="external-link">#14</a>).</li>
+<li>Clarified in <code>posterior_normal()</code> that the flat-prior draw of the mean is the conjugate posterior (scale <code>sqrt(sigma^2 / N)</code>), not the posterior predictive.</li>
+<li>Gave each vignette a descriptive title (previously all titled “BayesDP”) and removed unused <code>params</code>/<code>EVAL</code> scaffolding from the vignette headers.</li>
 </ul></div>
 </div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.3.7" id="bayesdp-137">bayesDP 1.3.7<a class="anchor" aria-label="anchor" href="#bayesdp-137"></a></h2><p class="text-muted">CRAN release: 2025-01-12</p>
-<ul><li>Updated GitHub actions workflows</li>
-<li>Updated README badges</li>
-<li>Fixed .Rd file itemize list for <code>bdpbinomial</code>, <code>bdpnormal</code>, and <code>bdpsurvival</code>
-</li>
-<li>Fixed logical check in <code>bdpsurvival</code>
-</li>
-<li>Fixed spelling mistakes in documentation</li>
-<li>Minor formatting updates</li>
-<li>Add reverse dependency checks</li>
+<ul><li>Updated GitHub actions workflows.</li>
+<li>Updated README badges.</li>
+<li>Fixed .Rd file itemize list for <code>bdpbinomial</code>, <code>bdpnormal</code>, and <code>bdpsurvival</code>.</li>
+<li>Fixed logical check in <code>bdpsurvival</code>.</li>
+<li>Fixed spelling mistakes in documentation.</li>
+<li>Minor formatting updates.</li>
+<li>Add reverse dependency checks.</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.3.6" id="bayesdp-136">bayesDP 1.3.6<a class="anchor" aria-label="anchor" href="#bayesdp-136"></a></h2><p class="text-muted">CRAN release: 2022-01-30</p>
-<ul><li>Fixed CRAN CMD warnings for S4 generics</li>
+<ul><li>Fixed CRAN CMD warnings for S4 generics.</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.3.5" id="bayesdp-135">bayesDP 1.3.5<a class="anchor" aria-label="anchor" href="#bayesdp-135"></a></h2><p class="text-muted">CRAN release: 2021-11-16</p>
-<ul><li>Fixed CRAN CMD warnings for S4 generics</li>
+<ul><li>Fixed CRAN CMD warnings for S4 generics.</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.3.4" id="bayesdp-134">bayesDP 1.3.4<a class="anchor" aria-label="anchor" href="#bayesdp-134"></a></h2><p class="text-muted">CRAN release: 2021-01-06</p>
-<ul><li>Updates to README and DESCRIPTION</li>
-<li>Updates to .gitignore file</li>
-<li>Add codecov for coverage checking</li>
-<li>Updates to R code formatting</li>
-<li>Added GitHub Actions CI</li>
+<ul><li>Updates to README and DESCRIPTION.</li>
+<li>Updates to .gitignore file.</li>
+<li>Add codecov for coverage checking.</li>
+<li>Updates to R code formatting.</li>
+<li>Added GitHub Actions CI.</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.3.3" id="bayesdp-133">bayesDP 1.3.3<a class="anchor" aria-label="anchor" href="#bayesdp-133"></a></h2><p class="text-muted">CRAN release: 2020-02-03</p>
-<ul><li>New package maintainer (Graeme L. Hickey) since package was orphaned</li>
-<li>Updates to README, DESCRIPTION, NAMESPACE</li>
-<li>Added <code>stop</code> break to <code>discount_logit</code> for <code>method = mc</code>
-</li>
+<ul><li>New package maintainer (Graeme L. Hickey) since package was orphaned.</li>
+<li>Updates to README, DESCRIPTION, NAMESPACE.</li>
+<li>Added <code>stop</code> break to <code>discount_logit</code> for <code>method = mc</code>.</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.3.2" id="bayesdp-132">bayesDP 1.3.2<a class="anchor" aria-label="anchor" href="#bayesdp-132"></a></h2><p class="text-muted">CRAN release: 2018-07-10</p>
-<ul><li>Minor <code>bdplm</code> vignette typo fixes</li>
+<ul><li>Minor <code>bdplm</code> vignette typo fixes.</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.3.1" id="bayesdp-131">bayesDP 1.3.1<a class="anchor" aria-label="anchor" href="#bayesdp-131"></a></h2><p class="text-muted">CRAN release: 2018-04-11</p>
 <div class="section level3">
 <h3 id="major-new-features-1-3-1">Major new features<a class="anchor" aria-label="anchor" href="#major-new-features-1-3-1"></a></h3>
-<ul><li>Changes to inputs for <code>bdpsurvival</code>
-<ul><li>Current and (optional) historical data are specified in separate data frames</li>
+<ul><li>Changes to inputs for <code>bdpsurvival</code>.
+<ul><li>Current and (optional) historical data are specified in separate data frames.</li>
 </ul></li>
-<li>Updated normal approximation used for <code>method = "mc"</code> of the <code>bdpbinomial</code> and <code>bdpnormal</code> functions</li>
+<li>Updated normal approximation used for <code>method = "mc"</code> of the <code>bdpbinomial</code> and <code>bdpnormal</code> functions.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="bug-fixes-and-minor-improvements-1-3-1">Bug fixes and minor improvements<a class="anchor" aria-label="anchor" href="#bug-fixes-and-minor-improvements-1-3-1"></a></h3>
-<ul><li>Summary method for <code>bdplm</code> now exists and mimics <code>lm</code>
-</li>
-<li>Removed <code>bdpbinomial</code> vignette language around success (vs event)</li>
-<li>Reported one-arm sample size for <code>bdpsurvival</code> print method adjusted to current data only</li>
+<ul><li>Summary method for <code>bdplm</code> now exists and mimics <code>lm</code>.</li>
+<li>Removed <code>bdpbinomial</code> vignette language around success (vs event).</li>
+<li>Reported one-arm sample size for <code>bdpsurvival</code> print method adjusted to current data only.</li>
 </ul></div>
 </div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.3.0" id="bayesdp-130">bayesDP 1.3.0<a class="anchor" aria-label="anchor" href="#bayesdp-130"></a></h2><p class="text-muted">CRAN release: 2017-12-07</p>
 <div class="section level3">
 <h3 id="major-new-features-1-3-0">Major new features<a class="anchor" aria-label="anchor" href="#major-new-features-1-3-0"></a></h3>
-<ul><li>Addition of the <code>bdplm</code> function for two-arm trials</li>
-<li>Users can now choose between 3 discount functions via the <code>discount_function</code> input:
-<ul><li>Weibull CDF</li>
-<li>Scaled Weibull CDF - scales the Weibull CDF so that the max possible value is 1</li>
-<li>Identity - sets the discount weight to the posterior probability</li>
+<ul><li>Addition of the <code>bdplm</code> function for two-arm trials.</li>
+<li>Users can now choose between 3 discount functions via the <code>discount_function</code> input.
+<ul><li>Weibull CDF.</li>
+<li>Scaled Weibull CDF - scales the Weibull CDF so that the max possible value is 1.</li>
+<li>Identity - sets the discount weight to the posterior probability.</li>
 </ul></li>
-<li>Removal of <code>bdpregression</code>
-</li>
+<li>Removal of <code>bdpregression</code>.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="bug-fixes-and-minor-improvements-1-3-0">Bug fixes and minor improvements<a class="anchor" aria-label="anchor" href="#bug-fixes-and-minor-improvements-1-3-0"></a></h3>
-<ul><li>Removed two-sided and one-sided function inputs to avoid confusion</li>
-<li>Posterior probabilities for <code>method = "mc"</code> switched from <code>pshisq</code> to pnorm</li>
-<li>Updated vignettes to reflect new features</li>
+<ul><li>Removed two-sided and one-sided function inputs to avoid confusion.</li>
+<li>Posterior probabilities for <code>method = "mc"</code> switched from <code>pshisq</code> to pnorm.</li>
+<li>Updated vignettes to reflect new features.</li>
 </ul></div>
 </div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.2.0" id="bayesdp-120">bayesDP 1.2.0<a class="anchor" aria-label="anchor" href="#bayesdp-120"></a></h2><p class="text-muted">CRAN release: 2017-07-10</p>
 <div class="section level3">
 <h3 id="major-new-features-1-2-0">Major new features<a class="anchor" aria-label="anchor" href="#major-new-features-1-2-0"></a></h3>
-<ul><li>Supports one-arm regression analysis</li>
-<li>Two additional modular functions</li>
-<li>Implementation of Monte Carlo-based estimation of alpha discount</li>
+<ul><li>Supports one-arm regression analysis.</li>
+<li>Two additional modular functions.</li>
+<li>Implementation of Monte Carlo-based estimation of alpha discount.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="bug-fixes-and-minor-improvements-1-2-0">Bug fixes and minor improvements<a class="anchor" aria-label="anchor" href="#bug-fixes-and-minor-improvements-1-2-0"></a></h3>
-<ul><li>Fixes to class slots</li>
-<li>Added <code>print</code> input to plot method</li>
+<ul><li>Fixes to class slots.</li>
+<li>Added <code>print</code> input to plot method.</li>
 </ul></div>
 </div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.1.0" id="bayesdp-110">bayesDP 1.1.0<a class="anchor" aria-label="anchor" href="#bayesdp-110"></a></h2><p class="text-muted">CRAN release: 2017-05-03</p>
 <div class="section level3">
 <h3 id="major-new-features-1-1-0">Major new features<a class="anchor" aria-label="anchor" href="#major-new-features-1-1-0"></a></h3>
-<ul><li>Supports two-arm survival analysis via hazard rate comparisons</li>
-<li>Completely revamped summary and print methods to produce better formatted results</li>
-<li>Plot method allows users to specify a <code>type</code>
-</li>
-<li>Added vignettes for each of <code>bdpbinomial</code>, <code>bdpnormal</code>, and <code>bdpsurvival</code>
-</li>
-<li>Implemented the <code>fix_alpha</code> input which allows users to set the historical data weight at <code>alpha_max</code>
-</li>
+<ul><li>Supports two-arm survival analysis via hazard rate comparisons.</li>
+<li>Completely revamped summary and print methods to produce better formatted results.</li>
+<li>Plot method allows users to specify a <code>type</code>.</li>
+<li>Added vignettes for each of <code>bdpbinomial</code>, <code>bdpnormal</code>, and <code>bdpsurvival</code>.</li>
+<li>Implemented the <code>fix_alpha</code> input which allows users to set the historical data weight at <code>alpha_max</code>.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="bug-fixes-and-minor-improvements-1-1-0">Bug fixes and minor improvements<a class="anchor" aria-label="anchor" href="#bug-fixes-and-minor-improvements-1-1-0"></a></h3>
-<ul><li>Fixed error with two-arm analysis where models did not fit if either the current or historical control data were not input</li>
-<li>Changed <code>two_side</code> input to logical</li>
-<li>Consolidated several internal functions into a single function for computational efficiency gains</li>
+<ul><li>Fixed error with two-arm analysis where models did not fit if either the current or historical control data were not input.</li>
+<li>Changed <code>two_side</code> input to logical.</li>
+<li>Consolidated several internal functions into a single function for computational efficiency gains.</li>
 </ul></div>
 </div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.0.3" id="bayesdp-103">bayesDP 1.0.3<a class="anchor" aria-label="anchor" href="#bayesdp-103"></a></h2>
-<ul><li>README update</li>
-<li>Added plot types</li>
-<li>Added Vignettes</li>
-<li>Added logo</li>
-<li>Improved documentation</li>
-<li>Updated <code>print</code>, <code>summary</code>, <code>plot</code> methods</li>
-<li>Refactored <code>bdpnormal</code> / <code>bdpbinomial</code>
-</li>
+<ul><li>README update.</li>
+<li>Added plot types.</li>
+<li>Added Vignettes.</li>
+<li>Added logo.</li>
+<li>Improved documentation.</li>
+<li>Updated <code>print</code>, <code>summary</code>, <code>plot</code> methods.</li>
+<li>Refactored <code>bdpnormal</code> / <code>bdpbinomial</code>.</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.0.2" id="bayesdp-102">bayesDP 1.0.2<a class="anchor" aria-label="anchor" href="#bayesdp-102"></a></h2><p class="text-muted">CRAN release: 2017-04-14</p>
-<ul><li>Crucial bugfixes</li>
+<ul><li>Crucial bugfixes.</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.0.1" id="bayesdp-101">bayesDP 1.0.1<a class="anchor" aria-label="anchor" href="#bayesdp-101"></a></h2><p class="text-muted">CRAN release: 2017-04-01</p>
-<ul><li>User requested bugfixes</li>
+<ul><li>User requested bugfixes.</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.0.0" id="bayesdp-100">bayesDP 1.0.0<a class="anchor" aria-label="anchor" href="#bayesdp-100"></a></h2><p class="text-muted">CRAN release: 2017-03-22</p>
-<ul><li>Initial CRAN release with normal, binomial and survival functions</li>
+<ul><li>Initial CRAN release with normal, binomial and survival functions.</li>
 </ul></div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
