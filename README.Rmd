@@ -5,6 +5,7 @@ output: github_document
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
 ```{r, echo = FALSE}
+set.seed(2710)
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -118,6 +119,21 @@ df0 <- data.frame(Y = Y0, treatment = treatment0, x = x0)
 fit_lm <- bdplm(Y ~ treatment + x, data = df, data0 = df0, method = "fixed")
 summary(fit_lm)
 ```
+
+## Tabular results
+
+`tidy()` returns posterior estimates and SDs, with optional equal-tailed credible limits. `glance()` returns one row containing current and historical sample sizes, retained draw counts, and discount weights. Both functions also work when called through broom.
+
+```{r, eval = FALSE}
+tidy(fit_bin, conf.int = TRUE, conf.level = 0.95)
+glance(fit_bin)
+tidy(fit_lm, conf.int = TRUE)
+tidy(fit_lm, effects = "sigma", conf.int = TRUE)
+```
+
+The conventional `std.error` column contains posterior SDs, and `conf.low` and `conf.high` contain credible limits. Estimates follow `summary()`: posterior medians for binomial, normal, and one-arm survival results, and posterior means for regression coefficients and the two-arm log hazard ratio. Binomial and normal results include treatment-minus-control differences when a control arm is present.
+
+For logistic and two-arm survival fits, `exponentiate = TRUE` reports the exponential of the posterior mean log effect and exponentiated credible limits, with posterior SDs calculated on the ratio scale. For one-arm survival fits, `time` selects the survival time of interest and defaults to the fit's `surv_time`. See `?tidy` and `?glance` for definitions and examples. These functions summarise saved draws without refitting. `augment()` is not currently provided.
 
 ## Citation
 

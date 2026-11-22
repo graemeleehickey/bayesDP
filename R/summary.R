@@ -19,6 +19,7 @@
 #'   model.response pweibull quantile rbeta rgamma rnorm var vcov
 #' @export
 setMethod("summary", signature(object = "bdpnormal"), function(object) {
+  estimates <- bdp_arm_summary(object, "posterior_mu")
   arm2 <- object$args1$arm2
   posterior_treatment <- object$posterior_treatment
   posterior_control <- object$posterior_control
@@ -38,8 +39,8 @@ setMethod("summary", signature(object = "bdpnormal"), function(object) {
   
   if (!arm2) {
     # Format treatment mean output
-    mean_CI_t <- round(quantile(posterior_treatment$posterior_mu, prob = c(0.025, 0.975)), 4)
-    mean_est_t <- round(median(posterior_treatment$posterior_mu), 4)
+    mean_CI_t <- round(c(estimates$conf.low[1], estimates$conf.high[1]), 4)
+    mean_est_t <- round(estimates$estimate[1], 4)
     
     cat("\n")
     cat("    One-armed bdp normal\n\n")
@@ -71,11 +72,9 @@ setMethod("summary", signature(object = "bdpnormal"), function(object) {
     cat(paste0(" ", mean_est_t))
     cat("\n")
   } else {
-    comparison_est <- posterior_treatment$posterior_mu - posterior_control$posterior_mu
-    
-    mean_est_t <- format(round(median(posterior_treatment$posterior_mu), 4), nsmall = 4)
-    mean_est_c <- format(round(median(posterior_control$posterior_mu), 4), nsmall = 4)
-    comp_CI <- round(quantile(comparison_est, prob = c(0.025, 0.975)), 4)
+    mean_est_t <- format(round(estimates$estimate[1], 4), nsmall = 4)
+    mean_est_c <- format(round(estimates$estimate[2], 4), nsmall = 4)
+    comp_CI <- round(c(estimates$conf.low[3], estimates$conf.high[3]), 4)
     cat("\n")
     cat("    Two-armed bdp normal\n\n")
     cat("data:\n")
@@ -160,6 +159,7 @@ setMethod("summary", signature(object = "bdpnormal"), function(object) {
 #'   pweibull quantile rbeta rgamma rnorm var vcov
 #' @export
 setMethod("summary", signature(object = "bdpbinomial"), function(object) {
+  estimates <- bdp_arm_summary(object, "posterior")
   arm2 <- object$args1$arm2
   posterior_treatment <- object$posterior_treatment
   posterior_control <- object$posterior_control
@@ -175,9 +175,8 @@ setMethod("summary", signature(object = "bdpbinomial"), function(object) {
   
   if (!arm2) {
     ### Format treatment mean output
-    mean_CI_t <- round(quantile(posterior_treatment$posterior, prob = c(0.025, 0.975)), 4)
-    mean_est_t <- round(median(posterior_treatment$posterior), 4)
-    mean_print_t <- paste0(mean_est_t, " (", mean_CI_t[1], ", ", mean_CI_t[2], ")")
+    mean_CI_t <- round(c(estimates$conf.low[1], estimates$conf.high[1]), 4)
+    mean_est_t <- round(estimates$estimate[1], 4)
     
     cat("\n")
     cat("    One-armed bdp binomial\n\n")
@@ -204,18 +203,11 @@ setMethod("summary", signature(object = "bdpbinomial"), function(object) {
   } else {
     
     ### Format control mean output
-    comparison_est <- posterior_treatment$posterior - posterior_control$posterior
-    
-    mean_est_t <- format(round(median(posterior_treatment$posterior), 4), nsmall = 4)
-    mean_est_c <- format(round(median(posterior_control$posterior), 4), nsmall = 4)
-    
-    mean_CI_c <- round(quantile(posterior_control$posterior, prob = c(0.025, 0.975)), 4)
-    mean_print_c <- paste0(mean_est_c, " (", mean_CI_c[1], ", ", mean_CI_c[2], ")")
+    mean_est_t <- format(round(estimates$estimate[1], 4), nsmall = 4)
+    mean_est_c <- format(round(estimates$estimate[2], 4), nsmall = 4)
     
     ### Format comparison output
-    comp_CI <- round(quantile(comparison_est, prob = c(0.025, 0.975)), 4)
-    comp_est <- round(median(comparison_est), 4)
-    comp_print <- paste0(comp_est, " (", comp_CI[1], ", ", comp_CI[2], ")")
+    comp_CI <- round(c(estimates$conf.low[3], estimates$conf.high[3]), 4)
     
     cat("\n")
     cat("    Two-armed bdp binomial\n\n")
@@ -330,15 +322,11 @@ setMethod("summary", signature(object = "bdpsurvival"), function(object) {
     s_t <- survival::survfit(Surv(time, status) ~ 1, data = data_t,
                             timefix = FALSE)
     
-    survival_times_posterior <- ppexp_times(s_t$time,
-                                       posterior_treatment$posterior_hazard,
-                                       cuts = c(0, breaks)
-    )
-    
-    s_t$surv <- 1 - sapply(survival_times_posterior, median)
-    s_t$std.err <- sapply(survival_times_posterior, sd)
-    s_t$upper <- 1 - sapply(survival_times_posterior, quantile, 0.025)
-    s_t$lower <- 1 - sapply(survival_times_posterior, quantile, 0.975)
+    estimates <- bdp_survival_summary(object, s_t$time)
+    s_t$surv <- estimates$estimate
+    s_t$std.err <- estimates$std.error
+    s_t$upper <- estimates$conf.high
+    s_t$lower <- estimates$conf.low
     
     m_t <- round(cbind(
       s_t$time, s_t$n.risk, s_t$n.event, s_t$surv, s_t$std.err,
@@ -385,10 +373,10 @@ setMethod("summary", signature(object = "bdpsurvival"), function(object) {
     ### Compute treatment effect of treatment vs control via the same
     ### inverse-variance-weighted piecewise log-hazard-ratio estimator used in
     ### bdpsurvival(); see the survival vignette, 'Approximate two-arm effect'.
-    logHR0 <- bdp_survival_effect(posterior_treatment, posterior_control)
-    coef <- mean(logHR0)
-    se_coef <- sd(logHR0)
-    CI <- quantile(logHR0, probs = c(0.025, 0.975))
+    estimates <- bdp_survival_effect_summary(object)
+    coef <- estimates$estimate
+    se_coef <- estimates$std.error
+    CI <- c(estimates$conf.low, estimates$conf.high)
     
     summ_table <- matrix(round(c(coef, exp(coef), se_coef, CI[1], CI[2]), 4), nrow = 1)
     cnames <- c("coef", "exp(coef)", "se(coef)", "lower 95% CI", "upper 95% CI")
@@ -517,12 +505,9 @@ setMethod("summary", signature(object = "bdplm"), function(object) {
   )
   
   # Format coefficient table
-  coefs <- object$estimates
-  cnames <- names(coefs[[1]])
-  cnames[1] <- "(Intercept)"
-  coefs <- t(do.call(rbind, coefs))
-  dimnames(coefs) <- list(cnames, c("Estimate", "Std. Error"))
-  coefs <- coefs[cnames != "sigma", , drop = FALSE]
+  estimates <- bdp_regression_summary(object, conf.int = FALSE)
+  coefs <- cbind(estimates$estimate, estimates$std.error)
+  dimnames(coefs) <- list(estimates$term, c("Estimate", "Std. Error"))
   coefs <- round(coefs, 4)
   
   # Format alpha
@@ -545,7 +530,7 @@ setMethod("summary", signature(object = "bdplm"), function(object) {
   print(alpha_mat)
   cat("\n")
   if ("sigma" %in% names(object$estimates$coefficients)) {
-    s <- round(object$estimates$coefficients$sigma, 4)
+    s <- round(bdp_regression_summary(object, "sigma", conf.int = FALSE)$estimate, 4)
     cat(paste0("Residual standard error: ", s))
     cat("\n")
   }

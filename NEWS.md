@@ -1,5 +1,10 @@
 # bayesDP (development version)
 
+## New features
+
+* Added `tidy()` and `glance()` methods for all fitted models, also available through broom. `tidy()` reports posterior estimates, SDs, and optional equal-tailed credible limits; logistic and two-arm survival effects can be exponentiated. `glance()` reports current and historical sample sizes, retained draw counts, and arm-specific discount weights, with event counts for survival fits.
+* Numerical summaries are shared with `summary()`. The new methods use saved draws without refitting or changing the random-number state. Participant-level `augment()` methods are not provided.
+
 ## Tests
 
 * Expanded checks for incomplete inputs, historical-only controls, factor contrasts, regression discount functions, plot options, and survival calculations at interval boundaries and numerical limits. Added comparisons with analytical posterior moments and integrated hazards.
