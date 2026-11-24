@@ -222,6 +222,8 @@
 
 ### Housekeeping
 
+- Removed machine-specific compiler settings so installation uses the
+  compilers configured by R on each platform.
 - Added `detectseparation` for logistic separation checks and documented
   the supported fitting conditions and the distinction between
   prescribed and estimated weights. Logistic sampling still requires
