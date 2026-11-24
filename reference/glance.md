@@ -33,7 +33,12 @@ glance(x, ...)
 
 - ...:
 
-  Additional arguments are not supported and produce an error.
+  The table-formatting argument `gof_map` and coefficient-summary
+  arguments `exponentiate`, `effects`, and `time` are accepted but do
+  not affect model-level summaries. This allows modelsummary to forward
+  them to both
+  [`tidy()`](https://graemeleehickey.github.io/bayesDP/reference/tidy.md)
+  and `glance()`. Other arguments produce an error.
 
 ## Value
 

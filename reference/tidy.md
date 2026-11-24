@@ -47,7 +47,11 @@ tidy(
 
 - ...:
 
-  Additional arguments are not supported and produce an error.
+  Unrecognised arguments produce an error. The neutral arguments
+  `vcov = NULL` and `coef_rename = FALSE`, forwarded by modelsummary,
+  are accepted. Rename table terms with
+  `modelsummary(..., coef_map = ...)`; covariance overrides are not
+  supported because uncertainty is calculated from posterior draws.
 
 - conf.int:
 

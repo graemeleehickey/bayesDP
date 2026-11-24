@@ -4,6 +4,11 @@
 
 ### Bug fixes
 
+- Fixed direct use of fitted models with `modelsummary()`: tidiers now
+  accept its neutral `vcov = NULL` and `coef_rename = FALSE` arguments
+  while retaining posterior SDs and equal-tailed credible intervals.
+  Unsupported covariance overrides still produce an error; table labels
+  can be changed with `coef_map`.
 - Fixed treatment-only regression formulas:
   [`bdplm()`](https://graemeleehickey.github.io/bayesDP/reference/bdplm.md)
   no longer adds unintended covariate columns under `method = "mc"`, and
@@ -121,6 +126,23 @@
 
 ### New features
 
+- Added [`coef()`](https://rdrr.io/r/stats/coef.html),
+  [`vcov()`](https://rdrr.io/r/stats/vcov.html), and
+  [`confint()`](https://rdrr.io/r/stats/confint.html) for linear and
+  logistic regression fits. These return posterior mean coefficients,
+  their posterior covariance, and equal-tailed credible intervals on the
+  original covariate scale. Added
+  [`nobs()`](https://rdrr.io/r/stats/nobs.html) for all fitted models,
+  counting current participants separately from historical participants.
+
+- Added
+  [`posterior::as_draws_df()`](https://mc-stan.org/posterior/reference/draws_df.html)
+  and
+  [`posterior::as_draws_matrix()`](https://mc-stan.org/posterior/reference/draws_matrix.html)
+  for all fitted models. Conversions preserve retained draws and their
+  order, including paired arm differences, regression residual SDs, and
+  survival interval log hazards. The posterior package is optional.
+
 - Added
   [`tidy()`](https://graemeleehickey.github.io/bayesDP/reference/tidy.md)
   and
@@ -148,6 +170,9 @@
 
 ### Tests
 
+- Added checks for coefficient extraction, joint posterior covariance,
+  credible intervals, participant counts, posterior draw conversion, and
+  direct modelsummary tables across the supported model types.
 - Added tests for treatment-only models, logistic seed control and
   method defaults, equivalent survival-response expressions,
   preservation of participant counts, invalid treatment coding, and

@@ -156,9 +156,9 @@
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit_bin</span><span class="op">)</span></span>
-<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;</span></span>
 <span><span class="co">#&gt;     One-armed bdp binomial</span></span>
-<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;</span></span>
 <span><span class="co">#&gt; Current treatment data: 10 and 500</span></span>
 <span><span class="co">#&gt; Historical treatment data: 25 and 250</span></span>
 <span><span class="co">#&gt; Stochastic comparison (p_hat) - treatment (current vs. historical data): 0</span></span>
@@ -179,9 +179,9 @@
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit_norm</span><span class="op">)</span></span>
-<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;</span></span>
 <span><span class="co">#&gt;     One-armed bdp normal</span></span>
-<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;</span></span>
 <span><span class="co">#&gt; data:</span></span>
 <span><span class="co">#&gt;   Current treatment: mu_t = 30, sigma_t = 10, N_t = 250</span></span>
 <span><span class="co">#&gt;   Historical treatment: mu0_t = 50, sigma0_t = 5, N0_t = 250</span></span>
@@ -216,24 +216,24 @@
 <span></span>
 <span><span class="va">fit_lm</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/bdplm.html">bdplm</a></span><span class="op">(</span><span class="va">Y</span> <span class="op">~</span> <span class="va">treatment</span> <span class="op">+</span> <span class="va">x</span>, data <span class="op">=</span> <span class="va">df</span>, data0 <span class="op">=</span> <span class="va">df0</span>, method <span class="op">=</span> <span class="st">"fixed"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit_lm</span><span class="op">)</span></span>
-<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;</span></span>
 <span><span class="co">#&gt; Call:</span></span>
 <span><span class="co">#&gt; bdplm(formula = Y ~ treatment + x, data = df, data0 = df0, method = "fixed")</span></span>
-<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;</span></span>
 <span><span class="co">#&gt; Residuals:</span></span>
 <span><span class="co">#&gt;      Min     1Q Median    3Q    Max</span></span>
 <span><span class="co">#&gt;  -13.725 -3.519  0.504 4.383 11.851</span></span>
-<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;</span></span>
 <span><span class="co">#&gt; Coefficients:</span></span>
 <span><span class="co">#&gt;             Estimate Std. Error</span></span>
 <span><span class="co">#&gt; (Intercept)   9.8228     0.6956</span></span>
 <span><span class="co">#&gt; treatment    32.3783     1.1265</span></span>
 <span><span class="co">#&gt; x             3.1145     0.1299</span></span>
-<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;</span></span>
 <span><span class="co">#&gt; Discount function value (alpha):</span></span>
 <span><span class="co">#&gt;  treatment control</span></span>
 <span><span class="co">#&gt;       0.07  0.3812</span></span>
-<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;</span></span>
 <span><span class="co">#&gt; Residual standard error: 5.4394</span></span></code></pre></div>
 </div>
 </div>
@@ -248,12 +248,34 @@
 <span><span class="fu"><a href="reference/tidy.html">tidy</a></span><span class="op">(</span><span class="va">fit_lm</span>, effects <span class="op">=</span> <span class="st">"sigma"</span>, conf.int <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p>The conventional <code>std.error</code> column contains posterior SDs, and <code>conf.low</code> and <code>conf.high</code> contain credible limits. Estimates follow <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code>: posterior medians for binomial, normal, and one-arm survival results, and posterior means for regression coefficients and the two-arm log hazard ratio. Binomial and normal results include treatment-minus-control differences when a control arm is present.</p>
 <p>For logistic and two-arm survival fits, <code>exponentiate = TRUE</code> reports the exponential of the posterior mean log effect and exponentiated credible limits, with posterior SDs calculated on the ratio scale. For one-arm survival fits, <code>time</code> selects the survival time of interest and defaults to the fit’s <code>surv_time</code>. See <code><a href="reference/tidy.html">?tidy</a></code> and <code><a href="reference/glance.html">?glance</a></code> for definitions and examples. These functions summarise saved draws without refitting. <code>augment()</code> is not currently provided.</p>
+<p>With the optional modelsummary package installed, fits can also be passed directly to comparison tables:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">modelsummary</span><span class="fu">::</span><span class="fu"><a href="https://modelsummary.com/man/modelsummary.html" class="external-link">modelsummary</a></span><span class="op">(</span><span class="va">fit_lm</span>, statistic <span class="op">=</span> <span class="st">"conf.int"</span><span class="op">)</span></span></code></pre></div>
+<p>The table intervals are posterior credible intervals. Keep the default <code>vcov = NULL</code> and <code>coef_rename = FALSE</code>; use <code>coef_map</code> to change displayed coefficient names. Covariance overrides are not supported because uncertainty is calculated from posterior draws.</p>
+</div>
+<div class="section level2">
+<h2 id="extracting-estimates-and-draws">Extracting estimates and draws<a class="anchor" aria-label="anchor" href="#extracting-estimates-and-draws"></a>
+</h2>
+<p>Linear and logistic regression fits support the usual R extraction functions. <code><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef()</a></code> returns posterior means, <code><a href="https://rdrr.io/r/stats/vcov.html" class="external-link">vcov()</a></code> returns the covariance of the coefficient draws, and <code><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint()</a></code> returns equal-tailed credible intervals. These use the original covariate scale, retain logistic coefficients on the log-odds scale, and exclude the linear model’s residual SD.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">fit_lm</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/vcov.html" class="external-link">vcov</a></span><span class="op">(</span><span class="va">fit_lm</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint</a></span><span class="op">(</span><span class="va">fit_lm</span>, parm <span class="op">=</span> <span class="st">"treatment"</span>, level <span class="op">=</span> <span class="fl">0.9</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/nobs.html" class="external-link">nobs</a></span><span class="op">(</span><span class="va">fit_lm</span><span class="op">)</span></span></code></pre></div>
+<p><code><a href="https://rdrr.io/r/stats/nobs.html" class="external-link">nobs()</a></code> works for every fitted model and counts current participants only. Historical participants are counted separately by <code><a href="reference/glance.html">glance()</a></code>, including when they supply the only control group. For survival models, counts refer to participants rather than split follow-up intervals.</p>
+<p>With the optional posterior package installed, all fitted models can be converted to standard draw formats for further calculations and use with tidybayes or bayesplot:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">draws</span> <span class="op">&lt;-</span> <span class="fu">posterior</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/posterior/reference/draws_df.html" class="external-link">as_draws_df</a></span><span class="op">(</span><span class="va">fit_bin</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">draws</span><span class="op">$</span><span class="va">treatment</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.025</span>, <span class="fl">0.975</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu">posterior</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/posterior/reference/draws_matrix.html" class="external-link">as_draws_matrix</a></span><span class="op">(</span><span class="va">fit_lm</span><span class="op">)</span></span></code></pre></div>
+<p>Binomial and normal conversions include arm outcomes and their paired difference. Regression conversions include all coefficient draws and, for linear models, the residual SD <code>sigma</code>. Survival conversions include interval log hazards and the survival probability or approximate common log hazard ratio reported by <code><a href="reference/tidy.html">tidy()</a></code>. See <code><a href="reference/posterior_draws.html">?posterior_draws</a></code> for variable definitions.</p>
+<p>Conversion preserves the saved draws and their order, without resampling. The <code>.chain = 1</code> label represents the single stored sequence; it does not create independent chains or establish convergence. Discount weights and comparison probabilities remain available in the fitted object.</p>
 </div>
 <div class="section level2">
 <h2 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
 </h2>
 <p>If you use <code>bayesDP</code>, please cite the package and the methodological paper:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/citation.html" class="external-link">citation</a></span><span class="op">(</span><span class="st">"bayesDP"</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>

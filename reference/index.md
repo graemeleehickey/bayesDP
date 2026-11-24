@@ -16,12 +16,26 @@
   : Bayesian Discount Prior: Survival Analysis
 - [`glance()`](https://graemeleehickey.github.io/bayesDP/reference/glance.md)
   : Glance at a Bayesian discount prior fit
+- [`nobs(`*`<bdpbinomial>`*`)`](https://graemeleehickey.github.io/bayesDP/reference/nobs.bdpbinomial.md)
+  [`nobs(`*`<bdpnormal>`*`)`](https://graemeleehickey.github.io/bayesDP/reference/nobs.bdpbinomial.md)
+  [`nobs(`*`<bdplm>`*`)`](https://graemeleehickey.github.io/bayesDP/reference/nobs.bdpbinomial.md)
+  [`nobs(`*`<bdpsurvival>`*`)`](https://graemeleehickey.github.io/bayesDP/reference/nobs.bdpbinomial.md)
+  : Count current participants
 - [`plot(`*`<bdpbinomial>`*`)`](https://graemeleehickey.github.io/bayesDP/reference/plot-bdpbinomial-method.md)
   : bdpbinomial Object Plot
 - [`plot(`*`<bdpnormal>`*`)`](https://graemeleehickey.github.io/bayesDP/reference/plot-bdpnormal-method.md)
   : bdpnormal Object Plot
 - [`plot(`*`<bdpsurvival>`*`)`](https://graemeleehickey.github.io/bayesDP/reference/plot-bdpsurvival-method.md)
   : bdpsurvival Object Plot
+- [`as_draws_matrix(`*`<bdpbinomial>`*`)`](https://graemeleehickey.github.io/bayesDP/reference/posterior_draws.md)
+  [`as_draws_matrix(`*`<bdpnormal>`*`)`](https://graemeleehickey.github.io/bayesDP/reference/posterior_draws.md)
+  [`as_draws_matrix(`*`<bdplm>`*`)`](https://graemeleehickey.github.io/bayesDP/reference/posterior_draws.md)
+  [`as_draws_matrix(`*`<bdpsurvival>`*`)`](https://graemeleehickey.github.io/bayesDP/reference/posterior_draws.md)
+  [`as_draws_df(`*`<bdpbinomial>`*`)`](https://graemeleehickey.github.io/bayesDP/reference/posterior_draws.md)
+  [`as_draws_df(`*`<bdpnormal>`*`)`](https://graemeleehickey.github.io/bayesDP/reference/posterior_draws.md)
+  [`as_draws_df(`*`<bdplm>`*`)`](https://graemeleehickey.github.io/bayesDP/reference/posterior_draws.md)
+  [`as_draws_df(`*`<bdpsurvival>`*`)`](https://graemeleehickey.github.io/bayesDP/reference/posterior_draws.md)
+  : Convert saved posterior draws
 - [`ppexp()`](https://graemeleehickey.github.io/bayesDP/reference/ppexp.md)
   : Compute cdf of the piecewise exponential distribution
 - [`print(`*`<bdpbinomial>`*`)`](https://graemeleehickey.github.io/bayesDP/reference/print-bdpbinomial-method.md)
@@ -35,6 +49,10 @@
 - [`probability_discount()`](https://graemeleehickey.github.io/bayesDP/reference/probability_discount.md)
   : Bayesian Discount Prior: Comparison Between Current and Historical
   Data
+- [`coef(`*`<bdplm>`*`)`](https://graemeleehickey.github.io/bayesDP/reference/regression_extractors.md)
+  [`vcov(`*`<bdplm>`*`)`](https://graemeleehickey.github.io/bayesDP/reference/regression_extractors.md)
+  [`confint(`*`<bdplm>`*`)`](https://graemeleehickey.github.io/bayesDP/reference/regression_extractors.md)
+  : Extract regression estimates and credible intervals
 - [`summary(`*`<bdpbinomial>`*`)`](https://graemeleehickey.github.io/bayesDP/reference/summary-bdpbinomial-method.md)
   : bdpbinomial Object Summary
 - [`summary(`*`<bdplm>`*`)`](https://graemeleehickey.github.io/bayesDP/reference/summary-bdplm-method.md)
