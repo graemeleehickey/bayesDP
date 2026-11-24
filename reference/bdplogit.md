@@ -27,7 +27,8 @@ bdplogit(
   fix_alpha = FALSE,
   weibull_scale = 0.135,
   weibull_shape = 3,
-  method = "fixed"
+  method = "fixed",
+  centering = "pooled"
 )
 ```
 
@@ -150,13 +151,25 @@ bdplogit(
   the analysis, unless `fix_alpha = TRUE` prescribes the weights. An
   explicit `"mc"` request is not supported and raises an error.
 
+- centering:
+
+  character. Data used to calculate covariate centering means:
+  `"pooled"` (default) uses current and historical observations,
+  `"current"` uses current observations only, and `"historical"` uses
+  historical observations only. Each mean includes both treatment arms
+  and gives equal weight to each included observation, without
+  discounting. The same means are subtracted from both datasets,
+  including encoded factor covariates. The response and treatment
+  indicator are not centered.
+
 ## Value
 
 `bdplogit` returns an object of class "bdplm", reusing its print and
 summary methods. Residual summaries use observed binary outcomes minus
 fitted probabilities from the posterior mean coefficients. The centering
 means are saved in `args1$covariate_means`; older saved fits without
-these means must be refitted before summarising residuals.
+these means must be refitted before summarising residuals. The centering
+choice is saved in `args1$centering`.
 
 The returned object is a list containing at least the following
 components:
@@ -211,21 +224,27 @@ Internally, the model is parameterized without a fixed intercept, using
 separate treatment and control (log-odds) means rather than an intercept
 plus a treatment effect. In this parameterization the arm means are the
 fitted values at covariate = 0, so when covariates are not centered the
-treatment- and control-mean estimators become strongly correlated and
-their standard errors are extrapolation errors at covariate = 0. This
-distorts the discount-prior construction and the historical borrowing.
-To guard against this, `bdplogit` automatically mean-centers each
-covariate on its pooled (current plus historical) mean before fitting,
-and back-transforms the reported intercept onto the original covariate
-scale. Specifically, if \\\bar{x}\_j\\ is the pooled mean of covariate
-\\j\\ and \\\beta_j\\ its estimated effect, the reported intercept is
+treatment- and control-mean estimators can become strongly correlated
+and their standard errors can reflect extrapolation to covariate = 0.
+This can affect the discount-prior construction and historical
+borrowing. To guard against this, `bdplogit` automatically mean-centers
+each covariate before fitting, using the data selected by `centering`.
+The default uses the pooled current and historical mean. The reported
+intercept is back-transformed onto the original covariate scale.
+Specifically, if \\\bar{x}\_j\\ is the selected mean of covariate \\j\\
+and \\\beta_j\\ its estimated effect, the reported intercept is
 \\\beta_0 = \beta_0^{c} - \sum_j \beta_j \bar{x}\_j\\, where
 \\\beta_0^{c}\\ is the control-arm log-odds estimated on the centered
-scale. The treatment effect and covariate slopes are unchanged by
-centering; the reported `intercept` remains the control-arm log-odds at
-covariate = 0 on the original scale. As a result, estimates are
-invariant to a location shift of any covariate, and users do not need to
-center covariates themselves.
+scale. This back-transformation leaves the treatment effect and slopes
+unchanged; the reported `intercept` remains the control-arm log-odds at
+covariate = 0 on the original scale. Location shifts of covariates leave
+the treatment effect and slopes unchanged; the intercept changes with
+the covariate origin. Centering does not generally make the arm-mean
+estimators independent, and their covariance is not retained in the
+diagonal historical prior. Consequently, changing `centering` can change
+the posterior, not just the reported intercept. User-supplied historical
+arm-prior means and SDs must describe the adjusted arm log-odds at the
+selected covariate centering values.
 
 Posterior sampling uses
 [`MCMCpack::MCMClogit()`](https://rdrr.io/pkg/MCMCpack/man/MCMClogit.html).

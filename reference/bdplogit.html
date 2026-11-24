@@ -85,7 +85,8 @@
 <span>  fix_alpha <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  weibull_scale <span class="op">=</span> <span class="fl">0.135</span>,</span>
 <span>  weibull_shape <span class="op">=</span> <span class="fl">3</span>,</span>
-<span>  method <span class="op">=</span> <span class="st">"fixed"</span></span>
+<span>  method <span class="op">=</span> <span class="st">"fixed"</span>,</span>
+<span>  centering <span class="op">=</span> <span class="st">"pooled"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -212,6 +213,16 @@ It estimates each historical weight once and holds it fixed throughout
 the analysis, unless <code>fix_alpha = TRUE</code> prescribes the weights.
 An explicit <code>"mc"</code> request is not supported and raises an error.</p></dd>
 
+
+<dt id="arg-centering">centering<a class="anchor" aria-label="anchor" href="#arg-centering"></a></dt>
+<dd><p>character. Data used to calculate covariate centering means:
+<code>"pooled"</code> (default) uses current and historical observations,
+<code>"current"</code> uses current observations only, and <code>"historical"</code>
+uses historical observations only. Each mean includes both treatment arms
+and gives equal weight to each included observation, without discounting.
+The same means are subtracted from both datasets, including encoded factor
+covariates. The response and treatment indicator are not centered.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -219,7 +230,8 @@ An explicit <code>"mc"</code> request is not supported and raises an error.</p><
   print and summary methods. Residual summaries use observed binary outcomes
   minus fitted probabilities from the posterior mean coefficients. The
   centering means are saved in <code>args1$covariate_means</code>; older saved fits
-  without these means must be refitted before summarising residuals.</p>
+  without these means must be refitted before summarising residuals.
+  The centering choice is saved in <code>args1$centering</code>.</p>
 <p>The returned object is a list containing at least
 the following components:</p><dl><dt><code>posterior</code></dt>
 <dd><p>data frame. Posterior draws of the intercept, treatment effect, and
@@ -265,21 +277,27 @@ the following components:</p><dl><dt><code>posterior</code></dt>
   separate treatment and control (log-odds) means rather than an intercept
   plus a treatment effect. In this parameterization the arm means are the
   fitted values at covariate = 0, so when covariates are not centered the
-  treatment- and control-mean estimators become strongly correlated and
-  their standard errors are extrapolation errors at covariate = 0. This
-  distorts the discount-prior construction and the historical borrowing. To
+  treatment- and control-mean estimators can become strongly correlated and
+  their standard errors can reflect extrapolation to covariate = 0. This
+  can affect the discount-prior construction and historical borrowing. To
   guard against this, <code>bdplogit</code> automatically mean-centers each
-  covariate on its pooled (current plus historical) mean before fitting, and
-  back-transforms the reported intercept onto the original covariate scale.
-  Specifically, if \(\bar{x}_j\) is the pooled mean of covariate \(j\)
+  covariate before fitting, using the data selected by <code>centering</code>.
+  The default uses the pooled current and historical mean. The reported
+  intercept is back-transformed onto the original covariate scale.
+  Specifically, if \(\bar{x}_j\) is the selected mean of covariate \(j\)
   and \(\beta_j\) its estimated effect, the reported intercept is
   \(\beta_0 = \beta_0^{c} - \sum_j \beta_j \bar{x}_j\), where
   \(\beta_0^{c}\) is the control-arm log-odds estimated on the centered
-  scale. The treatment effect and covariate slopes are unchanged by
-  centering; the reported <code>intercept</code> remains the control-arm log-odds
-  at covariate = 0 on the original scale. As a result, estimates are
-  invariant to a location shift of any covariate, and users do not need to
-  center covariates themselves.</p>
+  scale. This back-transformation leaves the treatment effect and slopes
+  unchanged; the reported <code>intercept</code> remains the control-arm log-odds
+  at covariate = 0 on the original scale. Location shifts of covariates leave
+  the treatment effect and slopes unchanged; the intercept changes with the
+  covariate origin. Centering does not generally make the arm-mean estimators
+  independent, and their covariance is not retained in the diagonal
+  historical prior. Consequently, changing <code>centering</code> can change the
+  posterior, not just the reported intercept. User-supplied historical
+  arm-prior means and SDs must describe the adjusted arm log-odds at the
+  selected covariate centering values.</p>
 <p>Posterior sampling uses <code><a href="https://rdrr.io/pkg/MCMCpack/man/MCMClogit.html" class="external-link">MCMCpack::MCMClogit()</a></code>. Before fitting,
   model matrices are checked for rank deficiency, and complete or
   quasi-complete separation is detected using <code>detectseparation</code>.

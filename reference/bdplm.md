@@ -29,7 +29,8 @@ bdplm(
   fix_alpha = FALSE,
   weibull_scale = 0.135,
   weibull_shape = 3,
-  method = "mc"
+  method = "mc",
+  centering = "pooled"
 )
 ```
 
@@ -160,6 +161,17 @@ bdplm(
   [`vignette("bdplm-vignette", package = "bayesDP")`](https://graemeleehickey.github.io/bayesDP/articles/bdplm-vignette.md)
   for more details.
 
+- centering:
+
+  character. Data used to calculate covariate centering means:
+  `"pooled"` (default) uses current and historical observations,
+  `"current"` uses current observations only, and `"historical"` uses
+  historical observations only. Each mean includes both treatment arms
+  and gives equal weight to each included observation, without
+  discounting. The same means are subtracted from both datasets,
+  including encoded factor covariates. The response and treatment
+  indicator are not centered.
+
 ## Value
 
 `bdplm` returns an object of class "bdplm".
@@ -186,9 +198,9 @@ components:
 
 - `args1`:
 
-  list. The original call, the centered analysis data, and the named
-  `covariate_means` used to restore the original covariate scale when
-  calculating residual summaries.
+  list. The original call, the centered analysis data, the `centering`
+  choice, and the named `covariate_means` used to restore the original
+  covariate scale when calculating residual summaries.
 
 ## Details
 
@@ -228,19 +240,23 @@ treatment- and control-mean estimators can become strongly correlated
 and their standard errors can reflect extrapolation to covariate = 0.
 This can affect the discount-prior construction and historical
 borrowing. To guard against this, `bdplm` automatically mean-centers
-each covariate on its pooled (current plus historical) mean before
-fitting, and back-transforms the reported intercept onto the original
-covariate scale. Specifically, if \\\bar{x}\_j\\ is the pooled mean of
-covariate \\j\\ and \\\beta_j\\ its estimated effect, the reported
-intercept is \\\beta_0 = \beta_0^{c} - \sum_j \beta_j \bar{x}\_j\\,
-where \\\beta_0^{c}\\ is the control-arm mean estimated on the centered
-scale. The treatment effect and covariate slopes are unchanged by
-centering; the reported `intercept` remains the control-arm mean at
+each covariate before fitting, using the data selected by `centering`.
+The default uses the pooled current and historical mean. The reported
+intercept is back-transformed onto the original covariate scale.
+Specifically, if \\\bar{x}\_j\\ is the selected mean of covariate \\j\\
+and \\\beta_j\\ its estimated effect, the reported intercept is
+\\\beta_0 = \beta_0^{c} - \sum_j \beta_j \bar{x}\_j\\, where
+\\\beta_0^{c}\\ is the control-arm mean estimated on the centered scale.
+This back-transformation leaves the treatment effect and slopes
+unchanged; the reported `intercept` remains the control-arm mean at
 covariate = 0 on the original scale. The treatment effect and covariate
 slopes are invariant to a location shift of a covariate; the reported
 intercept changes with the covariate origin. Centering does not
 generally make the arm-mean estimators independent, and their covariance
-is not retained in the diagonal historical prior.
+is not retained in the diagonal historical prior. Consequently, changing
+`centering` can change the posterior, not just the reported intercept.
+User-supplied historical arm-prior means and SDs must describe the
+adjusted arm means at the selected covariate centering values.
 
 The marginal posterior of the residual variance is evaluated
 numerically. Candidate variance values are equally spaced under

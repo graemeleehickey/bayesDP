@@ -172,9 +172,29 @@ y_i=\beta_0+\beta_1\mathrm{treatment}\_i+
 \sum\_{j=2}^{m}x\_{ji}\beta_j+\varepsilon_i, \qquad
 \varepsilon_i\sim\mathcal N(0,\sigma^2).
 
-The implementation centers each covariate on its pooled
-current-plus-historical mean and fits separate arm means. With
-z\_{ji}=x\_{ji}-\bar x_j,
+The implementation centers each covariate and fits separate arm means.
+The `centering` argument selects the observations used to calculate each
+mean: `"pooled"` (the default) uses current and historical participants,
+`"current"` uses current participants only, and `"historical"` uses
+historical participants only. Each mean includes both treatment arms,
+gives equal weight to each included participant, and is applied to both
+datasets. Historical discount weights are not used in centering. The
+same choices are available in
+[`bdplogit()`](https://graemeleehickey.github.io/bayesDP/reference/bdplogit.md).
+
+For example, to use current-participant covariate means:
+
+``` r
+
+fit_current_centering <- bdplm(
+  Y ~ treatment + x, data = current, data0 = historical,
+  method = "fixed", centering = "current"
+)
+fit_current_centering$args1$centering
+fit_current_centering$args1$covariate_means
+```
+
+With \bar x_j denoting the selected mean and z\_{ji}=x\_{ji}-\bar x_j,
 
 y_i=\beta_C^\*\mathrm{control}\_i+\beta_T^\*\mathrm{treatment}\_i+
 \sum\_{j=2}^{m}z\_{ji}\beta_j+\varepsilon_i.
@@ -215,7 +235,10 @@ a regression of historical outcomes on separate arm indicators and the
 centered covariates. The SDs are standard errors of those adjusted
 historical arm means, not residual SDs. The fitted arm means define
 independent normal priors: the historical regression’s off-diagonal
-covariance is not carried into the current model.
+covariance is not carried into the current model. Consequently, changing
+`centering` can change the posterior, not just the reported intercept.
+If supplying historical arm-prior means and SDs, specify them at the
+selected covariate centering values.
 
 For clarity, order the current coefficient vector as
 

@@ -299,8 +299,25 @@ y_i=\beta_0+\beta_1\mathrm{treatment}_i+
 \sum_{j=2}^{m}x_{ji}\beta_j+\varepsilon_i,
 \qquad \varepsilon_i\sim\mathcal N(0,\sigma^2).
 </span></p>
-<p>The implementation centers each covariate on its pooled
-current-plus-historical mean and fits separate arm means. With <span class="math inline">z_{ji}=x_{ji}-\bar x_j</span>,</p>
+<p>The implementation centers each covariate and fits separate arm
+means. The <code>centering</code> argument selects the observations used
+to calculate each mean: <code>"pooled"</code> (the default) uses current
+and historical participants, <code>"current"</code> uses current
+participants only, and <code>"historical"</code> uses historical
+participants only. Each mean includes both treatment arms, gives equal
+weight to each included participant, and is applied to both datasets.
+Historical discount weights are not used in centering. The same choices
+are available in <code><a href="../reference/bdplogit.html">bdplogit()</a></code>.</p>
+<p>For example, to use current-participant covariate means:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit_current_centering</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bdplm.html">bdplm</a></span><span class="op">(</span></span>
+<span>  <span class="va">Y</span> <span class="op">~</span> <span class="va">treatment</span> <span class="op">+</span> <span class="va">x</span>, data <span class="op">=</span> <span class="va">current</span>, data0 <span class="op">=</span> <span class="va">historical</span>,</span>
+<span>  method <span class="op">=</span> <span class="st">"fixed"</span>, centering <span class="op">=</span> <span class="st">"current"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">fit_current_centering</span><span class="op">$</span><span class="va">args1</span><span class="op">$</span><span class="va">centering</span></span>
+<span><span class="va">fit_current_centering</span><span class="op">$</span><span class="va">args1</span><span class="op">$</span><span class="va">covariate_means</span></span></code></pre></div>
+<p>With <span class="math inline">\bar x_j</span> denoting the selected
+mean and <span class="math inline">z_{ji}=x_{ji}-\bar x_j</span>,</p>
 <p><span class="math display">
 y_i=\beta_C^*\mathrm{control}_i+\beta_T^*\mathrm{treatment}_i+
 \sum_{j=2}^{m}z_{ji}\beta_j+\varepsilon_i.
@@ -339,7 +356,10 @@ by a regression of historical outcomes on separate arm indicators and
 the centered covariates. The SDs are standard errors of those adjusted
 historical arm means, not residual SDs. The fitted arm means define
 independent normal priors: the historical regression’s off-diagonal
-covariance is not carried into the current model.</p>
+covariance is not carried into the current model. Consequently, changing
+<code>centering</code> can change the posterior, not just the reported
+intercept. If supplying historical arm-prior means and SDs, specify them
+at the selected covariate centering values.</p>
 <p>For clarity, order the current coefficient vector as</p>
 <p><span class="math display">
 \boldsymbol\beta^*=(\beta_C^*,\beta_T^*,\beta_2,\ldots,\beta_m)^T,
