@@ -153,12 +153,12 @@ bdplogit(
 
 - centering:
 
-  character. Data used to calculate covariate centering means:
-  `"pooled"` (default) uses current and historical observations,
-  `"current"` uses current observations only, and `"historical"` uses
-  historical observations only. Each mean includes both treatment arms
-  and gives equal weight to each included observation, without
-  discounting. The same means are subtracted from both datasets,
+  character. How to center covariates: `"pooled"` (default) uses current
+  and historical observations, `"current"` uses current observations
+  only, and `"historical"` uses historical observations only. `"none"`
+  leaves covariates unchanged. Each centering mean includes both
+  treatment arms and gives equal weight to each included observation,
+  without discounting. The same means are subtracted from both datasets,
   including encoded factor covariates. The response and treatment
   indicator are not centered.
 
@@ -169,7 +169,8 @@ summary methods. Residual summaries use observed binary outcomes minus
 fitted probabilities from the posterior mean coefficients. The centering
 means are saved in `args1$covariate_means`; older saved fits without
 these means must be refitted before summarising residuals. The centering
-choice is saved in `args1$centering`.
+choice is saved in `args1$centering`. Under `centering = "none"`,
+`args1$covariate_means` contains zeros because no values are subtracted.
 
 The returned object is a list containing at least the following
 components:
@@ -227,24 +228,32 @@ fitted values at covariate = 0, so when covariates are not centered the
 treatment- and control-mean estimators can become strongly correlated
 and their standard errors can reflect extrapolation to covariate = 0.
 This can affect the discount-prior construction and historical
-borrowing. To guard against this, `bdplogit` automatically mean-centers
-each covariate before fitting, using the data selected by `centering`.
-The default uses the pooled current and historical mean. The reported
-intercept is back-transformed onto the original covariate scale.
-Specifically, if \\\bar{x}\_j\\ is the selected mean of covariate \\j\\
+borrowing. To guard against this, `bdplogit` defaults to centering each
+covariate at its pooled current and historical mean. The `centering`
+argument selects the data used to calculate the mean or disables
+centering with `"none"`. The reported intercept is transformed back to
+the original covariate scale. Specifically, if \\\bar{x}\_j\\ is the
+selected mean of covariate \\j\\ (or zero under `centering = "none"`)
 and \\\beta_j\\ its estimated effect, the reported intercept is
 \\\beta_0 = \beta_0^{c} - \sum_j \beta_j \bar{x}\_j\\, where
-\\\beta_0^{c}\\ is the control-arm log-odds estimated on the centered
-scale. This back-transformation leaves the treatment effect and slopes
-unchanged; the reported `intercept` remains the control-arm log-odds at
-covariate = 0 on the original scale. Location shifts of covariates leave
-the treatment effect and slopes unchanged; the intercept changes with
-the covariate origin. Centering does not generally make the arm-mean
-estimators independent, and their covariance is not retained in the
-diagonal historical prior. Consequently, changing `centering` can change
-the posterior, not just the reported intercept. User-supplied historical
-arm-prior means and SDs must describe the adjusted arm log-odds at the
-selected covariate centering values.
+\\\beta_0^{c}\\ is the control-arm log-odds at the selected covariate
+reference values. This back-transformation leaves the treatment effect
+and slopes unchanged; the reported `intercept` remains the control-arm
+log-odds at covariate = 0 on the original scale. With mean centering
+enabled, location shifts of covariates leave the treatment effect and
+slopes unchanged; the intercept changes with the covariate origin.
+Centering does not generally make the arm-mean estimators independent,
+and their covariance is not retained in the diagonal historical prior.
+
+Changing `centering` can change the estimated treatment effect and its
+posterior uncertainty, because the independent historical arm priors are
+constructed at the selected covariate reference values. Transforming the
+intercept back to the original covariate scale does not remove this
+dependence. With `centering = "none"`, the historical arm priors refer
+to covariate = 0, which can involve extrapolation, and results can
+depend on the covariate origin. User-supplied historical arm-prior means
+and SDs must describe the adjusted arm log-odds at the selected
+covariate reference values.
 
 Posterior sampling uses
 [`MCMCpack::MCMClogit()`](https://rdrr.io/pkg/MCMCpack/man/MCMClogit.html).

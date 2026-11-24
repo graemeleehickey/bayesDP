@@ -299,15 +299,16 @@ y_i=\beta_0+\beta_1\mathrm{treatment}_i+
 \sum_{j=2}^{m}x_{ji}\beta_j+\varepsilon_i,
 \qquad \varepsilon_i\sim\mathcal N(0,\sigma^2).
 </span></p>
-<p>The implementation centers each covariate and fits separate arm
-means. The <code>centering</code> argument selects the observations used
-to calculate each mean: <code>"pooled"</code> (the default) uses current
-and historical participants, <code>"current"</code> uses current
-participants only, and <code>"historical"</code> uses historical
-participants only. Each mean includes both treatment arms, gives equal
-weight to each included participant, and is applied to both datasets.
-Historical discount weights are not used in centering. The same choices
-are available in <code><a href="../reference/bdplogit.html">bdplogit()</a></code>.</p>
+<p>The implementation fits separate arm means. The
+<code>centering</code> argument selects how covariates are centered:
+<code>"pooled"</code> (the default) uses current and historical
+participants, <code>"current"</code> uses current participants only,
+<code>"historical"</code> uses historical participants only, and
+<code>"none"</code> leaves covariates unchanged. Each centering mean
+includes both treatment arms, gives equal weight to each included
+participant, and is applied to both datasets. Historical discount
+weights are not used in centering. The same choices are available in
+<code><a href="../reference/bdplogit.html">bdplogit()</a></code>.</p>
 <p>For example, to use current-participant covariate means:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_current_centering</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bdplm.html">bdplm</a></span><span class="op">(</span></span>
@@ -317,18 +318,19 @@ are available in <code><a href="../reference/bdplogit.html">bdplogit()</a></code
 <span><span class="va">fit_current_centering</span><span class="op">$</span><span class="va">args1</span><span class="op">$</span><span class="va">centering</span></span>
 <span><span class="va">fit_current_centering</span><span class="op">$</span><span class="va">args1</span><span class="op">$</span><span class="va">covariate_means</span></span></code></pre></div>
 <p>With <span class="math inline">\bar x_j</span> denoting the selected
-mean and <span class="math inline">z_{ji}=x_{ji}-\bar x_j</span>,</p>
+mean (or zero under <code>centering = "none"</code>) and <span class="math inline">z_{ji}=x_{ji}-\bar x_j</span>,</p>
 <p><span class="math display">
 y_i=\beta_C^*\mathrm{control}_i+\beta_T^*\mathrm{treatment}_i+
 \sum_{j=2}^{m}z_{ji}\beta_j+\varepsilon_i.
 </span></p>
 <p>Here <span class="math inline">\mathrm{control}_i=1-\mathrm{treatment}_i</span>.
 The reported treatment effect is <span class="math inline">\beta_1=\beta_T^*-\beta_C^*</span>, and the
-original-scale intercept is <span class="math inline">\beta_0=\beta_C^*-\sum_j\beta_j\bar x_j</span>.
-Location shifts of covariates leave the treatment effect and slopes
-unchanged; the intercept changes with the covariate origin. Centering
-reduces extrapolation when defining historical arm means, but does not
-generally make all coefficient estimates independent.</p>
+original-scale intercept is <span class="math inline">\beta_0=\beta_C^*-\sum_j\beta_j\bar x_j</span>. With
+mean centering enabled, location shifts of covariates leave the
+treatment effect and slopes unchanged; the intercept changes with the
+covariate origin. Centering reduces extrapolation when defining
+historical arm means, but does not generally make all coefficient
+estimates independent.</p>
 <p>Separately within each arm, the comparison model is</p>
 <p><span class="math display">
 y_i=\tilde\beta_0+\tilde\beta_1\mathrm{historical}_i+
@@ -353,13 +355,21 @@ coefficient given that draw’s residual variance. <span class="math inline">\Ph
 </h2>
 <p>Unless supplied explicitly, the prior arm means and SDs are estimated
 by a regression of historical outcomes on separate arm indicators and
-the centered covariates. The SDs are standard errors of those adjusted
-historical arm means, not residual SDs. The fitted arm means define
-independent normal priors: the historical regression’s off-diagonal
-covariance is not carried into the current model. Consequently, changing
-<code>centering</code> can change the posterior, not just the reported
-intercept. If supplying historical arm-prior means and SDs, specify them
-at the selected covariate centering values.</p>
+the covariates after any centering. The SDs are standard errors of those
+adjusted historical arm means, not residual SDs. The fitted arm means
+define independent normal priors: the historical regression’s
+off-diagonal covariance is not carried into the current model.</p>
+<p>Changing <code>centering</code> can change the estimated treatment
+effect and its posterior uncertainty, because the independent historical
+arm priors are constructed at the selected covariate reference values.
+Transforming the intercept back to the original covariate scale does not
+remove this dependence. With <code>centering = "none"</code>, the
+historical arm priors refer to covariate = 0, which can involve
+extrapolation, and results can depend on the covariate origin. If
+supplying historical arm-prior means and SDs, specify them at the
+selected covariate reference values. The stored
+<code>args1$covariate_means</code> are zero under <code>"none"</code>
+because no values are subtracted.</p>
 <p>For clarity, order the current coefficient vector as</p>
 <p><span class="math display">
 \boldsymbol\beta^*=(\beta_C^*,\beta_T^*,\beta_2,\ldots,\beta_m)^T,

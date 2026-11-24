@@ -126,15 +126,18 @@
 
 ### New features
 
-- Added `centering = "pooled"`, `"current"`, or `"historical"` to
+- Added `centering = "pooled"`, `"current"`, `"historical"`, or `"none"`
+  to
   [`bdplm()`](https://graemeleehickey.github.io/bayesDP/reference/bdplm.md)
   and
-  [`bdplogit()`](https://graemeleehickey.github.io/bayesDP/reference/bdplogit.md)
-  to choose which observations define the covariate means. The default
-  preserves pooled centering. Each choice uses both treatment arms,
-  without discount weighting, and applies the same means to both
-  datasets. Fits retain the choice and means; changing the reference can
-  change the posterior under the independent historical arm priors.
+  [`bdplogit()`](https://graemeleehickey.github.io/bayesDP/reference/bdplogit.md).
+  The default preserves pooled centering; `"none"` leaves covariates
+  unchanged. Mean centering uses both treatment arms in the selected
+  data, without discount weighting, and applies the same means to both
+  datasets. Fits retain the choice and subtracted values. Changing the
+  reference can change the estimated treatment effect and its posterior
+  uncertainty under the independent historical arm priors, even after
+  transforming the intercept back to the original covariate scale.
 
 - Added [`coef()`](https://rdrr.io/r/stats/coef.html),
   [`vcov()`](https://rdrr.io/r/stats/vcov.html), and
