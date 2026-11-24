@@ -35,7 +35,7 @@ tidy(x, ...)
 \arguments{
 \item{x}{A fitted \code{bdpbinomial}, \code{bdpnormal}, \code{bdplm}, or \code{bdpsurvival} object. Fits from \code{bdplogit()} use class \code{bdplm}.}
 
-\item{...}{Additional arguments are not supported and produce an error.}
+\item{...}{Unrecognised arguments produce an error. The neutral arguments \code{vcov = NULL} and \code{coef_rename = FALSE}, forwarded by \pkg{modelsummary}, are accepted. Rename table terms with \code{modelsummary(..., coef_map = ...)}; covariance overrides are not supported because uncertainty is calculated from posterior draws.}
 
 \item{conf.int}{Logical; include equal-tailed credible limits? Defaults to \code{FALSE}.}
 

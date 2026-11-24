@@ -57,9 +57,9 @@ fit_bin <- bdpbinomial(
 )
 
 summary(fit_bin)
-#> 
+#>
 #>     One-armed bdp binomial
-#> 
+#>
 #> Current treatment data: 10 and 500
 #> Historical treatment data: 25 and 250
 #> Stochastic comparison (p_hat) - treatment (current vs. historical data): 0
@@ -80,9 +80,9 @@ fit_norm <- bdpnormal(
 )
 
 summary(fit_norm)
-#> 
+#>
 #>     One-armed bdp normal
-#> 
+#>
 #> data:
 #>   Current treatment: mu_t = 30, sigma_t = 10, N_t = 250
 #>   Historical treatment: mu0_t = 50, sigma0_t = 5, N0_t = 250
@@ -117,24 +117,24 @@ df0 <- data.frame(Y = Y0, treatment = treatment0, x = x0)
 
 fit_lm <- bdplm(Y ~ treatment + x, data = df, data0 = df0, method = "fixed")
 summary(fit_lm)
-#> 
+#>
 #> Call:
 #> bdplm(formula = Y ~ treatment + x, data = df, data0 = df0, method = "fixed")
-#> 
+#>
 #> Residuals:
 #>      Min     1Q Median    3Q    Max
 #>  -13.725 -3.519  0.504 4.383 11.851
-#> 
+#>
 #> Coefficients:
 #>             Estimate Std. Error
 #> (Intercept)   9.8228     0.6956
 #> treatment    32.3783     1.1265
 #> x             3.1145     0.1299
-#> 
+#>
 #> Discount function value (alpha):
 #>  treatment control
 #>       0.07  0.3812
-#> 
+#>
 #> Residual standard error: 5.4394
 ```
 
@@ -152,6 +152,39 @@ tidy(fit_lm, effects = "sigma", conf.int = TRUE)
 The conventional `std.error` column contains posterior SDs, and `conf.low` and `conf.high` contain credible limits. Estimates follow `summary()`: posterior medians for binomial, normal, and one-arm survival results, and posterior means for regression coefficients and the two-arm log hazard ratio. Binomial and normal results include treatment-minus-control differences when a control arm is present.
 
 For logistic and two-arm survival fits, `exponentiate = TRUE` reports the exponential of the posterior mean log effect and exponentiated credible limits, with posterior SDs calculated on the ratio scale. For one-arm survival fits, `time` selects the survival time of interest and defaults to the fit’s `surv_time`. See `?tidy` and `?glance` for definitions and examples. These functions summarise saved draws without refitting. `augment()` is not currently provided.
+
+With the optional modelsummary package installed, fits can also be passed directly to comparison tables:
+
+``` r
+modelsummary::modelsummary(fit_lm, statistic = "conf.int")
+```
+
+The table intervals are posterior credible intervals. Keep the default `vcov = NULL` and `coef_rename = FALSE`; use `coef_map` to change displayed coefficient names. Covariance overrides are not supported because uncertainty is calculated from posterior draws.
+
+## Extracting estimates and draws
+
+Linear and logistic regression fits support the usual R extraction functions. `coef()` returns posterior means, `vcov()` returns the covariance of the coefficient draws, and `confint()` returns equal-tailed credible intervals. These use the original covariate scale, retain logistic coefficients on the log-odds scale, and exclude the linear model’s residual SD.
+
+``` r
+coef(fit_lm)
+vcov(fit_lm)
+confint(fit_lm, parm = "treatment", level = 0.9)
+nobs(fit_lm)
+```
+
+`nobs()` works for every fitted model and counts current participants only. Historical participants are counted separately by `glance()`, including when they supply the only control group. For survival models, counts refer to participants rather than split follow-up intervals.
+
+With the optional posterior package installed, all fitted models can be converted to standard draw formats for further calculations and use with tidybayes or bayesplot:
+
+``` r
+draws <- posterior::as_draws_df(fit_bin)
+quantile(draws$treatment, c(0.025, 0.975))
+posterior::as_draws_matrix(fit_lm)
+```
+
+Binomial and normal conversions include arm outcomes and their paired difference. Regression conversions include all coefficient draws and, for linear models, the residual SD `sigma`. Survival conversions include interval log hazards and the survival probability or approximate common log hazard ratio reported by `tidy()`. See `?posterior_draws` for variable definitions.
+
+Conversion preserves the saved draws and their order, without resampling. The `.chain = 1` label represents the single stored sequence; it does not create independent chains or establish convergence. Discount weights and comparison probabilities remain available in the fitted object.
 
 ## Citation
 

@@ -21,7 +21,7 @@ glance(x, ...)
 \arguments{
 \item{x}{A fitted \code{bdpbinomial}, \code{bdpnormal}, \code{bdplm}, or \code{bdpsurvival} object. Fits from \code{bdplogit()} use class \code{bdplm}.}
 
-\item{...}{Additional arguments are not supported and produce an error.}
+\item{...}{The table-formatting argument \code{gof_map} and coefficient-summary arguments \code{exponentiate}, \code{effects}, and \code{time} are accepted but do not affect model-level summaries. This allows \pkg{modelsummary} to forward them to both \code{tidy()} and \code{glance()}. Other arguments produce an error.}
 }
 \value{
 A one-row tibble containing:

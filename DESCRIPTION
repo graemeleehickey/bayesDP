@@ -52,6 +52,8 @@ Suggests:
     broom,
     covr,
     knitr,
+    modelsummary,
+    posterior,
     rmarkdown,
     testthat,
     withr

@@ -8,7 +8,7 @@
 #' @param exponentiate Logical; exponentiate logistic coefficients or the two-arm survival effect? Defaults to \code{FALSE}. Not supported for other quantities.
 #' @param effects For regression fits, \code{"coefficients"} returns the intercept, treatment effect, and covariate coefficients; \code{"sigma"} returns the residual SD of a linear model. Logistic fits have no residual SD parameter.
 #' @param time For a one-arm survival fit, a single finite, nonnegative time at which to summarise survival. Defaults to the fit's \code{surv_time}. Cannot be supplied for a two-arm fit.
-#' @param ... Additional arguments are not supported and produce an error.
+#' @param ... Unrecognised arguments produce an error. The neutral arguments \code{vcov = NULL} and \code{coef_rename = FALSE}, forwarded by \pkg{modelsummary}, are accepted. Rename table terms with \code{modelsummary(..., coef_map = ...)}; covariance overrides are not supported because uncertainty is calculated from posterior draws.
 #'
 #' @details
 #' Binomial and normal fits return \code{treatment}, then \code{control} and \code{difference} when a control arm is present. These describe event probabilities or population means, and the treatment-minus-control difference. Estimates are posterior medians. Differences are calculated from paired draws, including when controls are historical only or the fit used \code{compare = FALSE}.
@@ -90,7 +90,7 @@ tidy.bdpsurvival <- function(x, conf.int = FALSE, conf.level = 0.95,
 #' Return sample sizes, retained draw counts, and historical discount weights in a one-row tibble. These methods also work with \code{broom::glance()}.
 #'
 #' @param x A fitted \code{bdpbinomial}, \code{bdpnormal}, \code{bdplm}, or \code{bdpsurvival} object. Fits from \code{bdplogit()} use class \code{bdplm}.
-#' @param ... Additional arguments are not supported and produce an error.
+#' @param ... The table-formatting argument \code{gof_map} and coefficient-summary arguments \code{exponentiate}, \code{effects}, and \code{time} are accepted but do not affect model-level summaries. This allows \pkg{modelsummary} to forward them to both \code{tidy()} and \code{glance()}. Other arguments produce an error.
 #' @return A one-row tibble containing:
 #' \describe{
 #'   \item{nobs}{Number of current participants included in the analysis, summed across arms.}
@@ -116,21 +116,21 @@ generics::glance
 #' @rdname glance
 #' @export
 glance.bdpbinomial <- function(x, ...) {
-  bdp_check_dots(...)
+  bdp_check_glance_args(...)
   bdp_glance_aggregate(x, "posterior")
 }
 
 #' @rdname glance
 #' @export
 glance.bdpnormal <- function(x, ...) {
-  bdp_check_dots(...)
+  bdp_check_glance_args(...)
   bdp_glance_aggregate(x, "posterior_mu")
 }
 
 #' @rdname glance
 #' @export
 glance.bdplm <- function(x, ...) {
-  bdp_check_dots(...)
+  bdp_check_glance_args(...)
   data <- x$args1$data
   bdp_glance_counts(
     if (is.null(data)) NA_real_ else sum(data$historical == 0),
@@ -142,7 +142,7 @@ glance.bdplm <- function(x, ...) {
 #' @rdname glance
 #' @export
 glance.bdpsurvival <- function(x, ...) {
-  bdp_check_dots(...)
+  bdp_check_glance_args(...)
   data <- x$args1$participants
   result <- bdp_glance_counts(
     if (is.null(data)) NA_real_ else sum(data$historical == 0),
@@ -180,36 +180,40 @@ bdp_summarise_draws <- function(draws, point = median, conf.int = TRUE,
 }
 
 bdp_arm_summary <- function(x, component, conf.int = TRUE, conf.level = 0.95) {
+  bdp_summarise_draws(bdp_arm_draws(x, component), conf.int = conf.int, conf.level = conf.level)
+}
+
+bdp_arm_draws <- function(x, component) {
   draws <- list(treatment = x$posterior_treatment[[component]])
   if (x$args1$arm2) {
     draws$control <- x$posterior_control[[component]]
     draws$difference <- draws$treatment - draws$control
   }
-  bdp_summarise_draws(draws, conf.int = conf.int, conf.level = conf.level)
+  draws
 }
 
 bdp_regression_summary <- function(x, effects = "coefficients", conf.int = TRUE,
                                    conf.level = 0.95, exponentiate = FALSE) {
-  terms <- if (effects == "sigma") "sigma" else setdiff(names(x$posterior), "sigma")
-  draws <- as.list(x$posterior[, terms, drop = FALSE])
-  names(draws)[names(draws) == "intercept"] <- "(Intercept)"
+  draws <- as.list(bdp_regression_draws(x, effects))
   bdp_summarise_draws(draws, mean, conf.int, conf.level, exponentiate)
 }
 
 bdp_survival_summary <- function(x, times, conf.int = TRUE, conf.level = 0.95) {
-  arm <- x$posterior_treatment
-  log_hazard <- arm$posterior_log_hazard
-  draws <- lapply(times, function(time) {
-    if (time == 0) return(rep(1, nrow(arm$posterior_hazard)))
-    if (is.null(log_hazard)) {
-      lengths <- bdp_interval_lengths(time, x$args1$breaks)
-      active <- lengths > 0
-      return(exp(-drop(arm$posterior_hazard[, active, drop = FALSE] %*% lengths[active])))
-    }
-    exp(-exp(bdp_log_cumulative_hazard(log_hazard, time, x$args1$breaks)))
-  })
+  draws <- lapply(times, function(time) bdp_survival_probability_draws(x, time))
   names(draws) <- rep("survival", length(times))
   bdp_summarise_draws(draws, conf.int = conf.int, conf.level = conf.level)
+}
+
+bdp_survival_probability_draws <- function(x, time) {
+  arm <- x$posterior_treatment
+  log_hazard <- arm$posterior_log_hazard
+  if (time == 0) return(rep(1, nrow(arm$posterior_hazard)))
+  if (is.null(log_hazard)) {
+    lengths <- bdp_interval_lengths(time, x$args1$breaks)
+    active <- lengths > 0
+    return(exp(-drop(arm$posterior_hazard[, active, drop = FALSE] %*% lengths[active])))
+  }
+  exp(-exp(bdp_log_cumulative_hazard(log_hazard, time, x$args1$breaks)))
 }
 
 bdp_survival_effect_summary <- function(x, conf.int = TRUE, conf.level = 0.95,
@@ -247,10 +251,24 @@ bdp_check_dots <- function(...) {
 }
 
 bdp_check_tidy_args <- function(conf.int, conf.level, ...) {
-  bdp_check_dots(...)
+  dots <- list(...)
+  if ("vcov" %in% names(dots) && !is.null(dots$vcov)) {
+    stop("Covariance overrides are not supported; uncertainty uses posterior draws.", call. = FALSE)
+  }
+  if ("coef_rename" %in% names(dots) && !identical(dots$coef_rename, FALSE)) {
+    stop("coef_rename must be FALSE; use modelsummary's coef_map to rename table terms.", call. = FALSE)
+  }
+  dots[c("vcov", "coef_rename")] <- NULL
+  do.call(bdp_check_dots, dots)
   bdp_check_logical(conf.int, "conf.int")
   if (!is.numeric(conf.level) || length(conf.level) != 1L ||
       !is.finite(conf.level) || conf.level <= 0 || conf.level >= 1) {
     stop("conf.level must be a single finite number strictly between zero and one.", call. = FALSE)
   }
+}
+
+bdp_check_glance_args <- function(...) {
+  dots <- list(...)
+  dots[c("gof_map", "exponentiate", "effects", "time")] <- NULL
+  do.call(bdp_check_dots, dots)
 }

@@ -2,6 +2,7 @@
 
 ## Bug fixes
 
+* Fixed direct use of fitted models with `modelsummary()`: tidiers now accept its neutral `vcov = NULL` and `coef_rename = FALSE` arguments while retaining posterior SDs and equal-tailed credible intervals. Unsupported covariance overrides still produce an error; table labels can be changed with `coef_map`.
 * Fixed treatment-only regression formulas: `bdplm()` no longer adds unintended covariate columns under `method = "mc"`, and logistic posterior draws contain only the intercept and treatment effect. Posterior columns are selected by name in both regressions.
 * `bdplogit()` now defaults to its supported `"fixed"` method and uses distinct seeds drawn from R's random-number state for its two comparisons and final fit. `set.seed()` controls reproducibility, and stage seeds are retained in `args1$mcmc_seeds`. Results will differ from earlier versions that always used MCMCpack's default seed.
 * `bdpsurvival()` now uses evaluated survival responses, supporting transformed times, event expressions, named arguments, and `survival::Surv()`. Missing responses, unsupported censoring types, and invalid treatment codes cause explicit errors before interval splitting. Valid one-arm and historical-only-control analyses remain supported.
@@ -27,6 +28,8 @@
 
 ## New features
 
+* Added `coef()`, `vcov()`, and `confint()` for linear and logistic regression fits. These return posterior mean coefficients, their posterior covariance, and equal-tailed credible intervals on the original covariate scale. Added `nobs()` for all fitted models, counting current participants separately from historical participants.
+* Added `posterior::as_draws_df()` and `posterior::as_draws_matrix()` for all fitted models. Conversions preserve retained draws and their order, including paired arm differences, regression residual SDs, and survival interval log hazards. The posterior package is optional.
 * Added `tidy()` and `glance()` methods for all fitted models, also available through broom. `tidy()` reports posterior estimates, SDs, and optional equal-tailed credible limits; logistic and two-arm survival effects can be exponentiated. `glance()` reports current and historical sample sizes, retained draw counts, and arm-specific discount weights, with event counts for survival fits.
 * Numerical summaries are shared with `summary()`. The new methods use saved draws without refitting or changing the random-number state. Participant-level `augment()` methods are not provided.
 
@@ -35,6 +38,7 @@
 
 ## Tests
 
+* Added checks for coefficient extraction, joint posterior covariance, credible intervals, participant counts, posterior draw conversion, and direct modelsummary tables across the supported model types.
 * Added tests for treatment-only models, logistic seed control and method defaults, equivalent survival-response expressions, preservation of participant counts, invalid treatment coding, and summary-data input boundaries.
 * Expanded checks for incomplete inputs, historical-only controls, factor contrasts, regression discount functions, plot options, and survival calculations at interval boundaries and numerical limits. Added comparisons with analytical posterior moments and integrated hazards.
 * Added logistic regression checks for zero-event and all-event groups, covariate separation, quasi-complete separation, rank deficiency, prescribed weights, and supplied historical priors.

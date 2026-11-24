@@ -135,6 +135,39 @@ The conventional `std.error` column contains posterior SDs, and `conf.low` and `
 
 For logistic and two-arm survival fits, `exponentiate = TRUE` reports the exponential of the posterior mean log effect and exponentiated credible limits, with posterior SDs calculated on the ratio scale. For one-arm survival fits, `time` selects the survival time of interest and defaults to the fit's `surv_time`. See `?tidy` and `?glance` for definitions and examples. These functions summarise saved draws without refitting. `augment()` is not currently provided.
 
+With the optional modelsummary package installed, fits can also be passed directly to comparison tables:
+
+```{r, eval = FALSE}
+modelsummary::modelsummary(fit_lm, statistic = "conf.int")
+```
+
+The table intervals are posterior credible intervals. Keep the default `vcov = NULL` and `coef_rename = FALSE`; use `coef_map` to change displayed coefficient names. Covariance overrides are not supported because uncertainty is calculated from posterior draws.
+
+## Extracting estimates and draws
+
+Linear and logistic regression fits support the usual R extraction functions. `coef()` returns posterior means, `vcov()` returns the covariance of the coefficient draws, and `confint()` returns equal-tailed credible intervals. These use the original covariate scale, retain logistic coefficients on the log-odds scale, and exclude the linear model's residual SD.
+
+```{r, eval = FALSE}
+coef(fit_lm)
+vcov(fit_lm)
+confint(fit_lm, parm = "treatment", level = 0.9)
+nobs(fit_lm)
+```
+
+`nobs()` works for every fitted model and counts current participants only. Historical participants are counted separately by `glance()`, including when they supply the only control group. For survival models, counts refer to participants rather than split follow-up intervals.
+
+With the optional posterior package installed, all fitted models can be converted to standard draw formats for further calculations and use with tidybayes or bayesplot:
+
+```{r, eval = FALSE}
+draws <- posterior::as_draws_df(fit_bin)
+quantile(draws$treatment, c(0.025, 0.975))
+posterior::as_draws_matrix(fit_lm)
+```
+
+Binomial and normal conversions include arm outcomes and their paired difference. Regression conversions include all coefficient draws and, for linear models, the residual SD `sigma`. Survival conversions include interval log hazards and the survival probability or approximate common log hazard ratio reported by `tidy()`. See `?posterior_draws` for variable definitions.
+
+Conversion preserves the saved draws and their order, without resampling. The `.chain = 1` label represents the single stored sequence; it does not create independent chains or establish convergence. Discount weights and comparison probabilities remain available in the fitted object.
+
 ## Citation
 
 If you use `bayesDP`, please cite the package and the methodological paper:
