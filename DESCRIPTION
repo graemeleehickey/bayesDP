@@ -36,7 +36,6 @@ URL: https://github.com/graemeleehickey/bayesDP,
     https://CRAN.R-project.org/package=bayesDP
 BugReports: https://github.com/graemeleehickey/bayesDP/issues
 NeedsCompilation: yes
-Repository: CRAN
 Imports:
     detectseparation,
     generics,

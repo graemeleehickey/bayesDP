@@ -24,4 +24,5 @@
 ^_pkgdown\.yml$
 ^docs$
 ^pkgdown$
+^release$
 revdep
