@@ -25,13 +25,14 @@ centering_fit <- function(model, method, d, ...) {
   do.call(get(model), c(args, list(...)))
 }
 
-test_that("centering uses the selected population for both datasets and arm priors", {
+test_that("centering uses the selected reference for both datasets and arm priors", {
   withr::local_seed(9041)
   # Historical data have twice as many participants as current data, with
   # different continuous-covariate means and factor proportions.
   means <- list(pooled = c(x = 13.5, siteB = 5 / 12),
     current = c(x = 10.5, siteB = 3 / 4),
-    historical = c(x = 15, siteB = 1 / 4))
+    historical = c(x = 15, siteB = 1 / 4),
+    none = c(x = 0, siteB = 0))
   for (model in c("bdplm", "bdplogit")) {
     d <- centering_data(model == "bdplogit")
     for (method in if (model == "bdplm") c("fixed", "mc") else "fixed") {
@@ -85,7 +86,7 @@ test_that("centering uses the selected population for both datasets and arm prio
         expect_equal(observed,
           unname(round(quantile(residuals, c(0, 0.25, 0.5, 0.75, 1)), 3)))
 
-        if (choice != "pooled") {
+        if (choice %in% c("current", "historical")) {
           shifted_data <- lapply(d, function(x) transform(x, x = x + 100))
           shifted <- centering_fit(model, method, shifted_data, centering = choice)
           expect_equal(shifted$posterior$treatment, fit$posterior$treatment,
@@ -103,7 +104,7 @@ test_that("centering choices are independent of prescribed borrowing weights", {
   withr::local_seed(9043)
   for (model in c("bdplm", "bdplogit")) {
     d <- centering_data(model == "bdplogit")
-    for (choice in c("pooled", "current", "historical")) {
+    for (choice in c("pooled", "current", "historical", "none")) {
       estimated <- centering_fit(model, "fixed", d, centering = choice)
       for (weights in list(0, c(0.2, 0.8))) {
         prescribed <- centering_fit(model, "fixed", d, centering = choice,
@@ -120,7 +121,7 @@ test_that("centering choices also support models without covariates", {
   for (model in c("bdplm", "bdplogit")) {
     d <- centering_data(model == "bdplogit")
     for (method in if (model == "bdplm") c("fixed", "mc") else "fixed") {
-      fits <- lapply(c("pooled", "current", "historical"), function(choice) {
+      fits <- lapply(c("pooled", "current", "historical", "none"), function(choice) {
         args <- list(formula = Y ~ treatment, data = d$current,
           data0 = d$historical, method = method, centering = choice,
           number_mcmc_alpha = 300, number_mcmc_beta = 300)
@@ -146,7 +147,7 @@ test_that("invalid centering choices are rejected before sampling", {
       before <- .Random.seed
       expect_error(get(model)(Y ~ treatment + x, data = d$current,
         data0 = d$historical, centering = choice),
-        "centering must be 'pooled', 'current', or 'historical'", fixed = TRUE)
+        "centering must be 'pooled', 'current', 'historical', or 'none'", fixed = TRUE)
       expect_identical(.Random.seed, before)
     }
   }

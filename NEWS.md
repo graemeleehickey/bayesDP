@@ -28,7 +28,7 @@
 
 ## New features
 
-* Added `centering = "pooled"`, `"current"`, or `"historical"` to `bdplm()` and `bdplogit()` to choose which observations define the covariate means. The default preserves pooled centering. Each choice uses both treatment arms, without discount weighting, and applies the same means to both datasets. Fits retain the choice and means; changing the reference can change the posterior under the independent historical arm priors.
+* Added `centering = "pooled"`, `"current"`, `"historical"`, or `"none"` to `bdplm()` and `bdplogit()`. The default preserves pooled centering; `"none"` leaves covariates unchanged. Mean centering uses both treatment arms in the selected data, without discount weighting, and applies the same means to both datasets. Fits retain the choice and subtracted values. Changing the reference can change the estimated treatment effect and its posterior uncertainty under the independent historical arm priors, even after transforming the intercept back to the original covariate scale.
 
 * Added `coef()`, `vcov()`, and `confint()` for linear and logistic regression fits. These return posterior mean coefficients, their posterior covariance, and equal-tailed credible intervals on the original covariate scale. Added `nobs()` for all fitted models, counting current participants separately from historical participants.
 * Added `posterior::as_draws_df()` and `posterior::as_draws_matrix()` for all fitted models. Conversions preserve retained draws and their order, including paired arm differences, regression residual SDs, and survival interval log hazards. The posterior package is optional.
