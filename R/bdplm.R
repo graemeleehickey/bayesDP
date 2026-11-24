@@ -74,6 +74,13 @@
 #'   and holds it fixed throughout the analysis.  See the the \code{bdplm}
 #'   vignette \cr \code{vignette("bdplm-vignette", package = "bayesDP")} for more
 #'   details.
+#' @param centering character. Data used to calculate covariate centering means:
+#'   \code{"pooled"} (default) uses current and historical observations,
+#'   \code{"current"} uses current observations only, and \code{"historical"}
+#'   uses historical observations only. Each mean includes both treatment arms
+#'   and gives equal weight to each included observation, without discounting.
+#'   The same means are subtracted from both datasets, including encoded factor
+#'   covariates. The response and treatment indicator are not centered.
 #' @details \code{bdplm} uses a two-stage approach for determining the strength
 #'   of historical data in estimation of an adjusted mean or covariate effect.
 #'   In the first stage, a \emph{discount function} is used that that defines
@@ -108,19 +115,23 @@
 #'   their standard errors can reflect extrapolation to covariate = 0. This
 #'   can affect the discount-prior construction and historical borrowing. To
 #'   guard against this, \code{bdplm} automatically mean-centers each covariate
-#'   on its pooled (current plus historical) mean before fitting, and
-#'   back-transforms the reported intercept onto the original covariate scale.
-#'   Specifically, if \eqn{\bar{x}_j} is the pooled mean of covariate \eqn{j}
+#'   before fitting, using the data selected by \code{centering}. The default
+#'   uses the pooled current and historical mean. The reported intercept is
+#'   back-transformed onto the original covariate scale.
+#'   Specifically, if \eqn{\bar{x}_j} is the selected mean of covariate \eqn{j}
 #'   and \eqn{\beta_j} its estimated effect, the reported intercept is
 #'   \eqn{\beta_0 = \beta_0^{c} - \sum_j \beta_j \bar{x}_j}, where
 #'   \eqn{\beta_0^{c}} is the control-arm mean estimated on the centered scale.
-#'   The treatment effect and covariate slopes are unchanged by centering; the
+#'   This back-transformation leaves the treatment effect and slopes unchanged; the
 #'   reported \code{intercept} remains the control-arm mean at covariate = 0 on
 #'   the original scale. The treatment effect and covariate slopes are invariant
 #'   to a location shift of a covariate; the reported intercept changes with
 #'   the covariate origin. Centering does not generally make the arm-mean
 #'   estimators independent, and their covariance is not retained in the
-#'   diagonal historical prior.
+#'   diagonal historical prior. Consequently, changing \code{centering} can
+#'   change the posterior, not just the reported intercept. User-supplied
+#'   historical arm-prior means and SDs must describe the adjusted arm means
+#'   at the selected covariate centering values.
 #'
 #'   The marginal posterior of the residual variance is evaluated numerically.
 #'   Candidate variance values are equally spaced under \code{"fixed"} and
@@ -146,7 +157,7 @@
 #'   posterior means, and \code{se} contains posterior standard deviations, for
 #'   the intercept, treatment effect, covariate effects, and residual SD.}
 #'   \item{\code{args1}}{ list. The original call, the centered analysis data,
-#'   and the named \code{covariate_means} used to restore the original covariate
+#'   the \code{centering} choice, and the named \code{covariate_means} used to restore the original covariate
 #'   scale when calculating residual summaries.} }
 #'
 #' @examples
@@ -222,7 +233,8 @@ setGeneric(
            fix_alpha = FALSE,
            weibull_scale = 0.135,
            weibull_shape = 3,
-           method = "mc") {
+           method = "mc",
+           centering = "pooled") {
     standardGeneric("bdplm")
   }
 )
@@ -248,7 +260,8 @@ setMethod(
            fix_alpha = FALSE,
            weibull_scale = 0.135,
            weibull_shape = 3,
-           method = "mc") {
+           method = "mc",
+           centering = "pooled") {
 
     ### Check validity of data input
     call <- match.call()
@@ -258,6 +271,11 @@ setMethod(
 
     if (is.null(data0)) {
       stop("Historical data not input correctly.")
+    }
+
+    if (!is.character(centering) || length(centering) != 1L || is.na(centering) ||
+        !centering %in% c("pooled", "current", "historical")) {
+      stop("centering must be 'pooled', 'current', or 'historical'.", call. = FALSE)
     }
 
     ### Parse current data
@@ -423,19 +441,17 @@ setMethod(
     ##############################################################################
     # Mean-center covariates
     #
-    # The model is parameterized without a fixed intercept, using separate
-    # treatment and control means (i.e., Y ~ -1 + treatment + control + covs).
-    # In this parameterization the arm means are the fitted values at
-    # covariate = 0. When covariates are not centered these arm-mean estimators
-    # become strongly correlated and their standard errors are extrapolation
-    # errors at covariate = 0, which breaks the (diagonal) discount-prior
-    # construction and corrupts the historical borrowing. Centering each
-    # covariate on its pooled (current + historical) mean restores the intended
-    # behavior. The centering is reversed on the posterior intercept below so
-    # that reported quantities remain on the original covariate scale.
+    # Use one reference mean across both datasets and treatment arms, so the
+    # historical arm priors and current model have the same covariate origin.
+    # The reported intercept is transformed back to the original scale below.
     ##############################################################################
 
-    covariate_means <- vapply(covs_df, function(nm) mean(df[[nm]]), numeric(1))
+    centering_rows <- switch(centering,
+      pooled = rep(TRUE, nrow(df)),
+      current = df$historical == 0,
+      historical = df$historical == 1)
+    covariate_means <- vapply(covs_df,
+      function(nm) mean(df[[nm]][centering_rows]), numeric(1))
 
     for (nm in covs_df) {
       df[[nm]] <- df[[nm]] - covariate_means[[nm]]
@@ -698,6 +714,7 @@ setMethod(
     args1 <- list(
       call = call,
       data = df,
+      centering = centering,
       covariate_means = covariate_means
     )
 

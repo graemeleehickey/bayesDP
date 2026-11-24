@@ -28,6 +28,8 @@
 
 ## New features
 
+* Added `centering = "pooled"`, `"current"`, or `"historical"` to `bdplm()` and `bdplogit()` to choose which observations define the covariate means. The default preserves pooled centering. Each choice uses both treatment arms, without discount weighting, and applies the same means to both datasets. Fits retain the choice and means; changing the reference can change the posterior under the independent historical arm priors.
+
 * Added `coef()`, `vcov()`, and `confint()` for linear and logistic regression fits. These return posterior mean coefficients, their posterior covariance, and equal-tailed credible intervals on the original covariate scale. Added `nobs()` for all fitted models, counting current participants separately from historical participants.
 * Added `posterior::as_draws_df()` and `posterior::as_draws_matrix()` for all fitted models. Conversions preserve retained draws and their order, including paired arm differences, regression residual SDs, and survival interval log hazards. The posterior package is optional.
 * Added `tidy()` and `glance()` methods for all fitted models, also available through broom. `tidy()` reports posterior estimates, SDs, and optional equal-tailed credible limits; logistic and two-arm survival effects can be exponentiated. `glance()` reports current and historical sample sizes, retained draw counts, and arm-specific discount weights, with event counts for survival fits.

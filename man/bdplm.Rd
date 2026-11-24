@@ -25,7 +25,8 @@ bdplm(
   fix_alpha = FALSE,
   weibull_scale = 0.135,
   weibull_shape = 3,
-  method = "mc"
+  method = "mc",
+  centering = "pooled"
 )
 }
 \arguments{
@@ -116,6 +117,14 @@ than numerical error around a fixed weight. Alternate value "\code{fixed}" estim
 and holds it fixed throughout the analysis.  See the the \code{bdplm}
 vignette \cr \code{vignette("bdplm-vignette", package = "bayesDP")} for more
 details.}
+
+\item{centering}{character. Data used to calculate covariate centering means:
+\code{"pooled"} (default) uses current and historical observations,
+\code{"current"} uses current observations only, and \code{"historical"}
+uses historical observations only. Each mean includes both treatment arms
+and gives equal weight to each included observation, without discounting.
+The same means are subtracted from both datasets, including encoded factor
+covariates. The response and treatment indicator are not centered.}
 }
 \value{
 \code{bdplm} returns an object of class "bdplm".
@@ -131,7 +140,7 @@ details.}
   posterior means, and \code{se} contains posterior standard deviations, for
   the intercept, treatment effect, covariate effects, and residual SD.}
   \item{\code{args1}}{ list. The original call, the centered analysis data,
-  and the named \code{covariate_means} used to restore the original covariate
+  the \code{centering} choice, and the named \code{covariate_means} used to restore the original covariate
   scale when calculating residual summaries.} }
 }
 \description{
@@ -177,19 +186,23 @@ details.}
   their standard errors can reflect extrapolation to covariate = 0. This
   can affect the discount-prior construction and historical borrowing. To
   guard against this, \code{bdplm} automatically mean-centers each covariate
-  on its pooled (current plus historical) mean before fitting, and
-  back-transforms the reported intercept onto the original covariate scale.
-  Specifically, if \eqn{\bar{x}_j} is the pooled mean of covariate \eqn{j}
+  before fitting, using the data selected by \code{centering}. The default
+  uses the pooled current and historical mean. The reported intercept is
+  back-transformed onto the original covariate scale.
+  Specifically, if \eqn{\bar{x}_j} is the selected mean of covariate \eqn{j}
   and \eqn{\beta_j} its estimated effect, the reported intercept is
   \eqn{\beta_0 = \beta_0^{c} - \sum_j \beta_j \bar{x}_j}, where
   \eqn{\beta_0^{c}} is the control-arm mean estimated on the centered scale.
-  The treatment effect and covariate slopes are unchanged by centering; the
+  This back-transformation leaves the treatment effect and slopes unchanged; the
   reported \code{intercept} remains the control-arm mean at covariate = 0 on
   the original scale. The treatment effect and covariate slopes are invariant
   to a location shift of a covariate; the reported intercept changes with
   the covariate origin. Centering does not generally make the arm-mean
   estimators independent, and their covariance is not retained in the
-  diagonal historical prior.
+  diagonal historical prior. Consequently, changing \code{centering} can
+  change the posterior, not just the reported intercept. User-supplied
+  historical arm-prior means and SDs must describe the adjusted arm means
+  at the selected covariate centering values.
 
   The marginal posterior of the residual variance is evaluated numerically.
   Candidate variance values are equally spaced under \code{"fixed"} and

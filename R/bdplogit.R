@@ -74,6 +74,13 @@
 #'   It estimates each historical weight once and holds it fixed throughout
 #'   the analysis, unless \code{fix_alpha = TRUE} prescribes the weights.
 #'   An explicit \code{"mc"} request is not supported and raises an error.
+#' @param centering character. Data used to calculate covariate centering means:
+#'   \code{"pooled"} (default) uses current and historical observations,
+#'   \code{"current"} uses current observations only, and \code{"historical"}
+#'   uses historical observations only. Each mean includes both treatment arms
+#'   and gives equal weight to each included observation, without discounting.
+#'   The same means are subtracted from both datasets, including encoded factor
+#'   covariates. The response and treatment indicator are not centered.
 #' @details \code{bdplogit} uses a two-stage approach for determining the
 #'   strength of historical data in estimation of an adjusted mean or covariate
 #'   effect. In the first stage, a \emph{discount function} is used that
@@ -105,21 +112,27 @@
 #'   separate treatment and control (log-odds) means rather than an intercept
 #'   plus a treatment effect. In this parameterization the arm means are the
 #'   fitted values at covariate = 0, so when covariates are not centered the
-#'   treatment- and control-mean estimators become strongly correlated and
-#'   their standard errors are extrapolation errors at covariate = 0. This
-#'   distorts the discount-prior construction and the historical borrowing. To
+#'   treatment- and control-mean estimators can become strongly correlated and
+#'   their standard errors can reflect extrapolation to covariate = 0. This
+#'   can affect the discount-prior construction and historical borrowing. To
 #'   guard against this, \code{bdplogit} automatically mean-centers each
-#'   covariate on its pooled (current plus historical) mean before fitting, and
-#'   back-transforms the reported intercept onto the original covariate scale.
-#'   Specifically, if \eqn{\bar{x}_j} is the pooled mean of covariate \eqn{j}
+#'   covariate before fitting, using the data selected by \code{centering}.
+#'   The default uses the pooled current and historical mean. The reported
+#'   intercept is back-transformed onto the original covariate scale.
+#'   Specifically, if \eqn{\bar{x}_j} is the selected mean of covariate \eqn{j}
 #'   and \eqn{\beta_j} its estimated effect, the reported intercept is
 #'   \eqn{\beta_0 = \beta_0^{c} - \sum_j \beta_j \bar{x}_j}, where
 #'   \eqn{\beta_0^{c}} is the control-arm log-odds estimated on the centered
-#'   scale. The treatment effect and covariate slopes are unchanged by
-#'   centering; the reported \code{intercept} remains the control-arm log-odds
-#'   at covariate = 0 on the original scale. As a result, estimates are
-#'   invariant to a location shift of any covariate, and users do not need to
-#'   center covariates themselves.
+#'   scale. This back-transformation leaves the treatment effect and slopes
+#'   unchanged; the reported \code{intercept} remains the control-arm log-odds
+#'   at covariate = 0 on the original scale. Location shifts of covariates leave
+#'   the treatment effect and slopes unchanged; the intercept changes with the
+#'   covariate origin. Centering does not generally make the arm-mean estimators
+#'   independent, and their covariance is not retained in the diagonal
+#'   historical prior. Consequently, changing \code{centering} can change the
+#'   posterior, not just the reported intercept. User-supplied historical
+#'   arm-prior means and SDs must describe the adjusted arm log-odds at the
+#'   selected covariate centering values.
 #'
 #'   Posterior sampling uses \code{MCMCpack::MCMClogit()}. Before fitting,
 #'   model matrices are checked for rank deficiency, and complete or
@@ -158,6 +171,7 @@
 #'   minus fitted probabilities from the posterior mean coefficients. The
 #'   centering means are saved in \code{args1$covariate_means}; older saved fits
 #'   without these means must be refitted before summarising residuals.
+#'   The centering choice is saved in \code{args1$centering}.
 #'
 #' The returned object is a list containing at least
 #' the following components:
@@ -245,7 +259,8 @@ setGeneric(
            fix_alpha = FALSE,
            weibull_scale = 0.135,
            weibull_shape = 3,
-           method = "fixed") {
+           method = "fixed",
+           centering = "pooled") {
     standardGeneric("bdplogit")
   }
 )
@@ -269,7 +284,8 @@ setMethod(
            fix_alpha = FALSE,
            weibull_scale = 0.135,
            weibull_shape = 3,
-           method = "fixed") {
+           method = "fixed",
+           centering = "pooled") {
 
     ### Check validity of data input
     call <- match.call()
@@ -279,6 +295,11 @@ setMethod(
 
     if (is.null(data0)) {
       stop("Historical data not input correctly.")
+    }
+
+    if (!is.character(centering) || length(centering) != 1L || is.na(centering) ||
+        !centering %in% c("pooled", "current", "historical")) {
+      stop("centering must be 'pooled', 'current', or 'historical'.", call. = FALSE)
     }
 
     if (!is.character(method) || length(method) != 1L || is.na(method) ||
@@ -451,20 +472,17 @@ setMethod(
     ##############################################################################
     # Mean-center covariates
     #
-    # The model is parameterized without a fixed intercept, using separate
-    # treatment and control (log-odds) means (i.e., Y ~ -1 + treatment +
-    # control + covs). In this parameterization the arm means are the fitted
-    # values at covariate = 0. When covariates are not centered these arm-mean
-    # estimators become strongly correlated and their standard errors are
-    # extrapolation errors at covariate = 0, which breaks the (diagonal)
-    # discount-prior construction and corrupts the historical borrowing.
-    # Centering each covariate on its pooled (current + historical) mean
-    # restores the intended behavior. The centering is reversed on the
-    # posterior intercept below so that reported quantities remain on the
-    # original covariate scale.
+    # Use one reference mean across both datasets and treatment arms, so the
+    # historical arm priors and current model have the same covariate origin.
+    # The reported intercept is transformed back to the original scale below.
     ##############################################################################
 
-    covariate_means <- vapply(covs_df, function(nm) mean(df[[nm]]), numeric(1))
+    centering_rows <- switch(centering,
+      pooled = rep(TRUE, nrow(df)),
+      current = df$historical == 0,
+      historical = df$historical == 1)
+    covariate_means <- vapply(covs_df,
+      function(nm) mean(df[[nm]][centering_rows]), numeric(1))
 
     for (nm in covs_df) {
       df[[nm]] <- df[[nm]] - covariate_means[[nm]]
@@ -633,6 +651,7 @@ setMethod(
     args1 <- list(
       call = call,
       data = df,
+      centering = centering,
       covariate_means = covariate_means,
       family = "binomial",
       mcmc_seeds = mcmc_seeds
