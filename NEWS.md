@@ -53,6 +53,7 @@
 
 ## Housekeeping
 
+* Removed machine-specific compiler settings so installation uses the compilers configured by R on each platform.
 * Added `detectseparation` for logistic separation checks and documented the supported fitting conditions and the distinction between prescribed and estimated weights. Logistic sampling still requires `method = "fixed"`.
 * Updated the survival and borrowing vignettes to explain historical likelihood discounting, distinguish the historical weight `alpha` from the Gamma shape `a0`, and interpret current-only and full-borrowing limits. Regenerated the worked examples with the corrected update.
 * Updated the survival vignette with the corrected formulas, a comparison of fixed and draw-specific borrowing, numerical considerations, and the limitations of normal-tail comparisons with sparse events.
